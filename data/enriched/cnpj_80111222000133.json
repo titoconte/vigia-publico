@@ -1,0 +1,14 @@
+{
+  "cnpj": "80111222000133",
+  "razao_social": "Construtora Sul Brasil S.A.",
+  "data_abertura": "2009-01-30",
+  "capital_social": 12000000.0,
+  "cnae_principal": "4211-1/01 - Construção de rodovias e ferrovias",
+  "uf": "SC",
+  "municipio": "Criciúma",
+  "socios": [
+    "Sérgio Benedet",
+    "Marina Zanette"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/80111222000133"
+}

@@ -1,0 +1,23 @@
+id_despesa,id_emenda,orgao,fornecedor_cnpj,fornecedor_nome,valor_empenhado,data_empenho,fonte_url
+DESP-0001,EM-SC-2026-0001,Secretaria de Estado da Fazenda - SC,83456123000110,MedSul Equipamentos Hospitalares S.A.,850000.0,2026-02-15,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0002,EM-SC-2026-0002,Secretaria de Estado da Fazenda - SC,83999111000122,Catarinense Obras Escolares Ltda,620000.0,2026-03-20,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0003,EM-SC-2026-0003,Secretaria de Estado da Fazenda - SC,83456123000110,MedSul Equipamentos Hospitalares S.A.,540000.0,2026-04-10,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0004,EM-SC-2026-0004,Secretaria de Estado da Fazenda - SC,76123987000144,BioDiagnósticos Vale do Itajaí Ltda,410000.0,2026-05-12,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0005,EM-SC-2026-0005,Secretaria de Estado da Fazenda - SC,79888222000155,Oeste Pavimentações e Terraplenagem Ltda,480000.0,2026-03-08,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0006,EM-SC-2026-0006,Secretaria de Estado da Fazenda - SC,83456123000110,MedSul Equipamentos Hospitalares S.A.,390000.0,2026-06-14,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0007,EM-SC-2026-0007,Secretaria de Estado da Fazenda - SC,80111222000133,Construtora Sul Brasil S.A.,9500000.0,2026-07-02,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0008,EM-SC-2026-0008,Secretaria de Estado da Fazenda - SC,83456123000110,MedSul Equipamentos Hospitalares S.A.,520000.0,2026-04-18,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0009,EM-SC-2026-0009,Secretaria de Estado da Fazenda - SC,81222333000166,Serra Geral Engenharia e Pavimentação Ltda,3200000.0,2026-05-22,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0010,EM-SC-2026-0010,Secretaria de Estado da Fazenda - SC,83456123000110,MedSul Equipamentos Hospitalares S.A.,610000.0,2026-02-28,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0011,EM-SC-2026-0011,Secretaria de Estado da Fazenda - SC,55111222000199,Instituto Inovação Social Litoral Norte,1800000.0,2026-08-10,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0012,EM-SC-2026-0012,Secretaria de Estado da Fazenda - SC,55111222000199,Instituto Inovação Social Litoral Norte,1400000.0,2026-08-18,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0013,EM-SC-2026-0013,Secretaria de Estado da Fazenda - SC,83456123000110,MedSul Equipamentos Hospitalares S.A.,250000.0,2026-03-11,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0014,EM-SC-2026-0014,Secretaria de Estado da Fazenda - SC,76123987000144,BioDiagnósticos Vale do Itajaí Ltda,1150000.0,2026-09-05,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0015,EM-SC-2026-0015,Secretaria de Estado da Fazenda - SC,83999111000122,Catarinense Obras Escolares Ltda,950000.0,2026-09-19,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0016,EM-SC-2026-0016,Secretaria de Estado da Fazenda - SC,83999111000122,Catarinense Obras Escolares Ltda,300000.0,2026-02-14,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0017,EM-SC-2026-0017,Secretaria de Estado da Fazenda - SC,44555666000177,Alfa Consultoria e Serviços Rápidos ME,1350000.0,2026-06-25,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0018,EM-SC-2026-0018,Secretaria de Estado da Fazenda - SC,83999111000122,Catarinense Obras Escolares Ltda,470000.0,2026-03-30,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0019,EM-SC-2026-0019,Secretaria de Estado da Fazenda - SC,61888777000188,Paulista Soluções Tecnológicas Educacionais Ltda,1650000.0,2026-07-19,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0020,EM-SC-2026-0020,Secretaria de Estado da Fazenda - SC,83456123000110,MedSul Equipamentos Hospitalares S.A.,580000.0,2026-04-04,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0021,EM-SC-2026-0021,Secretaria de Estado da Fazenda - SC,76123987000144,BioDiagnósticos Vale do Itajaí Ltda,720000.0,2026-05-15,https://dados.sc.gov.br/dataset/despesas-estaduais
+DESP-0022,EM-SC-2026-0022,Secretaria de Estado da Fazenda - SC,79888222000155,Oeste Pavimentações e Terraplenagem Ltda,2100000.0,2026-08-03,https://dados.sc.gov.br/dataset/despesas-estaduais

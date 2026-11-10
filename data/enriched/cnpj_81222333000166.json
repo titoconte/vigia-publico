@@ -1,0 +1,13 @@
+{
+  "cnpj": "81222333000166",
+  "razao_social": "Serra Geral Engenharia e Pavimentação Ltda",
+  "data_abertura": "2016-07-15",
+  "capital_social": 950000.0,
+  "cnae_principal": "4211-1/01 - Construção de rodovias e ferrovias",
+  "uf": "SC",
+  "municipio": "Lages",
+  "socios": [
+    "Gustavo Arruda"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/81222333000166"
+}

@@ -1,0 +1,23 @@
+id_transferencia,id_emenda,municipio,codigo_ibge,entidade_beneficiaria,valor_transferido,situacao,fonte_url
+TRANSF-0001,EM-SC-2026-0001,Florianópolis,4205407,Fundo Municipal de Saúde de Florianópolis,850000.0,Pago,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0002,EM-SC-2026-0002,Chapecó,4204202,Secretaria Municipal de Educação de Chapecó,620000.0,Empenhado,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0003,EM-SC-2026-0003,Joinville,4209102,Hospital Municipal São José de Joinville,540000.0,Pago,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0004,EM-SC-2026-0004,Blumenau,4202404,Rede Feminina de Combate ao Câncer de Blumenau,410000.0,Liquidado,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0005,EM-SC-2026-0005,Concórdia,4204301,Secretaria de Agricultura e Infraestrutura Rural,480000.0,Pago,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0006,EM-SC-2026-0006,Chapecó,4204202,Associação Hospitalar Lenoir Vargas Ferreira,390000.0,Pago,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0007,EM-SC-2026-0007,Criciúma,4204608,Consórcio Intermunicipal de Infraestrutura Sul Catarinense,9500000.0,Empenhado,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0008,EM-SC-2026-0008,Tubarão,4218707,Hospital Nossa Senhora da Conceição,520000.0,Pago,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0009,EM-SC-2026-0009,Urupema,4218954,Prefeitura Municipal de Urupema - Pavimentação Turística,3200000.0,Liquidado,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0010,EM-SC-2026-0010,Lages,4209300,Hospital Tereza Ramos - Ala Pediátrica,610000.0,Pago,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0011,EM-SC-2026-0011,Balneário Camboriú,4202008,Instituto Inovação Social Litoral Norte,1800000.0,Empenhado,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0012,EM-SC-2026-0012,Itajaí,4208203,Instituto Inovação Social Litoral Norte,1400000.0,Empenhado,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0013,EM-SC-2026-0013,Navegantes,4211306,Fundo Municipal de Saúde de Navegantes,250000.0,Pago,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0014,EM-SC-2026-0014,Blumenau,4202404,Hospital Santo Antônio de Blumenau,1150000.0,Liquidado,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0015,EM-SC-2026-0015,Indaial,4207502,Secretaria Municipal de Urbanismo de Indaial,950000.0,Empenhado,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0016,EM-SC-2026-0016,Gaspar,4205902,Fundo Municipal de Educação de Gaspar,300000.0,Pago,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0017,EM-SC-2026-0017,Brusque,4202909,Secretaria de Obras e Serviços Públicos de Brusque,1350000.0,Empenhado,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0018,EM-SC-2026-0018,Rio do Sul,4214805,Defesa Civil Municipal de Rio do Sul,470000.0,Pago,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0019,EM-SC-2026-0019,São José,4216602,Secretaria Municipal de Administração de São José,1650000.0,Liquidado,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0020,EM-SC-2026-0020,Palhoça,4211900,Fundo Municipal de Saúde de Palhoça,580000.0,Pago,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0021,EM-SC-2026-0021,Jaraguá do Sul,4208906,Hospital e Maternidade Jaraguá,720000.0,Pago,https://dados.sc.gov.br/dataset/transferencias-voluntarias
+TRANSF-0022,EM-SC-2026-0022,Santiago do Sul,4215695,Prefeitura Municipal de Santiago do Sul,2100000.0,Empenhado,https://dados.sc.gov.br/dataset/transferencias-voluntarias

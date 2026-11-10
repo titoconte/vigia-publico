@@ -1,0 +1,13 @@
+{
+  "cnpj": "55111222000199",
+  "razao_social": "Instituto Inovação Social Litoral Norte",
+  "data_abertura": "2026-03-15",
+  "capital_social": 25000.0,
+  "cnae_principal": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "Balneário Camboriú",
+  "socios": [
+    "Fernando Tavares"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/55111222000199"
+}

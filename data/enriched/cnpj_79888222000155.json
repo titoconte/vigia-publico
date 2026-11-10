@@ -1,0 +1,13 @@
+{
+  "cnpj": "79888222000155",
+  "razao_social": "Oeste Pavimentações e Terraplenagem Ltda",
+  "data_abertura": "2012-03-19",
+  "capital_social": 1800000.0,
+  "cnae_principal": "4211-1/01 - Construção de rodovias e ferrovias",
+  "uf": "SC",
+  "municipio": "Concórdia",
+  "socios": [
+    "Valdir Dalagnol"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/79888222000155"
+}

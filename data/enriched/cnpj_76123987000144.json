@@ -1,0 +1,14 @@
+{
+  "cnpj": "76123987000144",
+  "razao_social": "BioDiagnósticos Vale do Itajaí Ltda",
+  "data_abertura": "2018-11-04",
+  "capital_social": 600000.0,
+  "cnae_principal": "8640-2/02 - Laboratórios clínicos",
+  "uf": "SC",
+  "municipio": "Blumenau",
+  "socios": [
+    "Helena Muller",
+    "Carlos Henrique Krueger"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/76123987000144"
+}

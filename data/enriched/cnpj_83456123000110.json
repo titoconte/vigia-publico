@@ -1,0 +1,14 @@
+{
+  "cnpj": "83456123000110",
+  "razao_social": "MedSul Equipamentos Hospitalares S.A.",
+  "data_abertura": "2014-05-12",
+  "capital_social": 2500000.0,
+  "cnae_principal": "4664-8/00 - Comércio atacadista de máquinas, aparelhos e equipamentos para uso odonto-médico-hospitalar",
+  "uf": "SC",
+  "municipio": "Florianópolis",
+  "socios": [
+    "Roberto Andrade",
+    "Luciana Costa"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83456123000110"
+}
