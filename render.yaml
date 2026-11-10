@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: vigia-publico-sc-api
+    env: python
+    buildCommand: pip install -r requirements.txt && python collect_tce.py && python enrich_cnpj.py && python etl.py && python anomalies.py
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vigia-publico-sc-db
+          property: connectionString
+
+  - type: web
+    name: vigia-publico-sc-frontend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+
+databases:
+  - name: vigia-publico-sc-db
+    plan: free
