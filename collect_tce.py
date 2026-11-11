@@ -797,7 +797,7 @@ def coletar_emendas_tce_sc(
         limite = (
             max_emendas
             if max_emendas is not None
-            else int(os.getenv("VIGIA_MAX_EMENDAS", "250").strip() or "250")
+            else int(os.getenv("VIGIA_MAX_EMENDAS", "0").strip() or "0")
         )
         ano_exercicio = os.getenv("VIGIA_ANO_EXERCICIO", "2026").strip() or "2026"
 
@@ -836,14 +836,13 @@ def coletar_emendas_tce_sc(
                         for nu in numeros
                     }
                 else:
-                    # Usa pool controlado de 4 threads com leve espaçamento para respeitar o rate-limit de 300 req/min
                     def _buscar_um(nu: str) -> tuple[str, dict[str, Any]]:
-                        """Auxiliar para busca concorrente controlada de um extrato de emenda."""
+                        """Auxiliar para busca concorrente controlada de um extrato de emenda no cache ou API."""
                         arq = pasta_cache / f"{nu}.json"
-                        pausa = 0.0 if arq.exists() else 0.75
+                        pausa = 0.0 if arq.exists() else 0.2
                         return (nu, _obter_extrato_emenda_com_cache(nu, pasta_cache, http, pausa_segundos=pausa))
 
-                    with ThreadPoolExecutor(max_workers=4) as pool:
+                    with ThreadPoolExecutor(max_workers=12) as pool:
                         extratos_map = dict(pool.map(_buscar_um, numeros))
 
                 linhas_finais = [

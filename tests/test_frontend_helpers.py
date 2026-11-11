@@ -15,6 +15,7 @@ from app import (
     obter_dados_perfil_parlamentar,
     obter_quantidade_emendas_por_autor,
     obter_totais_por_ano,
+    obter_totais_por_municipio,
     obter_totais_por_parlamentar,
     obter_totais_por_partido,
     obter_valor_por_populacao_municipios,
@@ -223,4 +224,39 @@ def test_obter_valor_por_populacao_municipios_e_qtd_emendas(tmp_path: Path) -> N
     # Verifica se os índices contêm estritamente bancadas / individuais
     assert all(eh_bancada_regional(str(b)) for b in qtd_bancadas.index)
     assert all(not eh_bancada_regional(str(p)) for p in qtd_individuais.index)
+
+
+def test_graficos_garantem_todos_municipios(tmp_path: Path) -> None:
+    """Garante que todos os municípios cadastrados no estado aparecem nos gráficos analíticos quando solicitado."""
+    db_path = _preparar_banco_frontend(tmp_path)
+    dados = carregar_dados_painel(db_path=db_path)
+    df_emendas = dados["emendas"]
+    df_municipios = dados["municipios"]
+
+    # 1. Total financeiro por município incluindo todos de SC
+    serie_totais = obter_totais_por_municipio(df_emendas, df_municipios, incluir_todos_sc=True, top_n=None)
+    assert not serie_totais.empty
+    assert len(serie_totais) == len(df_municipios)
+    # Todos os municípios da base estão presentes no índice
+    for mun in df_municipios["municipio"]:
+        assert mun in serie_totais.index
+
+    # 2. Razão Valor / População incluindo todos de SC
+    serie_per_capita = obter_valor_por_populacao_municipios(
+        df_filtrado=df_emendas,
+        df_todos_municipios=df_municipios,
+        incluir_todos_sc=True,
+        top_n=None,
+    )
+    assert not serie_per_capita.empty
+    assert len(serie_per_capita) == len(df_municipios)
+    for mun in df_municipios["municipio"]:
+        assert mun in serie_per_capita.index
+
+    # 3. Caso filtrado por um município específico (exibe apenas aquele município)
+    df_apenas_um = df_emendas[df_emendas["municipio"] == "Florianópolis"]
+    serie_um_mun = obter_totais_por_municipio(df_apenas_um, df_municipios, incluir_todos_sc=False, top_n=None)
+    assert len(serie_um_mun) == 1
+    assert "Florianópolis" in serie_um_mun.index
+
 

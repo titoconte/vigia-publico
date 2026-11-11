@@ -43,19 +43,8 @@ streamlit run app.py
 
 O navegador abrirá automaticamente em `http://localhost:8501`.
 
-### 2.2. Atenção ao Tamanho da Amostra Carregada
-Por padrão, se o banco ainda não existir, [`garantir_dados_iniciais`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/main.py#L43-L54) inicializa a base automaticamente. Na coleta padrão ([collect_tce.py](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/collect_tce.py)), o sistema baixa o índice integral (~4.292 emendas) e detalha prioritariamente as **250 maiores/principais emendas** para rapidez de resposta.
-
-> [!TIP]
-> **Quer analisar 100% das emendas estaduais no Streamlit?** Antes de abrir o painel, rode o pipeline completo sem limite de extratos (`VIGIA_MAX_EMENDAS=0`):
-> ```powershell
-> $env:VIGIA_MAX_EMENDAS="0"
-> python collect_tce.py
-> python enrich_cnpj.py
-> python etl.py
-> python anomalies.py
-> streamlit run app.py
-> ```
+### 2.2. Base Completa e Abrangência Territorial
+O sistema opera com 100% da base oficial de emendas parlamentares do Estado de Santa Catarina (~4.292 emendas) cobrindo todos os municípios catarinenses. No Explorador de Emendas (Página 2), os gráficos de análise territorial garantem a exibição de todos os 295 municípios de Santa Catarina, permitindo visualizar com precisão tanto os polos mais contemplados quanto os municípios sem repasses no recorte.
 
 ### 2.3. Atalhos Escondidos nas Tabelas do Streamlit (`st.dataframe`)
 Em qualquer uma das 4 páginas, ao passar o mouse sobre o canto superior direito de uma tabela interativa, você tem acesso a três ferramentas nativas muito úteis:

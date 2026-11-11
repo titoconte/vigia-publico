@@ -141,14 +141,57 @@ def calcular_valor_por_populacao_filtrada(df_filtrado: pd.DataFrame) -> dict[str
 
 def obter_valor_por_populacao_municipios(
     df_filtrado: pd.DataFrame,
-    top_n: int | None = 20,
+    df_todos_municipios: pd.DataFrame | None = None,
+    top_n: int | None = None,
+    *,
+    incluir_todos_sc: bool = False,
 ) -> pd.Series:
-    """Calcula a razão (Valor Total / População) para cada município contemplado no recorte filtrado."""
-    if df_filtrado.empty or "municipio" not in df_filtrado.columns or "populacao" not in df_filtrado.columns:
+    """Calcula a razão (Valor Total / População) para os municípios, garantindo a presença de todos os municípios de SC."""
+    if df_filtrado.empty:
+        if incluir_todos_sc and df_todos_municipios is not None and not df_todos_municipios.empty:
+            serie = pd.Series(0.0, index=df_todos_municipios["municipio"].dropna().unique()).sort_index()
+            return serie.head(top_n) if top_n and top_n > 0 else serie
         return pd.Series(dtype=float)
+
+    if "municipio" not in df_filtrado.columns or "populacao" not in df_filtrado.columns:
+        return pd.Series(dtype=float)
+
     agg = df_filtrado.groupby("municipio").agg({"valor": "sum", "populacao": "first"})
     agg = agg[agg["populacao"] > 0]
-    serie = (agg["valor"] / agg["populacao"]).round(2).sort_values(ascending=False)
+    razoes = (agg["valor"] / agg["populacao"]).round(2)
+    if incluir_todos_sc and df_todos_municipios is not None and not df_todos_municipios.empty:
+        todos_muns = df_todos_municipios["municipio"].dropna().unique()
+        razoes = razoes.reindex(todos_muns, fill_value=0.0)
+
+    serie = razoes.sort_values(ascending=False)
+    if top_n and top_n > 0:
+        return serie.head(top_n)
+    return serie
+
+
+def obter_totais_por_municipio(
+    df_filtrado: pd.DataFrame,
+    df_todos_municipios: pd.DataFrame | None = None,
+    *,
+    incluir_todos_sc: bool = False,
+    top_n: int | None = None,
+) -> pd.Series:
+    """Calcula o valor financeiro total de emendas por município, garantindo a exibição de todos os municípios."""
+    if df_filtrado.empty:
+        if incluir_todos_sc and df_todos_municipios is not None and not df_todos_municipios.empty:
+            serie = pd.Series(0.0, index=df_todos_municipios["municipio"].dropna().unique()).sort_index()
+            return serie.head(top_n) if top_n and top_n > 0 else serie
+        return pd.Series(dtype=float)
+
+    if "municipio" not in df_filtrado.columns or "valor" not in df_filtrado.columns:
+        return pd.Series(dtype=float)
+
+    totais = df_filtrado.groupby("municipio")["valor"].sum()
+    if incluir_todos_sc and df_todos_municipios is not None and not df_todos_municipios.empty:
+        todos_muns = df_todos_municipios["municipio"].dropna().unique()
+        totais = totais.reindex(todos_muns, fill_value=0.0)
+
+    serie = totais.sort_values(ascending=False)
     if top_n and top_n > 0:
         return serie.head(top_n)
     return serie
@@ -158,7 +201,7 @@ def obter_quantidade_emendas_por_autor(
     df_filtrado: pd.DataFrame,
     *,
     tipo_autor: str = "Todos",
-    top_n: int | None = 20,
+    top_n: int | None = None,
 ) -> pd.Series:
     """Calcula o número total de emendas alocadas agrupado por autor (parlamentar individual ou bancada)."""
     if df_filtrado.empty or "parlamentar" not in df_filtrado.columns:
@@ -440,7 +483,7 @@ def renderizar_pagina_explorador_emendas(st: Any, dados: dict[str, pd.DataFrame]
         st.markdown("##### 👤 Total por Parlamentar Individual (R$)")
         df_parl = df_filtrado[~df_filtrado["parlamentar"].apply(eh_bancada_regional)]
         if not df_parl.empty:
-            por_parl = df_parl.groupby("parlamentar")["valor"].sum().sort_values(ascending=False).head(20)
+            por_parl = df_parl.groupby("parlamentar")["valor"].sum().sort_values(ascending=False)
             st.bar_chart(por_parl)
         else:
             st.caption("Nenhum parlamentar individual no recorte filtrado.")
@@ -456,9 +499,15 @@ def renderizar_pagina_explorador_emendas(st: Any, dados: dict[str, pd.DataFrame]
 
     # Linha 2: Valor Total / População por Município e Número Total de Emendas por Autor
     g3, g4 = st.columns(2)
+    apenas_um_mun = df_filtrado["municipio"].nunique() == 1 if not df_filtrado.empty else False
     with g3:
         st.markdown("##### 📈 Valor Total / População por Município (R$ / hab)")
-        serie_per_capita = obter_valor_por_populacao_municipios(df_filtrado, top_n=20)
+        serie_per_capita = obter_valor_por_populacao_municipios(
+            df_filtrado,
+            dados.get("municipios"),
+            top_n=None,
+            incluir_todos_sc=not apenas_um_mun,
+        )
         if not serie_per_capita.empty:
             st.bar_chart(serie_per_capita)
         else:
@@ -466,17 +515,24 @@ def renderizar_pagina_explorador_emendas(st: Any, dados: dict[str, pd.DataFrame]
 
     with g4:
         st.markdown("##### 📋 Número Total de Emendas por Autor")
-        serie_qtd = obter_quantidade_emendas_por_autor(df_filtrado, top_n=20)
+        serie_qtd = obter_quantidade_emendas_por_autor(df_filtrado, top_n=None)
         if not serie_qtd.empty:
             st.bar_chart(serie_qtd)
         else:
             st.caption("Sem emendas no recorte selecionado.")
 
-    # Linha 3: Total Financeiro por Município
+    # Linha 3: Total Financeiro por Município (garante a exibição de todos os municípios)
     st.markdown("##### 🏙️ Total Financeiro por Município (R$)")
-    if not df_filtrado.empty:
-        por_mun = df_filtrado.groupby("municipio")["valor"].sum().sort_values(ascending=False).head(20)
-        st.bar_chart(por_mun)
+    totais_mun = obter_totais_por_municipio(
+        df_filtrado,
+        dados.get("municipios"),
+        incluir_todos_sc=not apenas_um_mun,
+        top_n=None,
+    )
+    if not totais_mun.empty:
+        st.bar_chart(totais_mun)
+    else:
+        st.caption("Nenhum município encontrado para o recorte.")
 
 
 def renderizar_pagina_perfil_parlamentar(st: Any, dados: dict[str, pd.DataFrame]) -> None:
