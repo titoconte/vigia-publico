@@ -1,0 +1,13 @@
+{
+  "cnpj": "83826370000100",
+  "razao_social": "ASSOCIACAO PAIS AMIGOS DOS EXCEPCIONAIS DE CAPINZAL",
+  "data_abertura": "1981-01-07",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "CAPINZAL",
+  "socios": [
+    "SERGIO DE SOUZA VIEIRA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83826370000100"
+}

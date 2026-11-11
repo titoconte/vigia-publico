@@ -1,0 +1,13 @@
+{
+  "cnpj": "75566125000182",
+  "razao_social": "ASSOC DE PAIS AMIGOS DOS EXCEPCIONAIS DE NOVA VENEZA",
+  "data_abertura": "1985-01-25",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "NOVA VENEZA",
+  "socios": [
+    "ANTONIO VILMAR MINATTO"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/75566125000182"
+}

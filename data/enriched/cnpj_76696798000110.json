@@ -1,0 +1,13 @@
+{
+  "cnpj": "76696798000110",
+  "razao_social": "ASSOCIACAO BOM PASTOR DE ITAJAI",
+  "data_abertura": "1985-04-17",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "ITAJAI",
+  "socios": [
+    "RODRIGO MARTINS"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/76696798000110"
+}

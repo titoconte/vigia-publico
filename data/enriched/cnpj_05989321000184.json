@@ -1,0 +1,13 @@
+{
+  "cnpj": "05989321000184",
+  "razao_social": "ASSOCIACAO COMUNITARIA E BENEFICENTE DE.DI.CA",
+  "data_abertura": "2003-11-05",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "CAMBORIU",
+  "socios": [
+    "ROSANE INES SCHULLE BENVENUTTI"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/05989321000184"
+}

@@ -1,0 +1,11 @@
+{
+  "cnpj": "23279570000168",
+  "razao_social": "CONSORCIO DA REGIAO DO RIO SARGENTO DE INTEGRACAO MUNICIPAL - CRESIM",
+  "data_abertura": "2015-08-24",
+  "capital_social": 0.0,
+  "cnae_principal": "Regulação das atividades de saúde, educação, serviços culturais e outros serviços sociais",
+  "uf": "SC",
+  "municipio": "CAMPO ERE",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/23279570000168"
+}

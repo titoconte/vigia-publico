@@ -1,0 +1,13 @@
+{
+  "cnpj": "82763798000430",
+  "razao_social": "COMUNIDADE EVANGELICA DE CONFISSAO LUTERANA EM RIO DO SUL",
+  "data_abertura": "2000-12-10",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "RIO DO SUL",
+  "socios": [
+    "DENISE MARIA ZIMMERMANN ROEPCKE"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82763798000430"
+}

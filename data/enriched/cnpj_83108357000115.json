@@ -1,0 +1,11 @@
+{
+  "cnpj": "83108357000115",
+  "razao_social": "MUNICIPIO DE BLUMENAU",
+  "data_abertura": "1975-03-31",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "BLUMENAU",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83108357000115"
+}

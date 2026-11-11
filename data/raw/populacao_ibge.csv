@@ -1,29 +1,296 @@
 codigo_ibge,municipio,populacao
-4209102,Joinville,616317
-4205407,Florianópolis,537211
-4202404,Blumenau,361261
-4216602,São José,270299
-4208203,Itajaí,264054
-4204202,Chapecó,254785
-4211900,Palhoça,222598
-4204608,Criciúma,214493
-4208906,Jaraguá do Sul,182660
-4209300,Lages,164981
-4202909,Brusque,141385
-4202008,Balneário Camboriú,139155
-4218707,Tubarão,110088
-4211306,Navegantes,86401
-4215802,São Bento do Sul,83277
-4204301,Concórdia,81646
-4214805,Rio do Sul,72587
-4201406,Araranguá,71922
-4205902,Gaspar,72570
-4202305,Biguaçu,76765
-4207502,Indaial,71549
-4203006,Caçador,73720
-4210100,Mafra,55286
-4203808,Canoinhas,55016
-4200507,Águas de Chapecó,6036
-4218954,Urupema,2656
-4213906,Presidente Castello Branco,1689
-4215695,Santiago do Sul,1651
+4200051,Abdon Batista,2628
+4200101,Abelardo Luz,17797
+4200200,Agrolândia,11798
+4200309,Agronômica,6453
+4200408,Água Doce,6547
+4200507,Águas de Chapecó,6118
+4200556,Águas Frias,3036
+4200606,Águas Mornas,7301
+4200705,Alfredo Wagner,11061
+4200754,Alto Bela Vista,1834
+4200804,Anchieta,5922
+4200903,Angelina,5489
+4201000,Anita Garibaldi,8311
+4201109,Anitápolis,3792
+4201208,Antônio Carlos,12803
+4201257,Apiúna,10061
+4201273,Arabutã,4522
+4201307,Araquari,53939
+4201406,Araranguá,77625
+4201505,Armazém,9388
+4201604,Arroio Trinta,3640
+4201653,Arvoredo,2646
+4201703,Ascurra,8804
+4201802,Atalanta,3263
+4201901,Aurora,7352
+4201950,Balneário Arroio do Silva,18343
+4202008,Balneário Camboriú,154525
+4202057,Balneário Barra do Sul,17533
+4202073,Balneário Gaivota,18651
+4202081,Bandeirante,3287
+4202099,Barra Bonita,1628
+4202107,Barra Velha,54854
+4202131,Bela Vista do Toldo,5929
+4202156,Belmonte,2715
+4202206,Benedito Novo,10755
+4202305,Biguaçu,85472
+4202404,Blumenau,390371
+4202438,Bocaina do Sul,3660
+4202453,Bombinhas,29722
+4202503,Bom Jardim da Serra,3964
+4202537,Bom Jesus,2919
+4202578,Bom Jesus do Oeste,2245
+4202602,Bom Retiro,8378
+4202701,Botuverá,5786
+4202800,Braço do Norte,36426
+4202859,Braço do Trombudo,4308
+4202875,Brunópolis,2402
+4202909,Brusque,158593
+4203006,Caçador,76591
+4203105,Caibi,6451
+4203154,Calmon,3525
+4203204,Camboriú,121040
+4203253,Capão Alto,2636
+4203303,Campo Alegre,13007
+4203402,Campo Belo do Sul,7306
+4203501,Campo Erê,9884
+4203600,Campos Novos,39429
+4203709,Canelinha,13819
+4203808,Canoinhas,57169
+4203907,Capinzal,24647
+4203956,Capivari de Baixo,25226
+4204004,Catanduvas,11126
+4204103,Caxambu do Sul,4794
+4204152,Celso Ramos,2868
+4204178,Cerro Negro,3280
+4204194,Chapadão do Lageado,3070
+4204202,Chapecó,289170
+4204251,Cocal do Sul,18295
+4204301,Concórdia,88402
+4204350,Cordilheira Alta,5305
+4204400,Coronel Freitas,10626
+4204459,Coronel Martins,1959
+4204509,Corupá,16042
+4204558,Correia Pinto,16341
+4204608,Criciúma,229333
+4204707,Cunha Porã,11276
+4204756,Cunhataí,2078
+4204806,Curitibanos,41964
+4204905,Descanso,8610
+4205001,Dionísio Cerqueira,15337
+4205100,Dona Emma,4482
+4205159,Doutor Pedrinho,3721
+4205175,Entre Rios,3596
+4205191,Ermo,2342
+4205209,Erval Velho,5193
+4205308,Faxinal dos Guedes,11588
+4205357,Flor do Sertão,1886
+4205407,Florianópolis,598370
+4205431,Formosa do Sul,2759
+4205456,Forquilhinha,35582
+4205506,Fraiburgo,33969
+4205555,Frei Rogério,2446
+4205605,Galvão,3137
+4205704,Garopaba,35153
+4205803,Garuva,20313
+4205902,Gaspar,79645
+4206009,Governador Celso Ramos,18632
+4206108,Grão-Pará,6407
+4206207,Gravatal,13323
+4206306,Guabiruba,27195
+4206405,Guaraciaba,11100
+4206504,Guaramirim,52093
+4206603,Guarujá do Sul,4888
+4206652,Guatambú,9947
+4206702,Herval d'Oeste,22271
+4206751,Ibiam,2067
+4206801,Ibicaré,3287
+4206900,Ibirama,21132
+4207007,Içara,64717
+4207106,Ilhota,19048
+4207205,Imaruí,12171
+4207304,Imbituba,58381
+4207403,Imbuia,6166
+4207502,Indaial,79523
+4207577,Iomerê,2981
+4207601,Ipira,4614
+4207650,Iporã do Oeste,9846
+4207684,Ipuaçu,8218
+4207700,Ipumirim,8177
+4207759,Iraceminha,3958
+4207809,Irani,10622
+4207858,Irati,2096
+4207908,Irineópolis,10416
+4208005,Itá,7430
+4208104,Itaiópolis,23063
+4208203,Itajaí,302247
+4208302,Itapema,88842
+4208401,Itapiranga,17388
+4208450,Itapoá,37488
+4208500,Ituporanga,28897
+4208609,Jaborá,4486
+4208708,Jacinto Machado,10833
+4208807,Jaguaruna,21850
+4208906,Jaraguá do Sul,203204
+4208955,Jardinópolis,1811
+4209003,Joaçaba,32103
+4209102,Joinville,673980
+4209151,José Boiteux,6539
+4209177,Jupiá,2744
+4209201,Lacerdópolis,2307
+4209300,Lages,173278
+4209409,Laguna,44126
+4209458,Lajeado Grande,1804
+4209508,Laurentino,8764
+4209607,Lauro Müller,14633
+4209706,Lebon Régis,11547
+4209805,Leoberto Leal,3383
+4209854,Lindóia do Sul,4597
+4209904,Lontras,14066
+4210001,Luiz Alves,12363
+4210035,Luzerna,5970
+4210050,Macieira,1792
+4210100,Mafra,57501
+4210209,Major Gercino,3248
+4210308,Major Vieira,7540
+4210407,Maracajá,8478
+4210506,Maravilha,31318
+4210555,Marema,2220
+4210605,Massaranduba,18344
+4210704,Matos Costa,2787
+4210803,Meleiro,7129
+4210852,Mirim Doce,2546
+4210902,Modelo,4162
+4211009,Mondaí,10196
+4211058,Monte Carlo,9201
+4211108,Monte Castelo,7708
+4211207,Morro da Fumaça,19708
+4211256,Morro Grande,3108
+4211306,Navegantes,98421
+4211405,Nova Erechim,5553
+4211454,Nova Itaberaba,4696
+4211504,Nova Trento,14536
+4211603,Nova Veneza,14042
+4211652,Novo Horizonte,2652
+4211702,Orleans,24901
+4211751,Otacílio Costa,17965
+4211801,Ouro,7033
+4211850,Ouro Verde,2188
+4211876,Paial,2022
+4211892,Painel,2201
+4211900,Palhoça,261287
+4212007,Palma Sola,7684
+4212056,Palmeira,2675
+4212106,Palmitos,15750
+4212205,Papanduva,19869
+4212239,Paraíso,4412
+4212254,Passo de Torres,15421
+4212270,Passos Maia,3964
+4212304,Paulo Lopes,10093
+4212403,Pedras Grandes,4371
+4212502,Penha,37775
+4212601,Peritiba,3041
+4212650,Pescaria Brava,10696
+4212700,Petrolândia,7041
+4212809,Balneário Piçarras,31604
+4212908,Pinhalzinho,24419
+4213005,Pinheiro Preto,3662
+4213104,Piratuba,6233
+4213153,Planalto Alegre,3085
+4213203,Pomerode,37602
+4213302,Ponte Alta,4350
+4213351,Ponte Alta do Norte,3234
+4213401,Ponte Serrada,10708
+4213500,Porto Belo,32615
+4213609,Porto União,33657
+4213708,Pouso Redondo,18270
+4213807,Praia Grande,8788
+4213906,Presidente Castello Branco,1700
+4214003,Presidente Getúlio,22226
+4214102,Presidente Nereu,2349
+4214151,Princesa,3080
+4214201,Quilombo,11502
+4214300,Rancho Queimado,3533
+4214409,Rio das Antas,6405
+4214508,Rio do Campo,6663
+4214607,Rio do Oeste,8160
+4214706,Rio dos Cedros,11247
+4214805,Rio do Sul,78666
+4214904,Rio Fortuna,5081
+4215000,Rio Negrinho,40096
+4215059,Rio Rufino,2426
+4215075,Riqueza,4821
+4215109,Rodeio,13665
+4215208,Romelândia,4613
+4215307,Salete,7659
+4215356,Saltinho,3575
+4215406,Salto Veloso,4508
+4215455,Sangão,14022
+4215505,Santa Cecília,15734
+4215554,Santa Helena,2480
+4215604,Santa Rosa de Lima,2137
+4215653,Santa Rosa do Sul,10595
+4215679,Santa Terezinha,7955
+4215687,Santa Terezinha do Progresso,2506
+4215695,Santiago do Sul,1749
+4215703,Santo Amaro da Imperatriz,30790
+4215752,São Bernardino,2715
+4215802,São Bento do Sul,88401
+4215901,São Bonifácio,2977
+4216008,São Carlos,10413
+4216057,São Cristóvão do Sul,6586
+4216107,São Domingos,9330
+4216206,São Francisco do Sul,57649
+4216255,São João do Oeste,6492
+4216305,São João Batista,35926
+4216354,São João do Itaperiú,4920
+4216404,São João do Sul,9428
+4216503,São Joaquim,27109
+4216602,São José,301218
+4216701,São José do Cedro,14597
+4216800,São José do Cerrito,8658
+4216909,São Lourenço do Oeste,26340
+4217006,São Ludgero,14667
+4217105,São Martinho,3539
+4217154,São Miguel da Boa Vista,1766
+4217204,São Miguel do Oeste,48490
+4217253,São Pedro de Alcântara,6272
+4217303,Saudades,10922
+4217402,Schroeder,22098
+4217501,Seara,19633
+4217550,Serra Alta,3374
+4217600,Siderópolis,14223
+4217709,Sombrio,32040
+4217758,Sul Brasil,2907
+4217808,Taió,19003
+4217907,Tangará,8100
+4217956,Tigrinhos,2589
+4218004,Tijucas,60560
+4218103,Timbé do Sul,5512
+4218202,Timbó,50613
+4218251,Timbó Grande,7536
+4218301,Três Barras,20674
+4218350,Treviso,3939
+4218400,Treze de Maio,7679
+4218509,Treze Tílias,9749
+4218608,Trombudo Central,7661
+4218707,Tubarão,117924
+4218756,Tunápolis,5108
+4218806,Turvo,13713
+4218855,União do Oeste,2784
+4218905,Urubici,11079
+4218954,Urupema,2771
+4219002,Urussanga,21539
+4219101,Vargeão,3729
+4219150,Vargem,2595
+4219176,Vargem Bonita,4579
+4219200,Vidal Ramos,6263
+4219309,Videira,59839
+4219358,Vitor Meireles,5524
+4219408,Witmarsum,4569
+4219507,Xanxerê,55573
+4219606,Xavantina,3462
+4219705,Xaxim,35058
+4219853,Zortéa,4342
+4220000,Balneário Rincão,18155

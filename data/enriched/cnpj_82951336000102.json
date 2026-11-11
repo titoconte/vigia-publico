@@ -1,0 +1,11 @@
+{
+  "cnpj": "82951336000102",
+  "razao_social": "SECRETARIA DE ESTADO DA AGRICULTURA E PECUARIA",
+  "data_abertura": "1974-12-13",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "FLORIANOPOLIS",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82951336000102"
+}

@@ -1,0 +1,13 @@
+{
+  "cnpj": "86159340000185",
+  "razao_social": "ASSOCIACAO BENEFICENTE BENTO CAVALHEIRO",
+  "data_abertura": "1968-06-03",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "SAO JOAQUIM",
+  "socios": [
+    "JOAO PAULO DE JESUS"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/86159340000185"
+}

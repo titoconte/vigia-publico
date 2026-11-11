@@ -1,0 +1,13 @@
+{
+  "cnpj": "03517135000117",
+  "razao_social": "OBRAS SOCIAIS DA CASA ESPIRITA BEZERRA DE MENEZES",
+  "data_abertura": "1999-11-08",
+  "capital_social": 0.0,
+  "cnae_principal": "Educação infantil - pré-escola",
+  "uf": "SC",
+  "municipio": "JOINVILLE",
+  "socios": [
+    "IVAN DA COSTA PEREIRA FILHO"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/03517135000117"
+}

@@ -1,0 +1,13 @@
+{
+  "cnpj": "47441594000130",
+  "razao_social": "INSTITUTO DE EDUCACAO SANTA ANA (IESA)",
+  "data_abertura": "2022-08-05",
+  "capital_social": 3000.0,
+  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "uf": "SC",
+  "municipio": "PALHOCA",
+  "socios": [
+    "FABRICIO SCHLEDER DANTAS"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/47441594000130"
+}

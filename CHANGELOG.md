@@ -1,7 +1,21 @@
-# Changelog
+# Histórico de Alterações (Changelog)
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
+
+## [1.1.0] - 2026-11-11
+
+### 🚀 Novas Funcionalidades
+- **`[collect_tce.py]`**: Integração real com a API oficial do Portal da Transparência SC / SIGEF-CIASC (`emendaparlamentar/exportcsv` e `emendaparlamentar/extratoemenda`), baixando o índice integral de 4.292 emendas estaduais e detalhando extratos oficiais com cache persistente em disco e controle de *rate-limit*.
+- **`[collect_tce.py]`**: Coleta real da população estimada de todos os **295 municípios de Santa Catarina** na API de Agregados `6579` do IBGE, além do download real das bases de Despesas do Executivo SC (`despesa/exportcsv`) e Transferências Voluntárias na API CKAN (`dados.sc.gov.br`).
+- **`[enrich_cnpj.py]`**: Ativação por padrão do enriquecimento real de CNPJs na Receita Federal via `BrasilAPI` (com *retry/backoff* e *fallback* em `publica.cnpj.ws`), enriquecendo 192 CNPJs reais de entidades e órgãos beneficiários.
+
+### 🔧 Ajustes e Melhorias
+- **`[etl.py]` e `[scheduler.py]`**: Propagação automática da UF cadastral oficial da Receita Federal e do modo de rede (`VIGIA_USAR_REDE` / `VIGIA_MAX_EMENDAS`), mantendo execução offline determinística na suíte automatizada Pytest/CI.
+- **`[feedback.md]` e `[README.md]`**: Atualização do relatório de verificação manual com alertas reais detectados na base estadual de SC e documentação das novas variáveis de ambiente.
+
+### 🐛 Correções de Bugs
+- **`[etl.py]` e `[collect_tce.py]`**: Normalização de localidades de abrangência estadual (`* Santa Catarina` e `Estado de Santa Catarina`) e garantia de unicidade estrita de chaves primárias nas tabelas `agregados_municipio` (`codigo_ibge`) e `agregados_fornecedor` (`fornecedor_cnpj`).
 
 ## [1.0.0] - 2026-11-10
 

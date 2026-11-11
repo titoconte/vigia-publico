@@ -1,0 +1,13 @@
+{
+  "cnpj": "03456062000109",
+  "razao_social": "ASSOCIACAO BENEFICENTE CRIANCA E IDOSO - ABECRI",
+  "data_abertura": "1999-10-18",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "CRICIUMA",
+  "socios": [
+    "ROBERTO RONATO OHLWEILER"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/03456062000109"
+}

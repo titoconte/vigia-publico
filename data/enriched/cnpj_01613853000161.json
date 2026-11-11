@@ -1,0 +1,11 @@
+{
+  "cnpj": "01613853000161",
+  "razao_social": "MUNICIPIO DE BRUNOPOLIS",
+  "data_abertura": "1997-01-02",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "BRUNOPOLIS",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/01613853000161"
+}

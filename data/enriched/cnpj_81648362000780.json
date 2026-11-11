@@ -1,0 +1,13 @@
+{
+  "cnpj": "81648362000780",
+  "razao_social": "CONGREGACAO DAS IRMAS CATEQUISTAS DE SANTANA",
+  "data_abertura": "1993-07-01",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de assistência social prestadas em residências coletivas e particulares não especificadas anteriormente",
+  "uf": "SC",
+  "municipio": "IRINEOPOLIS",
+  "socios": [
+    "EDILMA VESOLOVSKI"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/81648362000780"
+}

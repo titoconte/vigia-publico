@@ -1,0 +1,13 @@
+{
+  "cnpj": "75568006000169",
+  "razao_social": "ASSOC. DOS TRAB., APOSENT., PENCIONISTAS E IDOSOS DE CRICIUMA - ATAPREV-CRI",
+  "data_abertura": "1985-11-19",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "CRICIUMA",
+  "socios": [
+    "MARIA DO CARMO RICARDO MARTINS"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/75568006000169"
+}

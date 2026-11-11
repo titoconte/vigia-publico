@@ -1,0 +1,13 @@
+{
+  "cnpj": "84692144000146",
+  "razao_social": "INSTITUTO JOINVILLENSE DE EDUCACAO E ASSISTENCIA",
+  "data_abertura": "1966-09-02",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "JOINVILLE",
+  "socios": [
+    "EDVALDO NOGUEIRA DA SILVA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/84692144000146"
+}

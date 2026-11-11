@@ -10,11 +10,11 @@
 
 O **Vigia Público SC** é uma plataforma cívica open source desenvolvida para auxiliar jornalistas, pesquisadores e cidadãos de Santa Catarina no acompanhamento da execução das emendas parlamentares estaduais.
 
-A ferramenta automatiza o cruzamento de múltiplas fontes públicas oficiais:
-1. **Painel de Emendas do TCE/SC** (parlamentar, valor, município, entidade beneficiária, área temática, CNPJ do fornecedor e status de execução).
-2. **IBGE** (estimativa populacional oficial dos municípios catarinenses para cálculo do valor *per capita*).
-3. **Portal de Dados Abertos SC** (despesas estaduais e transferências voluntárias).
-4. **Receita Federal / BrasilAPI** (data de abertura do CNPJ, capital social, CNAE principal, UF e quadro societário).
+A ferramenta automatiza o cruzamento de múltiplas fontes públicas oficiais em tempo real:
+1. **Portal da Transparência SC / SIGEF-CIASC e Painel TCE/SC** (índice integral das ~4.290 emendas estaduais impositivas + extratos oficiais com parlamentar/bancada, valor, município, entidade beneficiária, CNPJ do credor, área temática e status de execução).
+2. **IBGE (API de Agregados `6579`)** (estimativa populacional oficial dos **295 municípios catarinenses** para cálculo exato do valor *per capita*).
+3. **Portal de Dados Abertos SC (CKAN / SEF)** (despesas orçamentárias estaduais e transferências voluntárias).
+4. **Receita Federal / BrasilAPI + CNPJ.ws** (data real de abertura do CNPJ, capital social, CNAE principal, UF de sede e quadro societário).
 
 ---
 
@@ -56,12 +56,13 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-### 3. Executar o Pipeline de Dados (Coleta → Enriquecimento → ETL → Anomalias)
+### 3. Executar o Pipeline de Dados Reais (Coleta → Enriquecimento → ETL → Anomalias)
 ```bash
-# 1. Coleta dados do TCE/SC, IBGE e Dados Abertos SC em data/raw/
+# 1. Coleta dados reais do Portal da Transparência SC, IBGE (295 municípios) e Dados Abertos SC em data/raw/
+#    (Por padrão detalha 250 emendas prioritárias; defina VIGIA_MAX_EMENDAS=0 para detalhar 100% da base)
 python collect_tce.py
 
-# 2. Enriquece CNPJs de fornecedores em data/enriched/
+# 2. Enriquece CNPJs reais na Receita Federal (BrasilAPI) em data/enriched/
 python enrich_cnpj.py
 
 # 3. Normaliza municípios, calcula per capita e gera tabelas limpas/agregadas no banco

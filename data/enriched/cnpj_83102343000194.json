@@ -1,0 +1,11 @@
+{
+  "cnpj": "83102343000194",
+  "razao_social": "MUNICIPIO DE BRUSQUE",
+  "data_abertura": "1974-12-20",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "BRUSQUE",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83102343000194"
+}

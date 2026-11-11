@@ -1,0 +1,13 @@
+{
+  "cnpj": "60922168005307",
+  "razao_social": "ASSOCIACAO CONGREGACAO DE SANTA CATARINA",
+  "data_abertura": "2015-03-18",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "TUBARAO",
+  "socios": [
+    "ADELAIDE SCHMOELLER"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/60922168005307"
+}

@@ -1,0 +1,11 @@
+{
+  "cnpj": "10485444000118",
+  "razao_social": "FUNDO MUNICIPAL DE SAUDE DE NOVA VENEZA",
+  "data_abertura": "1988-10-25",
+  "capital_social": 0.0,
+  "cnae_principal": "Regulação das atividades de saúde, educação, serviços culturais e outros serviços sociais",
+  "uf": "SC",
+  "municipio": "NOVA VENEZA",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/10485444000118"
+}

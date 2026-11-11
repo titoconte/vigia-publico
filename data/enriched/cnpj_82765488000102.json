@@ -1,0 +1,11 @@
+{
+  "cnpj": "82765488000102",
+  "razao_social": "MUNICIPIO DE TAIO",
+  "data_abertura": "1971-09-03",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "TAIO",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82765488000102"
+}

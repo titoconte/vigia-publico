@@ -1,0 +1,13 @@
+{
+  "cnpj": "13557221000107",
+  "razao_social": "INSTITUTO ESPLENDIDA",
+  "data_abertura": "2007-10-15",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "uf": "SC",
+  "municipio": "FLORIANOPOLIS",
+  "socios": [
+    "FABRICIO SCHLEDER DANTAS"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/13557221000107"
+}

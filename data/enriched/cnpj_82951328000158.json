@@ -1,0 +1,11 @@
+{
+  "cnpj": "82951328000158",
+  "razao_social": "SECRETARIA DE ESTADO DA EDUCACAO",
+  "data_abertura": "1974-12-13",
+  "capital_social": 0.0,
+  "cnae_principal": "Regulação das atividades de saúde, educação, serviços culturais e outros serviços sociais",
+  "uf": "SC",
+  "municipio": "FLORIANOPOLIS",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82951328000158"
+}

@@ -1,0 +1,13 @@
+{
+  "cnpj": "84712991000125",
+  "razao_social": "ASSOCIACAO CORPO DE BOMBEIROS VOLUNTARIOS DE JOINVILLE",
+  "data_abertura": "1969-09-09",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "uf": "SC",
+  "municipio": "JOINVILLE",
+  "socios": [
+    "MOACIR GERVAZIO THOMAZI"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/84712991000125"
+}

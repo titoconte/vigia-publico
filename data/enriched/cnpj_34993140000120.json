@@ -1,0 +1,13 @@
+{
+  "cnpj": "34993140000120",
+  "razao_social": "CONSELHO REGIONAL DE TURISMO DO GRANDE OESTE",
+  "data_abertura": "2019-09-10",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "uf": "SC",
+  "municipio": "XANXERE",
+  "socios": [
+    "BRUNO ANTONIO VIVIAN"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/34993140000120"
+}

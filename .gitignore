@@ -27,3 +27,7 @@ Thumbs.db
 *.db-journal
 *.db-wal
 *.db-shm
+
+# Cache incremental individual de extratos de emendas
+data/raw/extratos_cache/
+downloaded_files/

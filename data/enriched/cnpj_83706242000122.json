@@ -1,0 +1,13 @@
+{
+  "cnpj": "83706242000122",
+  "razao_social": "ASSOC DE PAIS E AMIGOS DOS EXCEPCIONAIS DE SIDEROPOLIS",
+  "data_abertura": "1981-07-16",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "SIDEROPOLIS",
+  "socios": [
+    "JUCELIA LONGO SCAINI"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83706242000122"
+}

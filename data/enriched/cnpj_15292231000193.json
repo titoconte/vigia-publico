@@ -1,0 +1,13 @@
+{
+  "cnpj": "15292231000193",
+  "razao_social": "FEDERACAO CATARINENSE DE JIU JITSU",
+  "data_abertura": "2012-03-09",
+  "capital_social": 0.0,
+  "cnae_principal": "Produção e promoção de eventos esportivos",
+  "uf": "SC",
+  "municipio": "JAGUARUNA",
+  "socios": [
+    "PAULO HENRIQUE DUARTE"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/15292231000193"
+}

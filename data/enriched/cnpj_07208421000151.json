@@ -1,0 +1,13 @@
+{
+  "cnpj": "07208421000151",
+  "razao_social": "ASSOCIACAO CORPO DE BOMBEIROS VOLUNTARIOS DE ILHOTA",
+  "data_abertura": "2005-01-27",
+  "capital_social": 0.0,
+  "cnae_principal": "Defesa Civil",
+  "uf": "SC",
+  "municipio": "ILHOTA",
+  "socios": [
+    "ALAN VIEIRA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/07208421000151"
+}

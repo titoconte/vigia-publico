@@ -1,0 +1,15 @@
+{
+  "cnpj": "83852418000154",
+  "razao_social": "FUNDACAO SOCIAL HOSPITALAR DE ICARA",
+  "data_abertura": "1980-09-30",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "ICARA",
+  "socios": [
+    "ELIZEU PERAZZOLI",
+    "JANAINA VELASQUES STONE",
+    "WASHINGTON VALMOR PEREIRA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83852418000154"
+}

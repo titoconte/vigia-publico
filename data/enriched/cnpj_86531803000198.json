@@ -1,0 +1,13 @@
+{
+  "cnpj": "86531803000198",
+  "razao_social": "HOSPITAL NOSSA SENHORA DA CONCEICAO",
+  "data_abertura": "1971-04-30",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "URUSSANGA",
+  "socios": [
+    "AGOSTINHO VENDRAMINI"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/86531803000198"
+}

@@ -1,0 +1,11 @@
+{
+  "cnpj": "83102632000193",
+  "razao_social": "MUNICIPIO DE IMBUIA",
+  "data_abertura": "1974-12-20",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "IMBUIA",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83102632000193"
+}

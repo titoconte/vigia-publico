@@ -1,0 +1,11 @@
+{
+  "cnpj": "83102491000109",
+  "razao_social": "MUNICIPIO DE SCHROEDER",
+  "data_abertura": "1964-10-06",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "SCHROEDER",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83102491000109"
+}

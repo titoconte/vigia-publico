@@ -1,0 +1,11 @@
+{
+  "cnpj": "83021873000108",
+  "razao_social": "MUNICIPIO DE SAO LOURENCO D'OESTE",
+  "data_abertura": "1974-12-23",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "SAO LOURENCO DO OESTE",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83021873000108"
+}

@@ -1,0 +1,13 @@
+{
+  "cnpj": "02122913000106",
+  "razao_social": "ASSOCIACAO HOSPITALAR LENOIR VARGAS FERREIRA",
+  "data_abertura": "1997-09-23",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "CHAPECO",
+  "socios": [
+    "MAURO DAMO"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/02122913000106"
+}

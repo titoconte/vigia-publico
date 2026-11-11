@@ -1,0 +1,13 @@
+{
+  "cnpj": "72154347000108",
+  "razao_social": "ASS DE PAIS E AMIGOS DOS EXCEP APAE DE POUSO REDONDO",
+  "data_abertura": "1993-04-20",
+  "capital_social": 0.0,
+  "cnae_principal": "Outras atividades de ensino não especificadas anteriormente",
+  "uf": "SC",
+  "municipio": "POUSO REDONDO",
+  "socios": [
+    "MARCOS ROBERTO PATERNO"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/72154347000108"
+}

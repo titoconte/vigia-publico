@@ -1,0 +1,13 @@
+{
+  "cnpj": "84953579000105",
+  "razao_social": "FUNDACAO DAS ESCOLAS UNIDAS DO PLANALTO CATARINENSE",
+  "data_abertura": "1970-01-29",
+  "capital_social": 0.0,
+  "cnae_principal": "Educação superior - graduação e pós-graduação",
+  "uf": "SC",
+  "municipio": "LAGES",
+  "socios": [
+    "CARLOS EDUARDO DE LIZ"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/84953579000105"
+}

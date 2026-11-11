@@ -1,0 +1,13 @@
+{
+  "cnpj": "76583574000100",
+  "razao_social": "CLUBE DE CACA E PESCA ALBERTO SCHEIDT",
+  "data_abertura": "1984-07-03",
+  "capital_social": 0.0,
+  "cnae_principal": "Clubes sociais, esportivos e similares",
+  "uf": "SC",
+  "municipio": "CRICIUMA",
+  "socios": [
+    "FILIPE TALAMINI BORSATO"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/76583574000100"
+}

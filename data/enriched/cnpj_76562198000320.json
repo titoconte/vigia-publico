@@ -1,0 +1,13 @@
+{
+  "cnpj": "76562198000320",
+  "razao_social": "HOSPITAL NOSSA SENHORA DAS GRACAS",
+  "data_abertura": "2008-05-14",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "JOINVILLE",
+  "socios": [
+    "MARIA DE FATIMA SOBRAL"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/76562198000320"
+}

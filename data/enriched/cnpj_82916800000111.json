@@ -1,0 +1,11 @@
+{
+  "cnpj": "82916800000111",
+  "razao_social": "MUNICIPIO DE ICARA",
+  "data_abertura": "1974-12-09",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "ICARA",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82916800000111"
+}

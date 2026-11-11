@@ -1,0 +1,11 @@
+{
+  "cnpj": "82572207000103",
+  "razao_social": "MUNICIPIO DE ITAPEMA",
+  "data_abertura": "1974-12-12",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "ITAPEMA",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82572207000103"
+}

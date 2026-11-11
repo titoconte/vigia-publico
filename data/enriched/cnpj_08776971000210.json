@@ -1,0 +1,13 @@
+{
+  "cnpj": "08776971000210",
+  "razao_social": "INSTITUTO SANTE",
+  "data_abertura": "2013-08-13",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "CAMPO ALEGRE",
+  "socios": [
+    "TERCIO EGON PAULO KASTEN"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/08776971000210"
+}

@@ -1,0 +1,13 @@
+{
+  "cnpj": "51326751000133",
+  "razao_social": "ASSOCIACAO DOS AMIGOS DOS AUTISTAS AMA JOACABA",
+  "data_abertura": "2023-06-16",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "JOACABA",
+  "socios": [
+    "CLARISSA NUNES BOTELHO LEMOS"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/51326751000133"
+}

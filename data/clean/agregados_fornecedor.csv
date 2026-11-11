@@ -1,10 +1,193 @@
 fornecedor_cnpj,fornecedor_nome,uf_fornecedor,data_abertura,capital_social,cnae_principal,total_recebido,quantidade_emendas,parlamentares_distintos
-80111222000133,Construtora Sul Brasil S.A.,SC,2009-01-30,12000000.0,4211-1/01 - Construção de rodovias e ferrovias,9500000.0,1,1
-83456123000110,MedSul Equipamentos Hospitalares S.A.,SC,2014-05-12,2500000.0,"4664-8/00 - Comércio atacadista de máquinas, aparelhos e equipamentos para uso odonto-médico-hospitalar",3740000.0,7,7
-55111222000199,Instituto Inovação Social Litoral Norte,SC,2026-03-15,25000.0,9430-8/00 - Atividades de associações de defesa de direitos sociais,3200000.0,2,1
-81222333000166,Serra Geral Engenharia e Pavimentação Ltda,SC,2016-07-15,950000.0,4211-1/01 - Construção de rodovias e ferrovias,3200000.0,1,1
-79888222000155,Oeste Pavimentações e Terraplenagem Ltda,SC,2012-03-19,1800000.0,4211-1/01 - Construção de rodovias e ferrovias,2580000.0,2,2
-83999111000122,Catarinense Obras Escolares Ltda,SC,2017-08-23,850000.0,4120-4/00 - Construção de edifícios,2340000.0,4,3
-76123987000144,BioDiagnósticos Vale do Itajaí Ltda,SC,2018-11-04,600000.0,8640-2/02 - Laboratórios clínicos,2280000.0,3,3
-61888777000188,Paulista Soluções Tecnológicas Educacionais Ltda,SP,2019-04-22,400000.0,6202-3/00 - Desenvolvimento e licenciamento de programas de computador customizáveis,1650000.0,1,1
-44555666000177,Alfa Consultoria e Serviços Rápidos ME,SC,2021-09-10,5000.0,7020-4/00 - Atividades de consultoria em gestão empresarial,1350000.0,1,1
+83108357000115,MUNICIPIO DE BLUMENAU,SC,1975-03-31,0.0,Administração pública em geral,11238744.17,7,5
+83102293000145,MUNICIPIO DE CAMBORIU,SC,,0.0,Administração pública / entidade conveniada,8807298.97,5,3
+14741096000153,FUNDO MUNICIPAL DE SAUDE DE CORREIA PINTO,SC,1991-11-25,0.0,Outras atividades de atenção à saúde humana não especificadas anteriormente,7556250.0,1,1
+86437845000164,ASSOCIACAO BENEFICENTE SANTA TERESINHA,SC,1967-08-29,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",5537500.0,3,2
+28700530002539,INSTITUTO MARIA SCHMITT DE DESENVOLVIMENTO DE ENSINO ASSISTENCIA SOCIAL E SAUDE DO CIDADAO,SC,2023-03-16,0.0,Atividades de apoio à gestão de saúde,5355407.64,3,2
+81531162000158,MUNICIPIO DE FORQUILHINHA,SC,1989-04-27,0.0,Administração pública em geral,4418890.0,4,4
+83102483000162,MUNICIPIO DE MASSARANDUBA,SC,,0.0,Administração pública / entidade conveniada,4318750.0,3,3
+13925994000107,FUNDO DE MELHORIA DA POLICIA MILITAR,SC,2011-04-01,0.0,Administração pública em geral,4043438.08,3,3
+83000323000102,MUNICIPIO DE MORRO DA FUMACA,SC,,0.0,Administração pública / entidade conveniada,4018890.0,3,3
+80989965000198,MUNICIPIO DE SANTA ROSA DO SUL,SC,,0.0,Administração pública / entidade conveniada,3518890.0,2,2
+84712983000189,INSTITUICAO BETHESDA,SC,1969-09-08,0.0,Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências,3268750.0,2,2
+00126152000135,ASSOCIACAO DOS BOMBEIROS VOLUNTARIOS NO ESTADO DE S C,SC,1994-07-27,0.0,Atividades de associações de defesa de direitos sociais,3118750.0,2,2
+82777301000190,MUNICIPIO DE LAGES,SC,1974-12-23,0.0,Administração pública em geral,2950000.0,4,3
+85217032000104,INSTITUTO HOSPITALAR E BENEFICENTE NOSSA SENHORA MERCES,SC,1970-01-20,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",2818750.0,2,2
+05748642000278,ASSOCIACAO RENAL VIDA,SC,2004-07-16,0.0,Serviços de diálise e nefrologia,2800000.0,2,2
+82951336000102,SECRETARIA DE ESTADO DA AGRICULTURA E PECUARIA,SC,1974-12-13,0.0,Administração pública em geral,2748277.0,1,1
+80636475000108,FUNDO MUNICIPAL DE SAUDE DE CHAPECO,SC,,0.0,Administração pública / entidade conveniada,2518750.0,1,1
+73360505000130,FUNDACAO CATARINENSE DE ESPORTE - FESPORTE,SC,,0.0,Administração pública / entidade conveniada,2518750.0,1,1
+82572207000103,MUNICIPIO DE ITAPEMA,SC,1974-12-12,0.0,Administração pública em geral,2518750.0,1,1
+82892316000108,MUNICIPIO DE PALHOCA,SC,,0.0,Administração pública / entidade conveniada,2518750.0,1,1
+82945718000115,MUNICIPIO DE SAO CARLOS,SC,1974-12-18,0.0,Administração pública em geral,2518750.0,1,1
+07654807000197,CONSORCIO PUBLICO INTERFEDERATIVO DE SAUDE DO ALTO URUGUAI CATARINENSE - CIS AMAUC,SC,2005-10-14,0.0,Atividades de associações de defesa de direitos sociais,2518750.0,1,1
+03269695000108,CONSORCIO PUBLICO INTERFEDERATIVO DE SAUDE E SERVICOS DO VALE EUROPEU CISAMVE,SC,1999-06-16,0.0,Administração pública em geral,2518750.0,1,1
+02299772000100,FUNDACAO MUNICIPAL DO MEIO AMBIENTE E DESENVOLVIMENTO SUSTENTAVEL,SC,1997-11-08,0.0,Administração pública em geral,2518750.0,1,1
+14007211000160,FUNDO MUNICIPAL DE SAUDE DE JARAGUA DO SUL,SC,1991-12-13,0.0,Administração pública em geral,2518750.0,1,1
+17236080000181,AASSC - ASSOCIACAO DE APOIO A SAUDE DE SANTA CATARINA,SC,2012-11-20,0.0,Atividades associativas não especificadas anteriormente,2518750.0,1,1
+34993140000120,CONSELHO REGIONAL DE TURISMO DO GRANDE OESTE,SC,2019-09-10,0.0,Atividades associativas não especificadas anteriormente,2518750.0,1,1
+23279570000168,CONSORCIO DA REGIAO DO RIO SARGENTO DE INTEGRACAO MUNICIPAL - CRESIM,SC,2015-08-24,0.0,"Regulação das atividades de saúde, educação, serviços culturais e outros serviços sociais",2518750.0,1,1
+05748642000197,ASSOCIACAO RENAL VIDA,SC,2003-04-09,0.0,Serviços de diálise e nefrologia,2518750.0,1,1
+10377912000130,FUNDO MUNICIPAL DE SAUDE DE RIO NEGRINHO,SC,,0.0,Administração pública / entidade conveniada,2518750.0,1,1
+83102277000152,MUNICIPIO DE ITAJAI,SC,,0.0,Administração pública / entidade conveniada,2518750.0,1,1
+83021857000115,MUNICIPIO DE PINHALZINHO,SC,1974-12-23,0.0,Administração pública em geral,2518750.0,1,1
+83102459000123,MUNICIPIO DE JARAGUA DO SUL,SC,1974-12-20,0.0,Administração pública em geral,2518750.0,1,1
+83102681000126,MUNICIPIO DE POUSO REDONDO,SC,1974-12-20,0.0,Administração pública em geral,2518750.0,1,1
+83102541000158,MUNICIPIO DE PORTO UNIAO,SC,,0.0,Administração pública / entidade conveniada,2518750.0,1,1
+83021881000154,MUNICIPIO DE SAUDADES,SC,,0.0,Administração pública / entidade conveniada,2518750.0,1,1
+83102848000159,MUNICIPIO DE GARUVA,SC,,0.0,Administração pública / entidade conveniada,2518750.0,1,1
+82926569000147,MUNICIPIO DE GRAVATAL,SC,1974-12-23,0.0,Administração pública em geral,2518000.0,1,1
+82915232000134,MUNICIPIO DE TIMBE DO SUL,SC,1974-12-05,0.0,Administração pública em geral,2300140.0,4,4
+83102327000100,MUNICIPIO DE PENHA,SC,1974-12-20,0.0,Administração pública em geral,2100000.0,3,3
+83102475000116,MUNICIPIO DE GUARAMIRIM,SC,1974-12-20,0.0,Administração pública em geral,2050000.0,2,2
+01511659000175,MUNICIPIO DE BALNEARIO GAIVOTA,SC,1995-12-29,0.0,Administração pública em geral,2000140.0,2,2
+83102467000170,MUNICIPIO DE CORUPA,SC,1974-12-20,0.0,Administração pública em geral,1600000.0,3,3
+83102228000110,MUNICIPIO DE ARAQUARI,SC,1974-12-20,0.0,Administração pública em geral,1600000.0,2,2
+82915026000124,MUNICIPIO DE MARACAJA,SC,1967-05-12,0.0,Administração pública em geral,1500140.0,2,2
+82929407000162,MUNICIPIO DE SIDEROPOLIS,SC,1974-12-10,0.0,Administração pública em geral,1500000.0,1,1
+73637035000100,CENTRO COMUNITARIO ESPORTIVO FORTALEZA,SC,1993-11-03,0.0,Atividades de associações de defesa de direitos sociais,1500000.0,1,1
+95995130000118,MUNICIPIO DE VARGEM,SC,1992-12-10,0.0,Administração pública em geral,1500000.0,1,1
+83169623000110,MUNICIPIO DE JOINVILLE,SC,1976-03-30,0.0,Administração pública em geral,1400000.0,1,1
+28700530000242,INSTITUTO MARIA SCHMITT DE DESENVOLVIMENTO DE ENSINO ASSISTENCIA SOCIAL E SAUDE DO CIDADAO,SC,2017-11-20,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",1400000.0,3,3
+82951328000158,SECRETARIA DE ESTADO DA EDUCACAO,SC,1974-12-13,0.0,"Regulação das atividades de saúde, educação, serviços culturais e outros serviços sociais",1191781.8,1,1
+83026765000128,MUNICIPIO DE CAMPO ERE,SC,1974-12-17,0.0,Administração pública em geral,1100000.0,2,2
+83102533000101,MUNICIPIO DE PAPANDUVA,SC,1974-12-20,0.0,Administração pública em geral,1050000.0,2,2
+83009910000162,MUNICIPIO DE FAXINAL DOS GUEDES,SC,1974-12-18,0.0,Administração pública em geral,1026236.27,1,1
+08435209000190,FUNDO MUNICIPAL DE SAUDE DE CRICIUMA SC,SC,1996-12-13,0.0,Administração pública em geral,1000140.0,1,1
+82911249000113,MUNICIPIO DE ARARANGUA,SC,1974-12-05,0.0,Administração pública em geral,1000140.0,1,1
+82928698000174,MUNICIPIO DE JAGUARUNA,SC,1974-12-12,0.0,Administração pública em geral,1000140.0,1,1
+17243084000197,MUNICIPIO DE BALNEARIO RINCAO,SC,2013-01-01,0.0,Administração pública em geral,1000000.0,1,1
+13557221000107,INSTITUTO ESPLENDIDA,SC,2007-10-15,0.0,Atividades associativas não especificadas anteriormente,1000000.0,1,1
+14186135000106,FUNDO DE MELHORIA DO CORPO DE BOMBEIROS MILITAR,SC,2004-12-27,0.0,Segurança e ordem pública,1000000.0,1,1
+82925652000100,MUNICIPIO DE SAO JOAO BATISTA,SC,1974-12-12,0.0,Administração pública em geral,1000000.0,1,1
+82916800000111,MUNICIPIO DE ICARA,SC,1974-12-09,0.0,Administração pública em geral,1000000.0,1,1
+83102343000194,MUNICIPIO DE BRUSQUE,SC,1974-12-20,0.0,Administração pública em geral,1000000.0,2,2
+85195337000154,FUNDACAO SHALOM DA FAMILIA,SC,1992-10-02,0.0,Atividades associativas não especificadas anteriormente,1000000.0,2,2
+82765488000102,MUNICIPIO DE TAIO,SC,1971-09-03,0.0,Administração pública em geral,1000000.0,1,1
+82892282000143,MUNICIPIO DE FLORIANOPOLIS,SC,1974-12-13,0.0,Administração pública em geral,1000000.0,2,2
+83722462000140,FUNDACAO CATARINENSE DE CULTURA,SC,1979-05-02,0.0,Administração pública em geral,1000000.0,1,1
+83021873000108,MUNICIPIO DE SAO LOURENCO DOESTE,SC,1974-12-23,0.0,Administração pública em geral,950000.0,2,2
+92736040000890,SOCIEDADE LITERARIA E CARITATIVA SANTO AGOSTINHO,SC,1966-09-22,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",900140.0,3,3
+10485444000118,FUNDO MUNICIPAL DE SAUDE DE NOVA VENEZA,SC,1988-10-25,0.0,"Regulação das atividades de saúde, educação, serviços culturais e outros serviços sociais",900140.0,1,1
+95951323000177,MUNICIPIO DE SANTA TEREZINHA,SC,1993-01-06,0.0,Administração pública em geral,900000.0,1,1
+95778056000188,MUNICIPIO DE COCAL DO SUL,SC,1993-01-04,0.0,Administração pública em geral,840000.0,1,1
+84712991000125,ASSOCIACAO CORPO DE BOMBEIROS VOLUNTARIOS DE JOINVILLE,SC,1969-09-09,0.0,Atividades associativas não especificadas anteriormente,800000.0,2,2
+82777335000185,MUNICIPIO DE ANITA GARIBALDI,SC,1974-12-23,0.0,Administração pública em geral,750000.0,1,1
+28700530002024,INSTITUTO MARIA SCHMITT DE DESENVOLVIMENTO DE ENSINO ASSISTENCIA SOCIAL E SAUDE DO CIDADAO,SC,2023-03-02,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",700000.0,2,2
+95815379000102,MUNICIPIO DE BOMBINHAS,SC,1993-01-01,0.0,Administração pública em geral,700000.0,1,1
+82547274000160,MUNICIPIO DE SAO JOAO DO SUL,SC,1974-12-05,0.0,Administração pública em geral,700000.0,1,1
+83021808000182,MUNICIPIO DE CHAPECO,SC,1974-12-23,0.0,Administração pública em geral,700000.0,1,1
+83102251000104,MUNICIPIO DE POMERODE,SC,1974-12-20,0.0,Administração pública em geral,700000.0,1,1
+60975737009531,SOCIEDADE BENEFICENTE SAO CAMILO,SC,2020-02-13,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",700000.0,1,1
+83249714000165,FUNDACAO MEDICO SOCIAL RURAL SAO SEBASTIAO,SC,1975-12-11,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",700000.0,1,1
+84706381000119,ASSOCIACAO DE INCLUSAO E PROMOCAO SOCIAL DA ARQUIDIOCESE DE JOINVILLE - ADIPROS,SC,1968-04-02,0.0,Atividades de associações de defesa de direitos sociais,690000.0,2,2
+83102491000109,MUNICIPIO DE SCHROEDER,SC,1964-10-06,0.0,Administração pública em geral,600000.0,1,1
+03174368000164,CENTRO DE RECUPERACAO DA PACIENCIA VALE EBENEZER,SC,1999-02-09,0.0,"Atividades de assistência psicossocial e à saúde a portadores de distúrbios psíquicos, deficiência mental e dependência química e grupos similares não",600000.0,1,1
+76583574000100,CLUBE DE CACA E PESCA ALBERTO SCHEIDT,SC,1984-07-03,0.0,"Clubes sociais, esportivos e similares",600000.0,1,1
+82561093000198,MUNICIPIO DE SAO JOAQUIM,SC,1974-12-10,0.0,Administração pública em geral,600000.0,1,1
+82821208000136,MUNICIPIO DE ITAPIRANGA,SC,1974-12-20,0.0,Administração pública em geral,600000.0,1,1
+02122913000106,ASSOCIACAO HOSPITALAR LENOIR VARGAS FERREIRA,SC,1997-09-23,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",599881.84,2,2
+41400580000191,ASSOCIACAO DE SERVICOS SOCIAIS VOLUNTARIOS DE BALNEARIO RINCAO,SC,2021-01-26,0.0,Atividades associativas não especificadas anteriormente,590000.0,2,2
+03264792000108,FUNDO MUNICIPAL DE SAUDE DE SAO FRANCISCO DO SUL,SC,1999-07-07,0.0,Outras atividades de atenção à saúde humana não especificadas anteriormente,550000.0,1,1
+79362208000100,ASSOCIACAO DE BOMBEIROS VOLUNTARIOS DE CORUPA,SC,1987-11-25,0.0,Atividades de associações de defesa de direitos sociais,531900.6,2,2
+95954509000180,MUNICIPIO DE BALNEARIO BARRA DO SUL,SC,1993-01-05,0.0,Administração pública em geral,517127.17,1,1
+02160922000191,ASSOCIACAO COMUNITARIA SAO JUDAS TADEU DE MELEIRO,SC,1997-10-06,0.0,Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências,500140.0,1,1
+47441594000130,INSTITUTO DE EDUCACAO SANTA ANA IESA,SC,2022-08-05,3000.0,Atividades associativas não especificadas anteriormente,500000.0,1,1
+76562198000320,HOSPITAL NOSSA SENHORA DAS GRACAS,SC,2008-05-14,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",500000.0,1,1
+51326751000133,ASSOCIACAO DOS AMIGOS DOS AUTISTAS AMA JOACABA,SC,2023-06-16,0.0,Atividades de associações de defesa de direitos sociais,500000.0,1,1
+03456062000109,ASSOCIACAO BENEFICENTE ESPERANCA DE CRICIUMA,SC,1999-10-18,0.0,Atividades de associações de defesa de direitos sociais,500000.0,1,1
+01630921000281,SOCIEDADE PADRE EDUARDO MICHELIS,SC,2019-03-28,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",500000.0,1,1
+01269862000187,ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS A MORNAS,SC,1996-06-13,0.0,Atividades de associações de defesa de direitos sociais,500000.0,1,1
+01613853000161,MUNICIPIO DE BRUNOPOLIS,SC,1997-01-02,0.0,Administração pública em geral,500000.0,1,1
+04730936000129,ASSOCIACAO LUX DE CULTURA E ARTE,SC,2001-10-05,0.0,Atividades de organizações associativas ligadas à cultura e à arte,500000.0,1,1
+83102590000190,MUNICIPIO DE AGRONOMICA,SC,1974-12-20,0.0,Administração pública em geral,500000.0,1,1
+83102632000193,MUNICIPIO DE IMBUIA,SC,1974-12-20,0.0,Administração pública em geral,500000.0,1,1
+83102731000175,MUNICIPIO DE TROMBUDO CENTRAL,SC,1974-12-20,0.0,Administração pública em geral,500000.0,1,1
+95993085000162,MUNICIPIO DE PASSOS MAIA,SC,1993-01-04,0.0,Administração pública em geral,500000.0,1,1
+83166793000140,ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS CANOINHAS,SC,1976-06-10,0.0,Atividades de associações de defesa de direitos sociais,500000.0,1,1
+83102756000179,MUNICIPIO DE RIO NEGRINHO,SC,1974-12-20,0.0,Administração pública em geral,500000.0,1,1
+83102855000150,MUNICIPIO DE NAVEGANTES,SC,1974-12-20,0.0,Administração pública em geral,500000.0,1,1
+83102517000119,MUNICIPIO DE ITAIOPOLIS,SC,1974-12-20,0.0,Administração pública em geral,500000.0,1,1
+84307974000102,FUNDACAO UNIVERSIDADE DO VALE DO ITAJAI,SC,1977-04-18,0.0,Educação superior - pós-graduação e extensão,500000.0,1,1
+95780458000117,MUNICIPIO DE SANGAO,SC,1994-11-14,0.0,Administração pública em geral,500000.0,1,1
+83782052000194,SERRA CIMA FUTEBOL CLUBE,SC,1983-06-09,0.0,Outras atividades esportivas não especificadas anteriormente,500000.0,1,1
+85361863000147,MUNICIPIO DE PALMITOS,SC,1969-02-25,0.0,Administração pública em geral,500000.0,1,1
+86531803000198,HOSPITAL NOSSA SENHORA DA CONCEICAO,SC,1971-04-30,0.0,Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências,500000.0,1,1
+82844754000192,MUNICIPIO DE BOM JARDIM DA SERRA,SC,1974-12-18,0.0,Administração pública em geral,500000.0,1,1
+82939406000107,MUNICIPIO DE CAPINZAL,SC,1974-12-13,0.0,Administração pública em geral,500000.0,1,1
+82892357000196,MUNICIPIO DE RANCHO QUEIMADO,SC,1974-12-13,0.0,Administração pública em geral,500000.0,1,1
+82821174000180,MUNICIPIO DE SAO MIGUEL DOESTE,SC,1974-12-20,0.0,Administração pública em geral,500000.0,1,1
+82939380000199,MUNICIPIO DE JOACABA,SC,1974-12-13,0.0,Administração pública em geral,500000.0,1,1
+82926593000186,MUNICIPIO DE SANTA ROSA DE LIMA,SC,1974-12-23,0.0,Administração pública em geral,500000.0,1,1
+82892290000190,MUNICIPIO DE ANTONIO CARLOS,SC,1974-12-13,0.0,Administração pública em geral,500000.0,1,1
+82892308000153,MUNICIPIO DE BIGUACU,SC,1974-12-13,0.0,Administração pública em geral,500000.0,1,1
+82777327000139,MUNICIPIO DE SAO JOSE DO CERRITO,SC,1974-12-23,0.0,Administração pública em geral,500000.0,1,1
+82843582000132,MUNICIPIO DE URUBICI,SC,1974-12-18,0.0,Administração pública em geral,500000.0,1,1
+11360515000119,FUNDO MUNICIPAL DE SAUDE DE SANTA TEREZINHA DO PROGRESSO,SC,1997-03-03,0.0,Atividades de apoio à gestão de saúde,500000.0,1,1
+10422587000180,FUNDO MUNICIPAL DE SAUDE DE SAO JOAO DO ITAPERIU SC,SC,1993-03-10,0.0,"Regulação das atividades de saúde, educação, serviços culturais e outros serviços sociais",500000.0,1,1
+06089125000116,FUNDO MUNICIPAL DE SAUDE DE IRINEOPOLIS - FMSI,SC,1993-07-09,0.0,Administração pública em geral,500000.0,1,1
+32784229000150,ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS DE BALNEARIO RINCAO,SC,2019-02-06,0.0,Serviços de assistência social sem alojamento,500000.0,1,1
+82821182000126,MUNICIPIO DE ROMELANDIA,SC,1974-12-20,0.0,Administração pública em geral,500000.0,1,1
+82892365000132,MUNICIPIO DE PAULO LOPES,SC,1974-12-13,0.0,Administração pública em geral,500000.0,1,1
+76696798000110,ASSOCIACAO BOM PASTOR DE ITAJAI,SC,1985-04-17,0.0,Atividades de associações de defesa de direitos sociais,500000.0,1,1
+45878768000109,ASSOCIACAO ONG CASA DE JAIRO - ASSCAJA,SC,2022-02-15,0.0,Serviços de assistência social sem alojamento,450000.0,1,1
+82793944000128,ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS DE LAGES,SC,1972-08-18,0.0,Atividades de associações de defesa de direitos sociais,450000.0,1,1
+79369377000172,ASS ESPORT CULT TRAD DOS MOTORISTAS DE POUSO REDONDO,SC,1989-01-11,0.0,"Clubes sociais, esportivos e similares",400000.0,1,1
+10950917000100,ASSOCIACAO DE SERVICOS SOCIAIS VOLUNTARIOS DE SCHROEDER,SC,2009-06-08,0.0,Atividades associativas não especificadas anteriormente,400000.0,1,1
+30147157000105,APJ - ASSOCIACAO PARALIMPICA DE JOINVILLE,SC,2018-02-28,0.0,Produção e promoção de eventos esportivos,400000.0,1,1
+24006302000488,INSTITUTO DE DESENVOLVIMENTO ENSINO E ASSISTENCIA A SAUDE - IDEAS,SC,2018-01-19,0.0,Atividades de apoio à gestão de saúde,400000.0,1,1
+06787536000185,LIONS CLUBE DE JAGUARUNA,SC,2004-07-05,0.0,Atividades de associações de defesa de direitos sociais,400000.0,1,1
+44200054000176,ASSOCIACAO DE PAIS E AMIGOS DE AUTISTAS DO MUNICIPIO DE LAURO MULLER,SC,2021-09-21,0.0,Atividades de associações de defesa de direitos sociais,395000.0,1,1
+82535832000177,FUNDACAO MEDICO ASSISTENCIAL DO TRABALHADOR RURAL DE SB,SC,1971-08-09,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",370000.0,1,1
+11173405000148,CONSORCIO INTERMUNICIPAL SERRA CATARINENSE,SC,2009-09-03,0.0,Administração pública em geral,362969.03,1,1
+03795934000155,ASSOCIACAO CORPO DE BOMBEIROS VOLUNTARIOS DE BARRA VELHA,SC,1995-11-16,0.0,Defesa Civil,350000.0,1,1
+86159340000185,ASSOCIACAO BENEFICENTE BENTO CAVALHEIRO,SC,1968-06-03,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",350000.0,1,1
+76277128000169,ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS DE TURVO,SC,1983-01-31,0.0,Atividades de associações de defesa de direitos sociais,350000.0,1,1
+20287497000188,ASSOCIACAO BRASILEIRA DE CULTURA DESPORTO E EDUCACAO ABCD DA EDUCACAO,SC,2014-03-18,0.0,Atividades de associações de defesa de direitos sociais,350000.0,1,1
+72154347000108,ASS DE PAIS E AMIGOS DOS EXCEP APAE DE POUSO REDONDO,SC,1993-04-20,0.0,Outras atividades de ensino não especificadas anteriormente,328908.97,1,1
+28700530003500,INSTITUTO MARIA SCHMITT DE DESENVOLVIMENTO DE ENSINO ASSISTENCIA SOCIAL E SAUDE DO CIDADAO,SC,2024-03-05,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",304000.0,1,1
+07208421000151,ASSOCIACAO CORPO DE BOMBEIROS VOLUNTARIOS DE ILHOTA,SC,2005-01-27,0.0,Defesa Civil,300000.0,1,1
+02092420000170,ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS,SC,1997-07-31,0.0,Atividades de associações de defesa de direitos sociais,300000.0,1,1
+12927890000160,GRUPO DE PAIS E AMIGOS PELA UNIDADE INFANTO-JUVENIL DE ONCO-HEMATOLOGIA - GUIDO,SC,2010-11-24,0.0,Centros de apoio a pacientes com câncer e com AIDS,300000.0,1,1
+26757846000164,LIONS CLUBE TRES BARRAS,SC,2016-12-07,0.0,Atividades associativas não especificadas anteriormente,300000.0,1,1
+32272902000173,ASSOCIACAO DE PAIS DOS AUTISTAS DO EXTREMO SUL- CATARINENSE - AMA ESC,SC,2018-11-12,0.0,Atividades de associações de defesa de direitos sociais,300000.0,1,1
+08518671000150,ASSOCIACAO INSTITUTO MORIA,SC,2006-11-08,0.0,Atividades de associações de defesa de direitos sociais,300000.0,1,1
+05989321000184,ASSOCIACAO COMUNITARIA E BENEFICENTE DE DI CA,SC,2003-11-05,0.0,Atividades de associações de defesa de direitos sociais,300000.0,1,1
+04333808000141,FEDERACAO CATARINENSE DO DESPORTO ESCOLAR,SC,2001-03-14,0.0,Produção e promoção de eventos esportivos,300000.0,1,1
+07447145000184,ASSOCIACAO MAFRENSE DOS DEFICIENTES VISUAIS - AMADEV,SC,2005-06-17,0.0,Atividades de associações de defesa de direitos sociais,300000.0,1,1
+09420788000160,ASSOCIACAO CULTURAL E DESPORTIVA DE AURORA - ACUDE 5 A,SC,2008-03-07,0.0,Atividades associativas não especificadas anteriormente,300000.0,1,1
+08776971000210,INSTITUTO SANTE,SC,2013-08-13,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",300000.0,1,1
+21235873000153,MUSICOS ASSOCIADOS DO ESTADO DE SANTA CATARINA,SC,2014-08-21,0.0,Atividades de organizações associativas ligadas à cultura e à arte,300000.0,1,1
+03517135000117,OBRAS SOCIAIS DA CASA ESPIRITA BEZERRA DE MENEZES,SC,1999-11-08,0.0,Educação infantil - pré-escola,300000.0,1,1
+83824771000120,ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCI DE NAVEGANTES,SC,1980-12-26,0.0,Atividades de associações de defesa de direitos sociais,300000.0,1,1
+83783340000163,ASSOCIACAO CORPO DE BOMBEIROS VOLUNTARIOS DE IBIRAMA,SC,1986-05-06,0.0,Atividades associativas não especificadas anteriormente,300000.0,1,1
+84714682000194,FUNDACAO EDUCACIONAL DA REGIAO DE JOINVILLE,SC,1970-02-24,0.0,Educação superior - graduação e pós-graduação,300000.0,1,1
+28700530003691,INSTITUTO MARIA SCHMITT DE DESENVOLVIMENTO DE ENSINO ASSISTENCIA SOCIAL E SAUDE DO CIDADAO,SC,2024-03-14,0.0,Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências,300000.0,1,1
+15292231000193,FEDERACAO CATARINENSE DE JIU JITSU,SC,2012-03-09,0.0,Produção e promoção de eventos esportivos,300000.0,1,1
+82986985000130,HOSPITAL ARQUIDIOCESANO CONSUL CARLOS RENAUX,SC,1989-10-13,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",300000.0,1,1
+60922168005307,ASSOCIACAO CONGREGACAO DE SANTA CATARINA,SC,2015-03-18,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",300000.0,1,1
+83156455000128,FUNDACAO HOSPITALAR DR JOSE ATHANAZIO,SC,1976-01-02,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",300000.0,1,1
+80991235000121,ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS DE SANTA ROSA DO SUL,SC,1991-04-17,0.0,Ensino fundamental,300000.0,1,1
+81648362000780,CONGREGACAO DAS IRMAS CATEQUISTAS DE SANTANA,SC,1993-07-01,0.0,Atividades de assistência social prestadas em residências coletivas e particulares não especificadas anteriormente,300000.0,1,1
+75566125000182,ASSOC DE PAIS AMIGOS DOS EXCEPCIONAIS DE NOVA VENEZA,SC,1985-01-25,0.0,Atividades de associações de defesa de direitos sociais,300000.0,1,1
+75568006000169,ASSOC DOS TRAB APOSENT PENCIONISTAS E IDOSOS DE CRICIUMA - ATAPREV-CRI,SC,1985-11-19,0.0,Atividades de associações de defesa de direitos sociais,300000.0,1,1
+82656554000106,ASSOC DE PAIS E AMIGOS DOS EXCEPCIONAIS DE BLUMENAU,SC,1969-12-31,0.0,Atividades de associações de defesa de direitos sociais,300000.0,1,1
+72498900000111,CLUBE DE BOCHA BELCHIOR,SC,1993-07-06,0.0,"Clubes sociais, esportivos e similares",300000.0,1,1
+79378261000108,ASSOCIACAO DESPORTIVA JARAGUA,SC,1992-03-05,0.0,"Clubes sociais, esportivos e similares",300000.0,1,1
+79679940000109,ASSOC DE PAIS E AMIGOS DOS EXCEPCIONAIS DE GAROPABA,SC,1986-12-11,0.0,Atividades de associações de defesa de direitos sociais,300000.0,1,1
+84953579000105,FUNDACAO DAS ESCOLAS UNIDAS DO PLANALTO CATARINENSE,SC,1970-01-29,0.0,Educação superior - graduação e pós-graduação,300000.0,1,1
+95991113000102,FUNDACAO HOSPITALAR DE CURITIBANOS,SC,1993-01-05,0.0,Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências,300000.0,1,1
+83852418000154,FUNDACAO SOCIAL HOSPITALAR DE ICARA,SC,1980-09-30,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",300000.0,1,1
+83826370000100,ASSOCIACAO PAIS AMIGOS DOS EXCEPCIONAIS DE CAPINZAL,SC,1981-01-07,0.0,Atividades de associações de defesa de direitos sociais,300000.0,1,1
+83566299000173,FUNDACAO DE ESTUDOS E PESQUISAS SOCIO ECONOMICAS,SC,1978-03-16,0.0,Pesquisa e desenvolvimento experimental em ciências sociais e humanas,300000.0,1,1
+83706242000122,ASSOC DE PAIS E AMIGOS DOS EXCEPCIONAIS DE SIDEROPOLIS,SC,1981-07-16,0.0,Atividades de associações de defesa de direitos sociais,300000.0,1,1
+84692144000146,INSTITUTO JOINVILLENSE DE EDUCACAO E ASSISTENCIA,SC,1966-09-02,0.0,Atividades de associações de defesa de direitos sociais,300000.0,1,1
+01767090000103,ASSOCIACAO HOSPITALAR BENEFICENTE FREI BRUNO,SC,1997-04-16,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",280000.0,1,1
+08729363000174,ASSOCIACAO DISTRIBUIDORA DE AGUA PARA IRRIGACAO,SC,2007-03-06,0.0,Atividades associativas não especificadas anteriormente,280000.0,1,1
+82798653000122,ASSOCIACAO DE SERVICOS SOCIAIS VOLUNTARIOS DE CACADOR,SC,1971-09-20,0.0,Atividades associativas não especificadas anteriormente,275000.0,1,1
+82763798000430,COMUNIDADE EVANGELICA DE CONFISSAO LUTERANA EM RIO DO SUL,SC,2000-12-10,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",270000.0,1,1
+83792143000100,ASSOCIACAO JOINVILENSE PARA INTEGRACAO DOS DEFICIENTES VISUAIS,SC,1981-08-13,0.0,Atividades de associações de defesa de direitos sociais,269266.66,1,1
+48342751000112,HOPE,SC,2022-09-02,0.0,Atividades de associações de defesa de direitos sociais,268119.6,1,1
+60194990000178,INSTITUTO DAS PEQUENAS MISSIONARIAS DE MARIA IMACULADA,SP,1967-04-28,0.0,Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências,268000.0,1,1
+83526640000167,ASSOCIACAO ASSISTENCIAL LAR BETANIA,SC,1978-01-24,0.0,Educação infantil - creche,264000.0,1,1
+28700530000838,INSTITUTO MARIA SCHMITT DE DESENVOLVIMENTO DE ENSINO ASSISTENCIA SOCIAL E SAUDE DO CIDADAO,SC,2019-03-25,0.0,"Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",262292.07,1,1

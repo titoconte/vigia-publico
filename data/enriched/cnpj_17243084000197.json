@@ -1,0 +1,11 @@
+{
+  "cnpj": "17243084000197",
+  "razao_social": "MUNICIPIO DE BALNEARIO RINCAO",
+  "data_abertura": "2013-01-01",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "BALNEARIO RINCAO",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/17243084000197"
+}

@@ -1,0 +1,13 @@
+{
+  "cnpj": "21235873000153",
+  "razao_social": "MUSICOS ASSOCIADOS DO ESTADO DE SANTA CATARINA",
+  "data_abertura": "2014-08-21",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de organizações associativas ligadas à cultura e à arte",
+  "uf": "SC",
+  "municipio": "CRICIUMA",
+  "socios": [
+    "JOELSON RONSANI"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/21235873000153"
+}

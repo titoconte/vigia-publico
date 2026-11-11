@@ -1,0 +1,11 @@
+{
+  "cnpj": "10422587000180",
+  "razao_social": "FUNDO MUNICIPAL DE SAUDE DE SAO JOAO DO ITAPERIU/SC",
+  "data_abertura": "1993-03-10",
+  "capital_social": 0.0,
+  "cnae_principal": "Regulação das atividades de saúde, educação, serviços culturais e outros serviços sociais",
+  "uf": "SC",
+  "municipio": "SAO JOAO DO ITAPERIU",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/10422587000180"
+}

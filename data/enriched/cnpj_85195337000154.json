@@ -1,0 +1,13 @@
+{
+  "cnpj": "85195337000154",
+  "razao_social": "FUNDACAO SHALOM DA FAMILIA",
+  "data_abertura": "1992-10-02",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "uf": "SC",
+  "municipio": "CRICIUMA",
+  "socios": [
+    "JUCELI AMANDIO"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/85195337000154"
+}

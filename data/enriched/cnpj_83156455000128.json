@@ -1,0 +1,11 @@
+{
+  "cnpj": "83156455000128",
+  "razao_social": "FUNDACAO HOSPITALAR DR JOSE ATHANAZIO",
+  "data_abertura": "1976-01-02",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "CAMPOS NOVOS",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83156455000128"
+}

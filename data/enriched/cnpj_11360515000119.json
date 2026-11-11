@@ -1,0 +1,11 @@
+{
+  "cnpj": "11360515000119",
+  "razao_social": "FUNDO MUNICIPAL DE SAUDE DE SANTA TEREZINHA DO PROGRESSO",
+  "data_abertura": "1997-03-03",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de apoio à gestão de saúde",
+  "uf": "SC",
+  "municipio": "SANTA TEREZINHA DO PROGRESSO",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/11360515000119"
+}

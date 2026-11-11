@@ -1,0 +1,13 @@
+{
+  "cnpj": "44200054000176",
+  "razao_social": "ASSOCIACAO DE PAIS E AMIGOS DE AUTISTAS DO MUNICIPIO DE LAURO MULLER",
+  "data_abertura": "2021-09-21",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "LAURO MULLER",
+  "socios": [
+    "FABIANA ELISA HAEFLIGER CATANEO"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/44200054000176"
+}

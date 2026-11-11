@@ -1,0 +1,13 @@
+{
+  "cnpj": "17236080000181",
+  "razao_social": "AASSC - ASSOCIACAO DE APOIO A SAUDE DE SANTA CATARINA",
+  "data_abertura": "2012-11-20",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "uf": "SC",
+  "municipio": "FLORIANOPOLIS",
+  "socios": [
+    "NOEMIR TEREZINHA SANTOS"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/17236080000181"
+}

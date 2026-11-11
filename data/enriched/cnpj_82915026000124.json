@@ -1,0 +1,11 @@
+{
+  "cnpj": "82915026000124",
+  "razao_social": "MUNICIPIO DE MARACAJA",
+  "data_abertura": "1967-05-12",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "MARACAJA",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82915026000124"
+}

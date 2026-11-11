@@ -1,0 +1,13 @@
+{
+  "cnpj": "09420788000160",
+  "razao_social": "ASSOCIACAO CULTURAL E DESPORTIVA DE AURORA - ACUDE 5 A",
+  "data_abertura": "2008-03-07",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "uf": "SC",
+  "municipio": "AURORA",
+  "socios": [
+    "JACSON FUCK"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/09420788000160"
+}

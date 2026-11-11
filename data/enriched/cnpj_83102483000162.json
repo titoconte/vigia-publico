@@ -1,0 +1,11 @@
+{
+  "cnpj": "83102483000162",
+  "razao_social": "Entidade/Credor 83102483000162",
+  "data_abertura": "",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública / entidade conveniada",
+  "uf": "SC",
+  "municipio": "Santa Catarina",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83102483000162"
+}

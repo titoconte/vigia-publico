@@ -1,0 +1,13 @@
+{
+  "cnpj": "83526640000167",
+  "razao_social": "ASSOCIACAO ASSISTENCIAL LAR BETANIA",
+  "data_abertura": "1978-01-24",
+  "capital_social": 0.0,
+  "cnae_principal": "Educação infantil - creche",
+  "uf": "SC",
+  "municipio": "BLUMENAU",
+  "socios": [
+    "ORLANDO MATTOS JUNIOR"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83526640000167"
+}

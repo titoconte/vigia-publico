@@ -1,0 +1,13 @@
+{
+  "cnpj": "84714682000194",
+  "razao_social": "FUNDACAO EDUCACIONAL DA REGIAO DE JOINVILLE",
+  "data_abertura": "1970-02-24",
+  "capital_social": 0.0,
+  "cnae_principal": "Educação superior - graduação e pós-graduação",
+  "uf": "SC",
+  "municipio": "JOINVILLE",
+  "socios": [
+    "ALEXANDRE CIDRAL"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/84714682000194"
+}

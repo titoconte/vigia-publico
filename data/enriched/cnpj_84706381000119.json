@@ -1,0 +1,13 @@
+{
+  "cnpj": "84706381000119",
+  "razao_social": "ASSOCIACAO DE INCLUSAO E PROMOCAO SOCIAL DA ARQUIDIOCESE DE JOINVILLE - ADIPROS",
+  "data_abertura": "1968-04-02",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "JOINVILLE",
+  "socios": [
+    "FRANCISCO CARLOS BACH"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/84706381000119"
+}

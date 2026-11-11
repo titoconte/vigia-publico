@@ -1,0 +1,11 @@
+{
+  "cnpj": "01511659000175",
+  "razao_social": "MUNICIPIO DE BALNEARIO GAIVOTA",
+  "data_abertura": "1995-12-29",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "BALNEARIO GAIVOTA",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/01511659000175"
+}

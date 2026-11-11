@@ -1,0 +1,13 @@
+{
+  "cnpj": "45878768000109",
+  "razao_social": "ASSOCIACAO ONG CASA DE JAIRO - ASSCAJA",
+  "data_abertura": "2022-02-15",
+  "capital_social": 0.0,
+  "cnae_principal": "Serviços de assistência social sem alojamento",
+  "uf": "SC",
+  "municipio": "BLUMENAU",
+  "socios": [
+    "TANIA MARIA TOBALDINI"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/45878768000109"
+}

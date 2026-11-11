@@ -1,0 +1,13 @@
+{
+  "cnpj": "76277128000169",
+  "razao_social": "ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS DE TURVO",
+  "data_abertura": "1983-01-31",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "TURVO",
+  "socios": [
+    "LUIZ CARLOS MARCON"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/76277128000169"
+}

@@ -1,0 +1,13 @@
+{
+  "cnpj": "01630921000281",
+  "razao_social": "SOCIEDADE PADRE EDUARDO MICHELIS",
+  "data_abertura": "2019-03-28",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "SAO BENTO DO SUL",
+  "socios": [
+    "MARIA ALICE SCHEIDT"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/01630921000281"
+}

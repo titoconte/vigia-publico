@@ -1,0 +1,11 @@
+{
+  "cnpj": "11173405000148",
+  "razao_social": "CONSORCIO INTERMUNICIPAL SERRA CATARINENSE",
+  "data_abertura": "2009-09-03",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "LAGES",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/11173405000148"
+}

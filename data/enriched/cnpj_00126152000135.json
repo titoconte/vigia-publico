@@ -1,0 +1,13 @@
+{
+  "cnpj": "00126152000135",
+  "razao_social": "ASSOCIACAO DOS BOMBEIROS VOLUNTARIOS NO ESTADO DE S.C.",
+  "data_abertura": "1994-07-27",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "JOINVILLE",
+  "socios": [
+    "IVAN FREDERICO HUDLER"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/00126152000135"
+}

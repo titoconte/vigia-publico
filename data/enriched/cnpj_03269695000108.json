@@ -1,0 +1,11 @@
+{
+  "cnpj": "03269695000108",
+  "razao_social": "CONSORCIO PUBLICO INTERFEDERATIVO DE SAUDE E SERVICOS DO VALE EUROPEU CISAMVE",
+  "data_abertura": "1999-06-16",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "BLUMENAU",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/03269695000108"
+}

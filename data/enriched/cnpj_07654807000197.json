@@ -1,0 +1,11 @@
+{
+  "cnpj": "07654807000197",
+  "razao_social": "CONSORCIO PUBLICO INTERFEDERATIVO DE SAUDE DO ALTO URUGUAI CATARINENSE - CIS AMAUC",
+  "data_abertura": "2005-10-14",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "CONCORDIA",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/07654807000197"
+}

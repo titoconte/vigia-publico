@@ -1,0 +1,13 @@
+{
+  "cnpj": "83566299000173",
+  "razao_social": "FUNDACAO DE ESTUDOS E PESQUISAS SOCIO ECONOMICAS",
+  "data_abertura": "1978-03-16",
+  "capital_social": 0.0,
+  "cnae_principal": "Pesquisa e desenvolvimento experimental em ciências sociais e humanas",
+  "uf": "SC",
+  "municipio": "FLORIANOPOLIS",
+  "socios": [
+    "RAIMUNDO NONATO DE OLIVEIRA LIMA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83566299000173"
+}
