@@ -13,7 +13,53 @@ import pandas as pd
 
 DEFAULT_RAW_DIR = Path("data/raw")
 PORTAL_TCE_FONTE_PADRAO = "https://www.tcesc.tc.br/painel-emendas-parlamentares"
+PORTAL_TRANSPARENCIA_SC_API = "https://api-portal-transparencia.apps.sm.okd4.ciasc.sc.gov.br/api"
+PORTAL_TRANSPARENCIA_SC_WEB = "https://www.transparencia.sc.gov.br"
 PORTAL_DADOS_ABERTOS_SC = "https://dados.sc.gov.br"
+IBGE_AGREGADOS_SC_URL = (
+    "https://servicodados.ibge.gov.br/api/v3/agregados/6579/periodos/-1/variaveis/9324?localidades=N6[N3[42]]"
+)
+
+
+def resolver_usar_rede(usar_rede: bool | None = None) -> bool:
+    """Resolve se a coleta deve consultar a rede (explícito > VIGIA_USAR_REDE > offline no Pytest > True)."""
+    if usar_rede is not None:
+        return bool(usar_rede)
+    valor_env = os.getenv("VIGIA_USAR_REDE", "").strip().lower()
+    if valor_env in ("1", "true", "yes", "sim"):
+        return True
+    if valor_env in ("0", "false", "no", "nao", "não"):
+        return False
+    if "PYTEST_CURRENT_TEST" in os.environ:
+        return False
+    return True
+
+
+def _decodificar_bytes_csv(conteudo: bytes) -> str:
+    """Decodifica bytes de arquivos CSV públicos tentando UTF-8 primeiro e fazendo fallback para Latin-1."""
+    try:
+        return conteudo.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        return conteudo.decode("latin-1", errors="replace")
+
+
+def _baixar_csv_streaming_limitado(
+    client: httpx.Client,
+    url: str,
+    max_linhas: int = 1500,
+) -> str:
+    """Realiza o download em streaming de um CSV grande retornando o cabeçalho e até max_linhas registros."""
+    buffer = bytearray()
+    alvo_quebras = max(1, max_linhas) + 1
+    with client.stream("GET", url, follow_redirects=True, timeout=25.0) as resposta:
+        resposta.raise_for_status()
+        for bloco in resposta.iter_bytes():
+            buffer.extend(bloco)
+            if buffer.count(b"\n") >= alvo_quebras:
+                break
+    texto = _decodificar_bytes_csv(bytes(buffer))
+    linhas = [ln for ln in texto.splitlines() if ln.strip()]
+    return "\n".join(linhas[:alvo_quebras])
 
 
 def obter_base_populacao_sc_referencia() -> list[dict[str, Any]]:
@@ -439,73 +485,154 @@ def coletar_emendas_tce_sc(
 
 def coletar_populacao_ibge(
     output_dir: Path | str = DEFAULT_RAW_DIR,
-    usar_api_ibge: bool = False,
+    usar_api_ibge: bool | None = None,
+    client: httpx.Client | None = None,
 ) -> Path:
-    """Coleta a estimativa populacional por município de SC do IBGE e salva em data/raw/populacao_ibge.csv."""
+    """Coleta a estimativa populacional oficial dos 295 municípios de SC no IBGE e salva em populacao_ibge.csv."""
     pasta = Path(output_dir)
     pasta.mkdir(parents=True, exist_ok=True)
     caminho_saida = pasta / "populacao_ibge.csv"
 
     registros_base = {item["codigo_ibge"]: dict(item) for item in obter_base_populacao_sc_referencia()}
+    deve_usar_api = resolver_usar_rede(usar_api_ibge)
 
-    if usar_api_ibge:
+    if deve_usar_api:
+        fechar_cliente = client is None
+        http = client or httpx.Client(timeout=20.0, follow_redirects=True)
         try:
-            url = os.getenv(
-                "IBGE_POPULACAO_URL",
-                "https://servicodados.ibge.gov.br/api/v1/localidades/estados/42/municipios",
-            )
-            resposta = httpx.get(url, timeout=15.0)
+            url_agregados = os.getenv("IBGE_AGREGADOS_URL", IBGE_AGREGADOS_SC_URL)
+            resposta = http.get(url_agregados)
             resposta.raise_for_status()
-            for mun in resposta.json():
-                codigo = str(mun.get("id", ""))
-                nome = str(mun.get("nome", ""))
-                if codigo and codigo in registros_base and nome:
-                    registros_base[codigo]["municipio"] = nome
+            payload = resposta.json()
+            novos_registros: dict[str, dict[str, Any]] = {}
+            for item_var in payload:
+                for resultado in item_var.get("resultados", []):
+                    for serie_mun in resultado.get("series", []):
+                        loc = serie_mun.get("localidade", {})
+                        codigo = str(loc.get("id", "")).strip()
+                        nome_bruto = str(loc.get("nome", "")).strip()
+                        if nome_bruto.upper().endswith(" - SC"):
+                            nome_limpo = nome_bruto[:-5].strip()
+                        else:
+                            nome_limpo = nome_bruto
+                        valores_serie = serie_mun.get("serie", {})
+                        pop_valor = 0
+                        if isinstance(valores_serie, dict) and valores_serie:
+                            ultimo_ano = sorted(valores_serie.keys())[-1]
+                            try:
+                                pop_valor = int(float(str(valores_serie[ultimo_ano]).strip()))
+                            except (TypeError, ValueError):
+                                pop_valor = 0
+                        if codigo and nome_limpo and pop_valor > 0:
+                            novos_registros[codigo] = {
+                                "codigo_ibge": codigo,
+                                "municipio": nome_limpo,
+                                "populacao": pop_valor,
+                            }
+            if novos_registros:
+                registros_base = novos_registros
         except Exception:
             pass
+        finally:
+            if fechar_cliente:
+                http.close()
 
     df = pd.DataFrame(list(registros_base.values()))
     df.to_csv(caminho_saida, index=False, encoding="utf-8")
     return caminho_saida
 
 
-def coletar_dados_abertos_sc(output_dir: Path | str = DEFAULT_RAW_DIR) -> dict[str, Path]:
-    """Coleta as bases complementares 'Despesas' e 'Transferências Voluntárias' do Portal de Dados Abertos SC."""
+def coletar_dados_abertos_sc(
+    output_dir: Path | str = DEFAULT_RAW_DIR,
+    usar_rede: bool | None = None,
+    max_linhas: int = 1500,
+    client: httpx.Client | None = None,
+) -> dict[str, Path]:
+    """Coleta as bases públicas de 'Despesas' (Portal Transparência SC) e 'Transferências' (CKAN Dados Abertos SC)."""
     pasta = Path(output_dir)
     pasta.mkdir(parents=True, exist_ok=True)
     caminho_despesas = pasta / "despesas_sc.csv"
     caminho_transferencias = pasta / "transferencias_sc.csv"
 
-    emendas = obter_emendas_tce_sc_referencia()
-    despesas = [
-        {
-            "id_despesa": f"DESP-{idx:04d}",
-            "id_emenda": item["id_emenda"],
-            "orgao": "Secretaria de Estado da Fazenda - SC",
-            "fornecedor_cnpj": item["fornecedor_cnpj"],
-            "fornecedor_nome": item["fornecedor_nome"],
-            "valor_empenhado": item["valor"],
-            "data_empenho": item["data"],
-            "fonte_url": f"{PORTAL_DADOS_ABERTOS_SC}/dataset/despesas-estaduais",
-        }
-        for idx, item in enumerate(emendas, start=1)
-    ]
-    transferencias = [
-        {
-            "id_transferencia": f"TRANSF-{idx:04d}",
-            "id_emenda": item["id_emenda"],
-            "municipio": item["municipio"],
-            "codigo_ibge": item["codigo_ibge"],
-            "entidade_beneficiaria": item["entidade_beneficiaria"],
-            "valor_transferido": item["valor"],
-            "situacao": item["status_execucao"],
-            "fonte_url": f"{PORTAL_DADOS_ABERTOS_SC}/dataset/transferencias-voluntarias",
-        }
-        for idx, item in enumerate(emendas, start=1)
-    ]
+    deve_usar_rede = resolver_usar_rede(usar_rede)
+    df_despesas_real: pd.DataFrame | None = None
+    df_transf_real: pd.DataFrame | None = None
 
-    pd.DataFrame(despesas).to_csv(caminho_despesas, index=False, encoding="utf-8")
-    pd.DataFrame(transferencias).to_csv(caminho_transferencias, index=False, encoding="utf-8")
+    if deve_usar_rede:
+        fechar_cliente = client is None
+        http = client or httpx.Client(timeout=25.0, follow_redirects=True)
+        try:
+            ano_atual = os.getenv("VIGIA_ANO_EXERCICIO", "2026").strip() or "2026"
+            url_desp = f"{PORTAL_TRANSPARENCIA_SC_API}/despesa/exportcsv?anofiltro[]={ano_atual}"
+            resp_desp = http.get(url_desp)
+            resp_desp.raise_for_status()
+            texto_desp = _decodificar_bytes_csv(resp_desp.content)
+            df_desp_lido = pd.read_csv(io.StringIO(texto_desp), sep=";", dtype=str)
+            if not df_desp_lido.empty:
+                df_desp_lido["fonte_url"] = url_desp
+                df_despesas_real = df_desp_lido.head(max_linhas)
+        except Exception:
+            df_despesas_real = None
+
+        try:
+            url_ckan = f"{PORTAL_DADOS_ABERTOS_SC}/api/3/action/package_show?id=transferencias"
+            resp_ckan = http.get(url_ckan)
+            resp_ckan.raise_for_status()
+            recursos = resp_ckan.json().get("result", {}).get("resources", [])
+            csvs_ckan = [r for r in recursos if str(r.get("format", "")).upper() == "CSV" and r.get("url")]
+            if csvs_ckan:
+                url_recurso = str(csvs_ckan[-1]["url"]).replace("http://", "https://")
+                trecho_csv = _baixar_csv_streaming_limitado(http, url_recurso, max_linhas=max_linhas)
+                df_transf_lido = pd.read_csv(
+                    io.StringIO(trecho_csv),
+                    sep=";",
+                    dtype=str,
+                    on_bad_lines="skip",
+                )
+                if not df_transf_lido.empty:
+                    df_transf_lido["fonte_url"] = url_recurso
+                    df_transf_real = df_transf_lido.head(max_linhas)
+        except Exception:
+            df_transf_real = None
+        finally:
+            if fechar_cliente:
+                http.close()
+
+    emendas_ref = obter_emendas_tce_sc_referencia()
+    if df_despesas_real is None or df_despesas_real.empty:
+        despesas = [
+            {
+                "id_despesa": f"DESP-{idx:04d}",
+                "id_emenda": item["id_emenda"],
+                "orgao": "Secretaria de Estado da Fazenda - SC",
+                "fornecedor_cnpj": item["fornecedor_cnpj"],
+                "fornecedor_nome": item["fornecedor_nome"],
+                "valor_empenhado": item["valor"],
+                "data_empenho": item["data"],
+                "fonte_url": f"{PORTAL_DADOS_ABERTOS_SC}/dataset/despesas-estaduais",
+            }
+            for idx, item in enumerate(emendas_ref, start=1)
+        ]
+        df_despesas_real = pd.DataFrame(despesas)
+
+    if df_transf_real is None or df_transf_real.empty:
+        transferencias = [
+            {
+                "id_transferencia": f"TRANSF-{idx:04d}",
+                "id_emenda": item["id_emenda"],
+                "municipio": item["municipio"],
+                "codigo_ibge": item["codigo_ibge"],
+                "entidade_beneficiaria": item["entidade_beneficiaria"],
+                "valor_transferido": item["valor"],
+                "situacao": item["status_execucao"],
+                "fonte_url": f"{PORTAL_DADOS_ABERTOS_SC}/dataset/transferencias-voluntarias",
+            }
+            for idx, item in enumerate(emendas_ref, start=1)
+        ]
+        df_transf_real = pd.DataFrame(transferencias)
+
+    df_despesas_real.to_csv(caminho_despesas, index=False, encoding="utf-8")
+    df_transf_real.to_csv(caminho_transferencias, index=False, encoding="utf-8")
     return {"despesas": caminho_despesas, "transferencias": caminho_transferencias}
 
 
