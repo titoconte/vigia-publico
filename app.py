@@ -248,10 +248,18 @@ def obter_dados_perfil_parlamentar(
         if not df_emendas.empty
         else pd.DataFrame(columns=["area", "valor"])
     )
+    por_municipio = (
+        df_emendas.groupby("municipio", as_index=False)["valor"]
+        .sum()
+        .sort_values("valor", ascending=False)
+        if not df_emendas.empty
+        else pd.DataFrame(columns=["municipio", "valor"])
+    )
     return {
         "resumo": dict(resumo_row) if resumo_row else {"parlamentar": parlamentar, "total_emendas": 0.0},
         "emendas": df_emendas,
         "por_area": por_area,
+        "por_municipio": por_municipio,
         "alertas": df_alertas.to_dict(orient="records"),
     }
 
@@ -621,6 +629,12 @@ def renderizar_pagina_perfil_parlamentar(st: Any, dados: dict[str, pd.DataFrame]
     c2.metric("Nº de Emendas", f"{int(resumo.get('quantidade_emendas', 0))}")
     c3.metric("Área Principal", str(resumo.get("principal_area", "-")))
     c4.metric("Maior Concentração Fornecedor", f"{float(resumo.get('percentual_maior_fornecedor', 0.0)):.1f}%")
+
+    st.markdown("##### 🏙️ Distribuição de Recursos por Município Destino (R$)")
+    if not perfil["por_municipio"].empty:
+        st.bar_chart(perfil["por_municipio"].set_index("municipio")["valor"])
+    else:
+        st.caption("Nenhum município cadastrado para este autor.")
 
     c_graf1, c_graf2 = st.columns(2)
     with c_graf1:

@@ -78,6 +78,10 @@ def test_perfis_parlamentar_e_municipio_e_feedback(tmp_path: Path) -> None:
     perfil_parl = obter_dados_perfil_parlamentar(parlamentar_nome, db_path=db_path)
     assert perfil_parl["resumo"]["parlamentar"] == parlamentar_nome
     assert not perfil_parl["por_area"].empty
+    assert not perfil_parl["por_municipio"].empty
+    assert "municipio" in perfil_parl["por_municipio"].columns
+    assert "valor" in perfil_parl["por_municipio"].columns
+    assert round(perfil_parl["por_municipio"]["valor"].sum(), 2) == round(perfil_parl["emendas"]["valor"].sum(), 2)
 
     perfil_mun = obter_dados_perfil_municipio("4218954", db_path=db_path)
     assert perfil_mun["resumo"]["municipio"] == "Urupema"

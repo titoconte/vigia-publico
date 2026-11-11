@@ -151,6 +151,9 @@ Abaixo dos dados individuais do parlamentar, uma seção dedicada apresenta **3 
 * **👤 Histograma por Autor (Parlamentar e Bancada):** ranking comparativo dos maiores empenhos financeiros, com filtro opcional para isolar apenas parlamentares individuais, apenas bancadas ou o ranking global unificado.
 * **📅 Histograma por Ano de Exercício:** gráfico temporal mostrando o total alocado ano a ano no orçamento do Estado.
 
+#### 4. Gráfico de Barras por Município Destino no Perfil do Autor
+Na **Verificação Detalhada por Autor**, logo abaixo dos indicadores de topo, o gráfico de barras **Distribuição de Recursos por Município Destino (R$)** apresenta em ordem decrescente todos os municípios contemplados pelo parlamentar ou bancada selecionada, permitindo diagnosticar a concentração geográfica e os polos regionais atendidos por cada mandato.
+
 #### Colunas Extras Visíveis na Tabela Inferior da Página 3 (e da Página 4)
 Diferente da Página 2 (que exibe 12 colunas resumidas), a tabela final das Páginas 3 e 4 exibe **todas as 21 colunas de `emendas_clean`**, revelando dados riquíssimos da Receita Federal:
 * `uf_fornecedor`: estado da sede do CNPJ (ex.: `SC`, `SP`, `PR`).
