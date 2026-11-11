@@ -101,12 +101,13 @@ A tabela é ordenada primeiro por **`pontuacao` (decrescente)** e, em caso de em
 ### 📊 Página 2 — Explorador de Emendas Parlamentares
 Implementada em [`renderizar_pagina_explorador_emendas`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/app.py#L227-L287), permite investigar **toda a base limpa (`emendas_clean`)**, inclusive emendas que **não** geraram alertas.
 
-#### Como ler os 3 indicadores (KPIs) de topo
+#### Como ler os 4 indicadores (KPIs) de topo
 * **Total Filtrado:** soma financeira bruta (`R$`) apenas das emendas que passaram pelos seus filtros atuais.
 * **Quantidade de Emendas:** número de instrumentos/extratos individuais no recorte.
 * **Municípios Contemplados:** contagem de códigos IBGE distintos atingidos pelo filtro (útil para medir capilaridade territorial de um deputado ou de uma área como *Saúde*).
+* **Valor Total / População:** razão per capita global do recorte ativo, obtida pela divisão do valor total filtrado pela soma das populações únicas dos municípios contemplados (sem duplicidade).
 
-#### Dicionário de Interpretação das 12 Colunas da Tabela
+#### Dicionário de Interpretação das Colunas da Tabela
 
 | Coluna | O que significa | Como interpretar corretamente (Pegadinhas comuns) |
 | :--- | :--- | :--- |
@@ -114,6 +115,7 @@ Implementada em [`renderizar_pagina_explorador_emendas`](file:///C:/Users/titoc/
 | `parlamentar` | Autor da emenda impositiva. | Inclui tanto **Deputados Estaduais individuais** quanto **Bancadas Regionais** (ex.: `BANCADA DA SERRA`, `BANCADA DO OESTE`), que naturalmente movimentam valores maiores. |
 | `partido` | Sigla partidária associada ao autor. | Em emendas coletivas de bancada, pode aparecer como bancada/pluripartidário ou vazio conforme o extrato. |
 | `municipio` | Localidade de destino do recurso. | **Atenção:** Quando a emenda tem escopo estadual (ex.: órgãos estaduais ou fundos estaduais), aparece normalizada para a referência estadual (`codigo_ibge` `4200000`). |
+| `populacao` | População residente oficial do município (IBGE). | Base demográfica utilizada para o cálculo do impacto per capita local e regional. |
 | `area` | Função orçamentária / área temática. | Ex.: `Saúde`, `Educação`, `Infraestrutura e Mobilidade`, `Agricultura`, `Segurança Pública`, `FUNDO SOCIAL`. |
 | `valor` | Valor financeiro da emenda em reais (`R$`). | Verifique sempre a coluna `status_execucao` ao lado para saber se esse valor já saiu do caixa ou se é apenas previsão/empenho! |
 | `valor_per_capita` | `valor` daquela emenda dividido pela população IBGE do município. | Mede o **impacto individual daquela única emenda** por habitante na cidade destino (não é a soma de todas as emendas do município — essa soma está na Página 4). |

@@ -125,6 +125,20 @@ def filtrar_emendas_explorador(
     return df.reset_index(drop=True)
 
 
+def calcular_valor_por_populacao_filtrada(df_filtrado: pd.DataFrame) -> dict[str, float]:
+    """Calcula a soma de valores, a população única dos municípios contemplados e a razão valor total / população."""
+    if df_filtrado.empty:
+        return {"total_valor": 0.0, "populacao_total": 0, "valor_por_habitante": 0.0}
+    total_valor = float(df_filtrado["valor"].sum())
+    pop_total = int(df_filtrado.drop_duplicates(subset=["codigo_ibge"])["populacao"].sum())
+    razao = round(total_valor / pop_total, 2) if pop_total > 0 else 0.0
+    return {
+        "total_valor": round(total_valor, 2),
+        "populacao_total": pop_total,
+        "valor_por_habitante": razao,
+    }
+
+
 def obter_dados_perfil_parlamentar(
     parlamentar: str,
     db_path: Path | str | None = None,
@@ -347,10 +361,16 @@ def renderizar_pagina_explorador_emendas(st: Any, dados: dict[str, pd.DataFrame]
         tipo_autor=f_tipo_autor,
     )
 
-    m1, m2, m3 = st.columns(3)
-    m1.metric("Total Filtrado", f"R$ {df_filtrado['valor'].sum():,.2f}")
+    resumo_calc = calcular_valor_por_populacao_filtrada(df_filtrado)
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Total Filtrado", f"R$ {resumo_calc['total_valor']:,.2f}")
     m2.metric("Quantidade de Emendas", f"{len(df_filtrado)}")
     m3.metric("Municípios Contemplados", f"{df_filtrado['codigo_ibge'].nunique()}")
+    m4.metric(
+        "Valor Total / População",
+        f"R$ {resumo_calc['valor_por_habitante']:,.2f} / hab",
+        help=f"População total dos municípios do recorte: {resumo_calc['populacao_total']:,} habitantes (IBGE).",
+    )
 
     st.dataframe(
         df_filtrado[
@@ -359,6 +379,7 @@ def renderizar_pagina_explorador_emendas(st: Any, dados: dict[str, pd.DataFrame]
                 "parlamentar",
                 "partido",
                 "municipio",
+                "populacao",
                 "area",
                 "valor",
                 "valor_per_capita",

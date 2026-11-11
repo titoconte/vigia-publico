@@ -7,6 +7,7 @@ from pathlib import Path
 from anomalies import executar_motor_anomalias
 from app import (
     AVISO_ETICO_FRONTEND,
+    calcular_valor_por_populacao_filtrada,
     carregar_dados_painel,
     eh_bancada_regional,
     filtrar_emendas_explorador,
@@ -159,3 +160,31 @@ def test_filtrar_emendas_por_tipo_autor(tmp_path: Path) -> None:
     assert len(df_bancadas) + len(df_individuais) == len(df_todos)
     assert df_bancadas["parlamentar"].apply(eh_bancada_regional).all()
     assert (~df_individuais["parlamentar"].apply(eh_bancada_regional)).all()
+
+
+def test_calcular_valor_por_populacao_filtrada(tmp_path: Path) -> None:
+    """Verifica o cálculo da razão valor total / população total dos municípios contemplados no Explorador."""
+    db_path = _preparar_banco_frontend(tmp_path)
+    dados = carregar_dados_painel(db_path=db_path)
+    df_emendas = dados["emendas"]
+
+    # Caso geral com base completa
+    resumo_geral = calcular_valor_por_populacao_filtrada(df_emendas)
+    assert resumo_geral["total_valor"] == df_emendas["valor"].sum()
+    assert resumo_geral["populacao_total"] > 0
+    assert resumo_geral["valor_por_habitante"] > 0
+    esperado = round(resumo_geral["total_valor"] / resumo_geral["populacao_total"], 2)
+    assert resumo_geral["valor_por_habitante"] == esperado
+
+    # Caso filtrado por um município específico (Florianópolis)
+    df_floripa = df_emendas[df_emendas["municipio"] == "Florianópolis"]
+    resumo_floripa = calcular_valor_por_populacao_filtrada(df_floripa)
+    assert resumo_floripa["total_valor"] == df_floripa["valor"].sum()
+    assert resumo_floripa["populacao_total"] == 537211  # População IBGE de Florianópolis
+    assert resumo_floripa["valor_por_habitante"] == round(df_floripa["valor"].sum() / 537211, 2)
+
+    # Caso DataFrame vazio
+    resumo_vazio = calcular_valor_por_populacao_filtrada(df_emendas.iloc[0:0])
+    assert resumo_vazio["total_valor"] == 0.0
+    assert resumo_vazio["populacao_total"] == 0
+    assert resumo_vazio["valor_por_habitante"] == 0.0
