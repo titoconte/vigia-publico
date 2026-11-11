@@ -39,6 +39,65 @@ def carregar_dados_painel(db_path: Path | str | None = None) -> dict[str, pd.Dat
     }
 
 
+def eh_bancada_regional(nome_autor: str | None) -> bool:
+    """Verifica se o nome informado corresponde a uma bancada regional da ALESC."""
+    if not nome_autor:
+        return False
+    return str(nome_autor).strip().upper().startswith("BANCADA")
+
+
+def separar_autores_por_tipo(lista_autores: list[str]) -> dict[str, list[str]]:
+    """Separa uma lista de nomes de autores entre 'parlamentares' individuais e 'bancadas' regionais."""
+    bancadas = sorted([a for a in lista_autores if eh_bancada_regional(a)])
+    parlamentares = sorted([a for a in lista_autores if not eh_bancada_regional(a)])
+    return {"parlamentares": parlamentares, "bancadas": bancadas}
+
+
+def obter_totais_por_partido(df_emendas: pd.DataFrame) -> pd.Series:
+    """Calcula o somatório total financeiro (R$) de emendas agrupado por partido político."""
+    if df_emendas.empty or "partido" not in df_emendas.columns:
+        return pd.Series(dtype=float)
+    return df_emendas.groupby("partido")["valor"].sum().sort_values(ascending=False)
+
+
+def obter_totais_por_parlamentar(
+    df_emendas: pd.DataFrame,
+    *,
+    tipo_autor: str = "Todos",
+    top_n: int | None = None,
+) -> pd.Series:
+    """Calcula o valor total acumulado de emendas por parlamentar ou bancada em ordem decrescente."""
+    if df_emendas.empty or "parlamentar" not in df_emendas.columns:
+        return pd.Series(dtype=float)
+    df = df_emendas.copy()
+    if tipo_autor in ("Bancadas", "Bancada Regional", "Bancada"):
+        df = df[df["parlamentar"].apply(eh_bancada_regional)]
+    elif tipo_autor in ("Parlamentares", "Parlamentar Individual", "Parlamentar"):
+        df = df[~df["parlamentar"].apply(eh_bancada_regional)]
+
+    agrupado = df.groupby("parlamentar")["valor"].sum().sort_values(ascending=False)
+    if top_n and top_n > 0:
+        return agrupado.head(top_n)
+    return agrupado
+
+
+def obter_totais_por_ano(
+    df_emendas: pd.DataFrame,
+    *,
+    parlamentar: str | None = None,
+) -> pd.Series:
+    """Calcula o somatório financeiro (R$) de emendas agrupado por ano de referência."""
+    if df_emendas.empty or "data" not in df_emendas.columns:
+        return pd.Series(dtype=float)
+    df = df_emendas.copy()
+    if parlamentar and parlamentar != "Todos":
+        df = df[df["parlamentar"] == parlamentar]
+
+    anos = df["data"].astype(str).str.slice(0, 4)
+    df["ano"] = anos
+    return df.groupby("ano")["valor"].sum().sort_index()
+
+
 def filtrar_emendas_explorador(
     df_emendas: pd.DataFrame,
     *,
@@ -46,9 +105,15 @@ def filtrar_emendas_explorador(
     municipio: str = "Todos",
     area: str = "Todas",
     valor_minimo: float = 0.0,
+    tipo_autor: str = "Todos",
 ) -> pd.DataFrame:
     """Aplica os filtros selecionados pelo usuário na Página 2 (Explorador de Emendas)."""
     df = df_emendas.copy()
+    if tipo_autor in ("Parlamentar", "Parlamentar Individual", "Parlamentares"):
+        df = df[~df["parlamentar"].apply(eh_bancada_regional)]
+    elif tipo_autor in ("Bancada", "Bancada Regional", "Bancadas"):
+        df = df[df["parlamentar"].apply(eh_bancada_regional)]
+
     if parlamentar and parlamentar != "Todos":
         df = df[df["parlamentar"] == parlamentar]
     if municipio and municipio != "Todos":
@@ -166,21 +231,38 @@ def registrar_feedback_local(
 
 
 def renderizar_pagina_painel_alertas(st: Any, dados: dict[str, pd.DataFrame]) -> None:
-    """Renderiza a Página 1: Painel de Alertas ordenado por pontuação com filtros, detalhes e feedback."""
+    """Renderiza a Página 1: Painel de Alertas com verificação separada por bancada ou parlamentar."""
     st.header("🚨 Página 1 — Painel de Alertas e Análise de Risco")
     df_alertas = dados["alertas"]
 
-    col1, col2, col3, col4 = st.columns(4)
+    c_tipo_autor, col1, col2, col3, col4 = st.columns([1.2, 1.2, 1.2, 1.2, 1.0])
+    filtro_tipo_autor = c_tipo_autor.selectbox(
+        "Tipo de Autor",
+        ["Todos", "Parlamentar Individual", "Bancada Regional"],
+    )
+
+    autores_alertas = df_alertas["parlamentar"].dropna().unique().tolist()
+    divisao_autores = separar_autores_por_tipo(autores_alertas)
+    if filtro_tipo_autor == "Bancada Regional":
+        opcoes_autor = ["Todos"] + divisao_autores["bancadas"]
+    elif filtro_tipo_autor == "Parlamentar Individual":
+        opcoes_autor = ["Todos"] + divisao_autores["parlamentares"]
+    else:
+        opcoes_autor = ["Todos"] + sorted(autores_alertas)
+
     tipos = ["Todos"] + sorted(df_alertas["tipo"].dropna().unique().tolist())
-    parlamentares = ["Todos"] + sorted(df_alertas["parlamentar"].dropna().unique().tolist())
     municipios = ["Todos"] + sorted(df_alertas["municipio"].dropna().unique().tolist())
 
     filtro_tipo = col1.selectbox("Regra / Tipo de Padrão", tipos)
-    filtro_parl = col2.selectbox("Parlamentar", parlamentares)
+    filtro_parl = col2.selectbox("Autor Específico", opcoes_autor)
     filtro_mun = col3.selectbox("Município", municipios)
     filtro_score = col4.slider("Pontuação Mínima", min_value=0, max_value=100, value=60, step=5)
 
     df_view = df_alertas[df_alertas["pontuacao"] >= filtro_score].copy()
+    if filtro_tipo_autor == "Bancada Regional":
+        df_view = df_view[df_view["parlamentar"].apply(eh_bancada_regional)]
+    elif filtro_tipo_autor == "Parlamentar Individual":
+        df_view = df_view[~df_view["parlamentar"].apply(eh_bancada_regional)]
     if filtro_tipo != "Todos":
         df_view = df_view[df_view["tipo"] == filtro_tipo]
     if filtro_parl != "Todos":
@@ -227,16 +309,29 @@ def renderizar_pagina_painel_alertas(st: Any, dados: dict[str, pd.DataFrame]) ->
 
 
 def renderizar_pagina_explorador_emendas(st: Any, dados: dict[str, pd.DataFrame]) -> None:
-    """Renderiza a Página 2: Explorador de Emendas com tabela filtrável e gráficos de barras."""
+    """Renderiza a Página 2: Explorador de Emendas com tabela filtrável por bancada ou parlamentar."""
     st.header("📊 Página 2 — Explorador de Emendas Parlamentares")
     df_emendas = dados["emendas"]
 
-    col1, col2, col3, col4 = st.columns(4)
-    parlamentares = ["Todos"] + sorted(df_emendas["parlamentar"].unique().tolist())
+    c_tipo, col1, col2, col3, col4 = st.columns([1.2, 1.2, 1.2, 1.2, 1.0])
+    f_tipo_autor = c_tipo.selectbox(
+        "Tipo de Autor",
+        ["Todos", "Parlamentar Individual", "Bancada Regional"],
+    )
+
+    autores_emendas = df_emendas["parlamentar"].unique().tolist()
+    divisao_emendas = separar_autores_por_tipo(autores_emendas)
+    if f_tipo_autor == "Bancada Regional":
+        opcoes_parl = ["Todos"] + divisao_emendas["bancadas"]
+    elif f_tipo_autor == "Parlamentar Individual":
+        opcoes_parl = ["Todos"] + divisao_emendas["parlamentares"]
+    else:
+        opcoes_parl = ["Todos"] + sorted(autores_emendas)
+
     municipios = ["Todos"] + sorted(df_emendas["municipio"].unique().tolist())
     areas = ["Todas"] + sorted(df_emendas["area"].unique().tolist())
 
-    f_parl = col1.selectbox("Filtrar por Parlamentar", parlamentares)
+    f_parl = col1.selectbox("Autor Específico", opcoes_parl)
     f_mun = col2.selectbox("Filtrar por Município", municipios)
     f_area = col3.selectbox("Filtrar por Área", areas)
     f_val = col4.number_input("Valor Mínimo (R$)", min_value=0.0, value=0.0, step=50000.0)
@@ -247,6 +342,7 @@ def renderizar_pagina_explorador_emendas(st: Any, dados: dict[str, pd.DataFrame]
         municipio=f_mun,
         area=f_area,
         valor_minimo=f_val,
+        tipo_autor=f_tipo_autor,
     )
 
     m1, m2, m3 = st.columns(3)
@@ -289,10 +385,28 @@ def renderizar_pagina_explorador_emendas(st: Any, dados: dict[str, pd.DataFrame]
 
 
 def renderizar_pagina_perfil_parlamentar(st: Any, dados: dict[str, pd.DataFrame]) -> None:
-    """Renderiza a Página 3: Perfil do Parlamentar com totais, distribuição por área e alertas associados."""
-    st.header("🏛️ Página 3 — Perfil do Parlamentar")
-    lista_parlamentares = dados["parlamentares"]["parlamentar"].tolist()
-    escolhido = st.selectbox("Selecione o Parlamentar", lista_parlamentares)
+    """Renderiza a Página 3: Perfil do Parlamentar com verificação separada por bancada e histogramas comparativos."""
+    st.header("🏛️ Página 3 — Perfil do Parlamentar e Bancadas Regionais")
+
+    c_tipo_perfil, c_escolha = st.columns([1, 2])
+    tipo_analise = c_tipo_perfil.radio(
+        "Verificação Separada por Categoria:",
+        ["Parlamentar Individual", "Bancada Regional"],
+        horizontal=False,
+    )
+
+    todos_autores = dados["parlamentares"]["parlamentar"].tolist()
+    divisao = separar_autores_por_tipo(todos_autores)
+    if tipo_analise == "Bancada Regional":
+        lista_opcoes = divisao["bancadas"]
+        rotulo_seletor = "Selecione a Bancada Regional"
+    else:
+        lista_opcoes = divisao["parlamentares"]
+        rotulo_seletor = "Selecione o Parlamentar Individual"
+
+    if not lista_opcoes:
+        lista_opcoes = todos_autores
+    escolhido = c_escolha.selectbox(rotulo_seletor, lista_opcoes)
 
     perfil = obter_dados_perfil_parlamentar(escolhido)
     resumo = perfil["resumo"]
@@ -303,19 +417,76 @@ def renderizar_pagina_perfil_parlamentar(st: Any, dados: dict[str, pd.DataFrame]
     c3.metric("Área Principal", str(resumo.get("principal_area", "-")))
     c4.metric("Maior Concentração Fornecedor", f"{float(resumo.get('percentual_maior_fornecedor', 0.0)):.1f}%")
 
-    st.subheader("Distribuição por Área Temática")
-    if not perfil["por_area"].empty:
-        st.bar_chart(perfil["por_area"].set_index("area")["valor"])
+    c_graf1, c_graf2 = st.columns(2)
+    with c_graf1:
+        st.subheader("Distribuição por Área Temática")
+        if not perfil["por_area"].empty:
+            st.bar_chart(perfil["por_area"].set_index("area")["valor"])
+    with c_graf2:
+        st.subheader("Evolução Anual do Autor (R$)")
+        ano_autor = obter_totais_por_ano(perfil["emendas"])
+        if not ano_autor.empty:
+            st.bar_chart(ano_autor)
 
-    st.subheader("Padrões / Alertas Associados ao Parlamentar")
+    st.subheader(f"Padrões / Alertas Associados ({escolhido})")
     if perfil["alertas"]:
         for alerta in perfil["alertas"]:
             st.info(f"**[{alerta['pontuacao']} pts] {alerta['tipo']}**: {alerta['justificativa']}")
     else:
-        st.success("Nenhum alerta estatístico associado a este parlamentar.")
+        st.success("Nenhum alerta estatístico associado a este autor.")
 
-    st.subheader("Emendas do Parlamentar")
+    st.subheader(f"Emendas Cadastradas ({escolhido})")
     st.dataframe(perfil["emendas"], use_container_width=True, hide_index=True)
+
+    st.markdown("---")
+    st.subheader("📊 Histogramas Comparativos Gerais")
+    st.caption("Visão comparativa orçamentária do valor total de emendas em Santa Catarina separada por partido, por autor e por ano.")
+
+    tab_partido, tab_parlamentar, tab_ano = st.tabs([
+        "🏛️ Valor Total por Partido",
+        "👤 Valor Total por Autor",
+        "📅 Valor Total por Ano",
+    ])
+
+    with tab_partido:
+        st.markdown("#### Histograma / Total por Partido Político (R$)")
+        totais_partido = obter_totais_por_partido(dados["emendas"])
+        if not totais_partido.empty:
+            st.bar_chart(totais_partido)
+            df_partidos = totais_partido.reset_index()
+            df_partidos.columns = ["Partido", "Valor Total (R$)"]
+            df_partidos["% do Total"] = (
+                df_partidos["Valor Total (R$)"] / df_partidos["Valor Total (R$)"].sum() * 100
+            ).round(2)
+            st.dataframe(df_partidos, use_container_width=True, hide_index=True)
+
+    with tab_parlamentar:
+        st.markdown("#### Histograma / Total por Parlamentar e Bancada (R$)")
+        c_filtro_graf, c_top = st.columns([2, 1])
+        sub_tipo = c_filtro_graf.radio(
+            "Filtrar Histograma por:",
+            ["Parlamentares Individuais", "Bancadas Regionais", "Todos"],
+            horizontal=True,
+            key="sub_tipo_hist_parl",
+        )
+        top_escolha = c_top.selectbox("Exibir:", ["Top 10", "Top 20", "Todos"], index=1)
+        top_n_val = 10 if top_escolha == "Top 10" else (20 if top_escolha == "Top 20" else None)
+
+        totais_autores = obter_totais_por_parlamentar(dados["emendas"], tipo_autor=sub_tipo, top_n=top_n_val)
+        if not totais_autores.empty:
+            st.bar_chart(totais_autores)
+            df_autores = totais_autores.reset_index()
+            df_autores.columns = ["Autor", "Valor Total (R$)"]
+            st.dataframe(df_autores, use_container_width=True, hide_index=True)
+
+    with tab_ano:
+        st.markdown("#### Histograma / Total por Ano de Exercício (R$)")
+        totais_ano = obter_totais_por_ano(dados["emendas"])
+        if not totais_ano.empty:
+            st.bar_chart(totais_ano)
+            df_anos = totais_ano.reset_index()
+            df_anos.columns = ["Ano", "Valor Total (R$)"]
+            st.dataframe(df_anos, use_container_width=True, hide_index=True)
 
 
 def renderizar_pagina_perfil_municipio(st: Any, dados: dict[str, pd.DataFrame]) -> None:

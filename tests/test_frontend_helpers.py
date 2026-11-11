@@ -8,10 +8,15 @@ from anomalies import executar_motor_anomalias
 from app import (
     AVISO_ETICO_FRONTEND,
     carregar_dados_painel,
+    eh_bancada_regional,
     filtrar_emendas_explorador,
     obter_dados_perfil_municipio,
     obter_dados_perfil_parlamentar,
+    obter_totais_por_ano,
+    obter_totais_por_parlamentar,
+    obter_totais_por_partido,
     registrar_feedback_local,
+    separar_autores_por_tipo,
 )
 from collect_tce import executar_coleta_completa
 from enrich_cnpj import CADASTRO_REFERENCIA_CNPJ, enriquecer_lote_cnpjs
@@ -84,3 +89,71 @@ def test_perfis_parlamentar_e_municipio_e_feedback(tmp_path: Path) -> None:
         db_path=db_path,
     )
     assert atualizado["util_count"] == 1
+
+
+def test_eh_bancada_regional_e_separacao_autores() -> None:
+    """Verifica se bancadas regionais são diferenciadas de parlamentares individuais com precisão."""
+    assert eh_bancada_regional("BANCADA DA SERRA") is True
+    assert eh_bancada_regional("Bancada do Vale do Itajai") is True
+    assert eh_bancada_regional("bancada do oeste") is True
+    assert eh_bancada_regional("Dep. Paulinha") is False
+    assert eh_bancada_regional("Luciane Carminatti") is False
+    assert eh_bancada_regional("") is False
+    assert eh_bancada_regional(None) is False
+
+    autores = [
+        "BANCADA DA SERRA",
+        "Dep. Paulinha",
+        "BANCADA DO NORTE",
+        "Ivan Naatz",
+        "BANCADA DO SUL",
+    ]
+    separados = separar_autores_por_tipo(autores)
+    assert len(separados["bancadas"]) == 3
+    assert len(separados["parlamentares"]) == 2
+    assert "BANCADA DA SERRA" in separados["bancadas"]
+    assert "Dep. Paulinha" in separados["parlamentares"]
+
+
+def test_histogramas_partido_parlamentar_ano(tmp_path: Path) -> None:
+    """Verifica o cálculo correto dos histogramas por partido, por parlamentar e por ano para o Perfil Parlamentar."""
+    db_path = _preparar_banco_frontend(tmp_path)
+    dados = carregar_dados_painel(db_path=db_path)
+    df_emendas = dados["emendas"]
+
+    totais_partido = obter_totais_por_partido(df_emendas)
+    assert not totais_partido.empty
+    assert totais_partido.sum() == df_emendas["valor"].sum()
+    assert "PSD" in totais_partido.index or "PL" in totais_partido.index or "MDB" in totais_partido.index
+
+    totais_bancadas = obter_totais_por_parlamentar(df_emendas, tipo_autor="Bancadas")
+    totais_individuais = obter_totais_por_parlamentar(df_emendas, tipo_autor="Parlamentares")
+    totais_todos = obter_totais_por_parlamentar(df_emendas, tipo_autor="Todos")
+
+    assert not totais_bancadas.empty
+    assert not totais_individuais.empty
+    assert len(totais_bancadas) + len(totais_individuais) == len(totais_todos)
+    assert all("BANCADA" in str(nome).upper() for nome in totais_bancadas.index)
+    assert all("BANCADA" not in str(nome).upper() for nome in totais_individuais.index)
+
+    totais_ano = obter_totais_por_ano(df_emendas)
+    assert not totais_ano.empty
+    assert "2026" in totais_ano.index
+    assert totais_ano["2026"] == df_emendas["valor"].sum()
+
+
+def test_filtrar_emendas_por_tipo_autor(tmp_path: Path) -> None:
+    """Verifica a filtragem de emendas separando parlamentares individuais de bancadas regionais."""
+    db_path = _preparar_banco_frontend(tmp_path)
+    dados = carregar_dados_painel(db_path=db_path)
+    df_emendas = dados["emendas"]
+
+    df_bancadas = filtrar_emendas_explorador(df_emendas, tipo_autor="Bancada Regional")
+    df_individuais = filtrar_emendas_explorador(df_emendas, tipo_autor="Parlamentar Individual")
+    df_todos = filtrar_emendas_explorador(df_emendas, tipo_autor="Todos")
+
+    assert len(df_bancadas) > 0
+    assert len(df_individuais) > 0
+    assert len(df_bancadas) + len(df_individuais) == len(df_todos)
+    assert df_bancadas["parlamentar"].apply(eh_bancada_regional).all()
+    assert (~df_individuais["parlamentar"].apply(eh_bancada_regional)).all()

@@ -128,3 +128,28 @@ def test_post_api_alerta_feedback_util_e_falso_positivo(client: TestClient) -> N
         json={"avaliacao": "invalido"},
     )
     assert resp_invalido.status_code == 422
+
+
+def test_filtros_por_tipo_autor_bancada_vs_parlamentar(client: TestClient) -> None:
+    """Verifica se os endpoints /api/emendas, /api/parlamentares e /api/alertas filtram por tipo_autor."""
+    resp_bancadas = client.get("/api/emendas", params={"tipo_autor": "bancada"})
+    assert resp_bancadas.status_code == 200
+    emendas_bancada = resp_bancadas.json()
+    assert len(emendas_bancada) > 0
+    assert all("bancada" in e["parlamentar"].lower() for e in emendas_bancada)
+
+    resp_individuais = client.get("/api/emendas", params={"tipo_autor": "parlamentar"})
+    assert resp_individuais.status_code == 200
+    emendas_indiv = resp_individuais.json()
+    assert len(emendas_indiv) > 0
+    assert all("bancada" not in e["parlamentar"].lower() for e in emendas_indiv)
+
+    resp_parl_bancadas = client.get("/api/parlamentares", params={"tipo_autor": "bancada"})
+    assert resp_parl_bancadas.status_code == 200
+    assert len(resp_parl_bancadas.json()) > 0
+    assert all("bancada" in p["parlamentar"].lower() for p in resp_parl_bancadas.json())
+
+    resp_alertas_bancada = client.get("/api/alertas", params={"tipo_autor": "bancada"})
+    assert resp_alertas_bancada.status_code == 200
+    for alerta in resp_alertas_bancada.json():
+        assert "bancada" in alerta["parlamentar"].lower()

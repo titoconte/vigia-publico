@@ -115,13 +115,21 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
         municipio: str | None = Query(default=None, description="Filtra por nome do município (com ou sem acentos)"),
         area: str | None = Query(default=None, description="Filtra pela área temática (ex.: Saúde, Educação, Infraestrutura)"),
         valor_minimo: float | None = Query(default=None, ge=0, description="Filtra emendas com valor igual ou superior"),
+        tipo_autor: str | None = Query(default=None, description="Filtra por 'parlamentar' individual ou 'bancada' regional"),
         limit: int = Query(default=200, ge=1, le=1000, description="Quantidade máxima de registros retornados"),
         offset: int = Query(default=0, ge=0, description="Deslocamento para paginação"),
     ) -> list[dict[str, Any]]:
-        """Lista as emendas parlamentares limpas permitindo filtros combinados por parlamentar, município, área e valor mínimo."""
+        """Lista as emendas parlamentares limpas permitindo filtros combinados por autor, bancada, município, área e valor mínimo."""
         caminho = garantir_dados_iniciais(db_path)
         clausulas: list[str] = ["1=1"]
         parametros: list[Any] = []
+
+        if tipo_autor:
+            tl = tipo_autor.strip().lower()
+            if tl in ("bancada", "bancadas", "bancada regional"):
+                clausulas.append("LOWER(parlamentar) LIKE 'bancada%'")
+            elif tl in ("parlamentar", "parlamentares", "parlamentar individual"):
+                clausulas.append("LOWER(parlamentar) NOT LIKE 'bancada%'")
 
         if parlamentar:
             clausulas.append("LOWER(parlamentar) LIKE ?")
@@ -150,12 +158,22 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
         return [dict(r) for r in linhas]
 
     @app.get("/api/parlamentares", tags=["Parlamentares"])
-    def listar_parlamentares() -> list[dict[str, Any]]:
+    def listar_parlamentares(
+        tipo_autor: str | None = Query(default=None, description="Filtra por 'parlamentar' individual ou 'bancada' regional"),
+    ) -> list[dict[str, Any]]:
         """Lista todos os parlamentares com totais agregados, médias, principal área e concentração de fornecedor."""
         caminho = garantir_dados_iniciais(db_path)
+        clausula = "1=1"
+        if tipo_autor:
+            tl = tipo_autor.strip().lower()
+            if tl in ("bancada", "bancadas", "bancada regional"):
+                clausula = "LOWER(parlamentar) LIKE 'bancada%'"
+            elif tl in ("parlamentar", "parlamentares", "parlamentar individual"):
+                clausula = "LOWER(parlamentar) NOT LIKE 'bancada%'"
+
         with conectar_banco(caminho) as conn:
             linhas = conn.execute(
-                "SELECT * FROM agregados_parlamentar ORDER BY total_emendas DESC"
+                f"SELECT * FROM agregados_parlamentar WHERE {clausula} ORDER BY total_emendas DESC"
             ).fetchall()
         return [dict(r) for r in linhas]
 
@@ -165,11 +183,19 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
         parlamentar: str | None = Query(default=None, description="Filtra alertas associados a um parlamentar"),
         municipio: str | None = Query(default=None, description="Filtra alertas associados a um município"),
         pontuacao_minima: float | None = Query(default=None, ge=0, le=100, description="Pontuação mínima do alerta"),
+        tipo_autor: str | None = Query(default=None, description="Filtra por 'parlamentar' individual ou 'bancada' regional"),
     ) -> list[dict[str, Any]]:
-        """Lista as anomalias detectadas ordenadas por pontuação decrescente."""
+        """Lista as anomalias detectadas ordenadas por pontuação decrescente com suporte a filtro por bancada ou parlamentar."""
         caminho = garantir_dados_iniciais(db_path)
         clausulas: list[str] = ["1=1"]
         parametros: list[Any] = []
+
+        if tipo_autor:
+            tl = tipo_autor.strip().lower()
+            if tl in ("bancada", "bancadas", "bancada regional"):
+                clausulas.append("LOWER(parlamentar) LIKE 'bancada%'")
+            elif tl in ("parlamentar", "parlamentares", "parlamentar individual"):
+                clausulas.append("LOWER(parlamentar) NOT LIKE 'bancada%'")
 
         if tipo:
             clausulas.append("(LOWER(tipo) LIKE ? OR LOWER(regra) LIKE ?)")

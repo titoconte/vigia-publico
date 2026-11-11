@@ -136,19 +136,25 @@ Implementada em [`renderizar_pagina_explorador_emendas`](file:///C:/Users/titoc/
 
 ---
 
-### 🏛️ Página 3 — Perfil do Parlamentar
-Implementada em [`renderizar_pagina_perfil_parlamentar`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/app.py#L289-L316), entrega um raio-X consolidado por deputado ou bancada a partir de `agregados_parlamentar` ([`construir_agregados_parlamentar`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/etl.py#L55-L95)).
+### 🏛️ Página 3 — Perfil do Parlamentar e Bancadas Regionais
+Implementada em [`renderizar_pagina_perfil_parlamentar`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/app.py#L387-L485), entrega um raio-X consolidado com **verificação estritamente separada** entre Deputados Individuais e Bancadas Regionais:
 
-#### Como interpretar os 4 KPIs do Parlamentar
+#### 1. Verificação Separada (Parlamentar Individual vs. Bancada Regional)
+No topo da página, um seletor de categoria permite isolar a análise:
+* **Parlamentar Individual:** lista os 40 deputados estaduais da ALESC, permitindo avaliar a cota e atuação individual de cada mandato.
+* **Bancada Regional:** lista as 6 bancadas regionais (Serra, Norte, Oeste, Sul, Vale do Itajaí e Grande Florianópolis), que articulam recursos coletivos para intervenções regionais estruturantes.
+
+#### 2. Como interpretar os 4 KPIs do Perfil
 1. **Total Destinado:** volume global somado de todas as emendas daquele autor na base.
-2. **Nº de Emendas:** permite deduzir a estratégia de atuação:
-   * *Muitas emendas de valor menor (pulverização):* perfil típico de atendimento a dezenas de bases municipais e pequenas entidades.
-   * *Poucas emendas de valor milionário (focalização):* perfil focado em obras estruturantes ou hospitais/fundos específicos.
-3. **Área Principal:** área temática que recebeu a maior fatia financeira (`R$`) do parlamentar (não necessariamente a que tem maior número de emendas, e sim maior volume em reais).
-4. **Maior Concentração Fornecedor (`%`):** indica qual percentual de todo o dinheiro daquele parlamentar foi para **um único CNPJ**.
-   * *Até ~30%:* distribuição diversificada habitual.
-   * *Entre 50% e 80%:* alta concentração — vale olhar na tabela inferior quem é esse CNPJ.
-   * *Acima de 80% (com volume ≥ R$ 500 mil e ≥ 2 emendas):* dispara automaticamente a **Regra 3** na seção de alertas logo abaixo.
+2. **Nº de Emendas:** permite deduzir a estratégia de atuação (pulverização vs. concentração).
+3. **Área Principal:** área temática que recebeu a maior fatia financeira (`R$`) do parlamentar.
+4. **Maior Concentração Fornecedor (`%`):** percentual canalizado para um único credor/CNPJ.
+
+#### 3. Histogramas Comparativos Gerais na Página 3
+Abaixo dos dados individuais do parlamentar, uma seção dedicada apresenta **3 abas com histogramas gerais** cobrindo todo o orçamento estadual:
+* **🏛️ Histograma por Partido Político:** soma o valor total destinado por cada legenda (MDB, PL, PSD, PT, PP, etc.) e sua participação percentual relativa.
+* **👤 Histograma por Autor (Parlamentar e Bancada):** ranking comparativo dos maiores empenhos financeiros, com filtro opcional para isolar apenas parlamentares individuais, apenas bancadas ou o ranking global unificado.
+* **📅 Histograma por Ano de Exercício:** gráfico temporal mostrando o total alocado ano a ano no orçamento do Estado.
 
 #### Colunas Extras Visíveis na Tabela Inferior da Página 3 (e da Página 4)
 Diferente da Página 2 (que exibe 12 colunas resumidas), a tabela final das Páginas 3 e 4 exibe **todas as 21 colunas de `emendas_clean`**, revelando dados riquíssimos da Receita Federal:

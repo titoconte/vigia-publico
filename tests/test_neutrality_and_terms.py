@@ -46,3 +46,4 @@ def test_arquivos_principais_nao_contem_apuracao_jornalistica() -> None:
         conteudo = arq.read_text(encoding="utf-8").lower()
         for termo in termos_proibidos:
             assert termo not in conteudo, f"Termo proibido '{termo}' encontrado no arquivo {arq.name}"
+
