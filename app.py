@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import re
 from typing import Any
 
 import pandas as pd
@@ -219,6 +220,58 @@ def obter_quantidade_emendas_por_autor(
     return serie
 
 
+def formatar_cpf_cnpj(documento: str) -> str:
+    """Formata uma string de CPF (11 dígitos) ou CNPJ (14 dígitos) com pontuação padrão oficial."""
+    digitos = re.sub(r"\D", "", str(documento or "")).strip()
+    if len(digitos) == 11:
+        return f"{digitos[:3]}.{digitos[3:6]}.{digitos[6:9]}-{digitos[9:]}"
+    if len(digitos) == 14:
+        return f"{digitos[:2]}.{digitos[2:5]}.{digitos[5:8]}/{digitos[8:12]}-{digitos[12:]}"
+    return documento or "Não informado"
+
+
+def obter_totais_por_cpf_cnpj(
+    df_emendas: pd.DataFrame,
+    top_n: int | None = None,
+) -> pd.DataFrame:
+    """Consolida as emendas agrupadas por CPF/CNPJ do favorecido calculando valor total e contagem no período."""
+    if df_emendas.empty or "fornecedor_cnpj" not in df_emendas.columns:
+        return pd.DataFrame(
+            columns=[
+                "identificacao_cpf_cnpj",
+                "fornecedor_cnpj",
+                "doc_formatado",
+                "valor_total",
+                "quantidade_emendas",
+                "fornecedor_nome",
+            ]
+        )
+
+    df = df_emendas.copy()
+    col_nome = "fornecedor_nome" if "fornecedor_nome" in df.columns else "entidade_beneficiaria"
+    nomes = df[col_nome].fillna("Não informado") if col_nome in df.columns else ["Não informado"] * len(df)
+    df["doc_formatado"] = df["fornecedor_cnpj"].apply(formatar_cpf_cnpj)
+    df["identificacao_cpf_cnpj"] = [
+        f"{doc} - {nome}" if nome and str(nome).strip() and str(nome).strip() != "Não informado" else str(doc)
+        for doc, nome in zip(df["doc_formatado"], nomes)
+    ]
+
+    col_id = "id_emenda" if "id_emenda" in df.columns else "valor"
+    agg = (
+        df.groupby(["identificacao_cpf_cnpj", "fornecedor_cnpj", "doc_formatado"], as_index=False)
+        .agg(
+            valor_total=("valor", "sum"),
+            quantidade_emendas=(col_id, "count"),
+            fornecedor_nome=(col_nome, "first") if col_nome in df.columns else ("doc_formatado", "first"),
+        )
+        .sort_values("valor_total", ascending=False)
+        .reset_index(drop=True)
+    )
+    if top_n and top_n > 0:
+        return agg.head(top_n)
+    return agg
+
+
 def obter_dados_perfil_parlamentar(
     parlamentar: str,
     db_path: Path | str | None = None,
@@ -255,11 +308,13 @@ def obter_dados_perfil_parlamentar(
         if not df_emendas.empty
         else pd.DataFrame(columns=["municipio", "valor"])
     )
+    por_cpf_cnpj = obter_totais_por_cpf_cnpj(df_emendas)
     return {
         "resumo": dict(resumo_row) if resumo_row else {"parlamentar": parlamentar, "total_emendas": 0.0},
         "emendas": df_emendas,
         "por_area": por_area,
         "por_municipio": por_municipio,
+        "por_cpf_cnpj": por_cpf_cnpj,
         "alertas": df_alertas.to_dict(orient="records"),
     }
 
@@ -635,6 +690,37 @@ def renderizar_pagina_perfil_parlamentar(st: Any, dados: dict[str, pd.DataFrame]
         st.bar_chart(perfil["por_municipio"].set_index("municipio")["valor"])
     else:
         st.caption("Nenhum município cadastrado para este autor.")
+
+    st.markdown("##### 💳 Destinações por CPF / CNPJ do Beneficiário no Período")
+    c_cpf1, c_cpf2 = st.columns(2)
+    with c_cpf1:
+        st.markdown("###### 💰 Valor Total por CPF / CNPJ (R$)")
+        if not perfil["por_cpf_cnpj"].empty:
+            serie_val_cpf = perfil["por_cpf_cnpj"].set_index("identificacao_cpf_cnpj")["valor_total"]
+            st.bar_chart(serie_val_cpf)
+        else:
+            st.caption("Nenhum favorecido cadastrado para este autor.")
+
+    with c_cpf2:
+        st.markdown("###### 📋 Número Total de Emendas por CPF / CNPJ")
+        if not perfil["por_cpf_cnpj"].empty:
+            serie_qtd_cpf = perfil["por_cpf_cnpj"].set_index("identificacao_cpf_cnpj")["quantidade_emendas"]
+            st.bar_chart(serie_qtd_cpf)
+        else:
+            st.caption("Nenhum favorecido cadastrado para este autor.")
+
+    with st.expander("Ver detalhamento dos favorecidos (CPF / CNPJ) deste autor"):
+        if not perfil["por_cpf_cnpj"].empty:
+            df_tab_cpf = perfil["por_cpf_cnpj"][
+                ["doc_formatado", "fornecedor_nome", "quantidade_emendas", "valor_total"]
+            ].copy()
+            df_tab_cpf.columns = ["CPF / CNPJ", "Favorecido", "Nº de Emendas", "Valor Total (R$)"]
+            total_autor_val = float(resumo.get("total_emendas", 0.0))
+            if total_autor_val > 0:
+                df_tab_cpf["% do Total do Autor"] = (
+                    df_tab_cpf["Valor Total (R$)"] / total_autor_val * 100
+                ).round(2)
+            st.dataframe(df_tab_cpf, use_container_width=True, hide_index=True)
 
     c_graf1, c_graf2 = st.columns(2)
     with c_graf1:

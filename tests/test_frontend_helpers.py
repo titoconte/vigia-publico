@@ -11,10 +11,12 @@ from app import (
     carregar_dados_painel,
     eh_bancada_regional,
     filtrar_emendas_explorador,
+    formatar_cpf_cnpj,
     obter_dados_perfil_municipio,
     obter_dados_perfil_parlamentar,
     obter_quantidade_emendas_por_autor,
     obter_totais_por_ano,
+    obter_totais_por_cpf_cnpj,
     obter_totais_por_municipio,
     obter_totais_por_parlamentar,
     obter_totais_por_partido,
@@ -82,6 +84,12 @@ def test_perfis_parlamentar_e_municipio_e_feedback(tmp_path: Path) -> None:
     assert "municipio" in perfil_parl["por_municipio"].columns
     assert "valor" in perfil_parl["por_municipio"].columns
     assert round(perfil_parl["por_municipio"]["valor"].sum(), 2) == round(perfil_parl["emendas"]["valor"].sum(), 2)
+    assert not perfil_parl["por_cpf_cnpj"].empty
+    assert "fornecedor_cnpj" in perfil_parl["por_cpf_cnpj"].columns
+    assert "valor_total" in perfil_parl["por_cpf_cnpj"].columns
+    assert "quantidade_emendas" in perfil_parl["por_cpf_cnpj"].columns
+    assert round(perfil_parl["por_cpf_cnpj"]["valor_total"].sum(), 2) == round(perfil_parl["emendas"]["valor"].sum(), 2)
+    assert perfil_parl["por_cpf_cnpj"]["quantidade_emendas"].sum() == len(perfil_parl["emendas"])
 
     perfil_mun = obter_dados_perfil_municipio("4218954", db_path=db_path)
     assert perfil_mun["resumo"]["municipio"] == "Urupema"
@@ -262,5 +270,35 @@ def test_graficos_garantem_todos_municipios(tmp_path: Path) -> None:
     serie_um_mun = obter_totais_por_municipio(df_apenas_um, df_municipios, incluir_todos_sc=False, top_n=None)
     assert len(serie_um_mun) == 1
     assert "Florianópolis" in serie_um_mun.index
+
+
+def test_obter_totais_por_cpf_cnpj_e_formatacao(tmp_path: Path) -> None:
+    """Valida a formatação de CPF/CNPJ e agregação por documento (valor total e quantidade de emendas)."""
+    # 1. Valida formatação de CPF e CNPJ
+    assert formatar_cpf_cnpj("12345678901") == "123.456.789-01"
+    assert formatar_cpf_cnpj("123.456.789-01") == "123.456.789-01"
+    assert formatar_cpf_cnpj("83108357000115") == "83.108.357/0001-15"
+    assert formatar_cpf_cnpj("83.108.357/0001-15") == "83.108.357/0001-15"
+    assert formatar_cpf_cnpj("") == "Não informado"
+
+    # 2. Valida agregação com banco de dados
+    db_path = _preparar_banco_frontend(tmp_path)
+    dados = carregar_dados_painel(db_path=db_path)
+    df_emendas = dados["emendas"]
+
+    totais_cpf = obter_totais_por_cpf_cnpj(df_emendas)
+    assert not totais_cpf.empty
+    assert "doc_formatado" in totais_cpf.columns
+    assert "valor_total" in totais_cpf.columns
+    assert "quantidade_emendas" in totais_cpf.columns
+
+    # O total financeiro e de emendas agrupados por CPF/CNPJ deve bater com o total geral da base
+    assert round(totais_cpf["valor_total"].sum(), 2) == round(df_emendas["valor"].sum(), 2)
+    assert totais_cpf["quantidade_emendas"].sum() == len(df_emendas)
+
+    # 3. Caso vazio
+    vazio_cpf = obter_totais_por_cpf_cnpj(df_emendas.iloc[0:0])
+    assert vazio_cpf.empty
+
 
 
