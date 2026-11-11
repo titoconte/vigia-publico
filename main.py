@@ -126,10 +126,10 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
 
         if tipo_autor:
             tl = tipo_autor.strip().lower()
-            if tl in ("bancada", "bancadas", "bancada regional"):
-                clausulas.append("LOWER(parlamentar) LIKE 'bancada%'")
-            elif tl in ("parlamentar", "parlamentares", "parlamentar individual"):
-                clausulas.append("LOWER(parlamentar) NOT LIKE 'bancada%'")
+            if tl in ("bancada", "bancadas", "bancada regional", "bancadas regionais"):
+                clausulas.append("LOWER(TRIM(parlamentar)) LIKE 'bancada %'")
+            elif tl in ("parlamentar", "parlamentares", "parlamentar individual", "parlamentares individuais"):
+                clausulas.append("LOWER(TRIM(parlamentar)) NOT LIKE 'bancada %'")
 
         if parlamentar:
             clausulas.append("LOWER(parlamentar) LIKE ?")
@@ -166,10 +166,10 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
         clausula = "1=1"
         if tipo_autor:
             tl = tipo_autor.strip().lower()
-            if tl in ("bancada", "bancadas", "bancada regional"):
-                clausula = "LOWER(parlamentar) LIKE 'bancada%'"
-            elif tl in ("parlamentar", "parlamentares", "parlamentar individual"):
-                clausula = "LOWER(parlamentar) NOT LIKE 'bancada%'"
+            if tl in ("bancada", "bancadas", "bancada regional", "bancadas regionais"):
+                clausula = "LOWER(TRIM(parlamentar)) LIKE 'bancada %'"
+            elif tl in ("parlamentar", "parlamentares", "parlamentar individual", "parlamentares individuais"):
+                clausula = "LOWER(TRIM(parlamentar)) NOT LIKE 'bancada %'"
 
         with conectar_banco(caminho) as conn:
             linhas = conn.execute(
@@ -192,10 +192,10 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
 
         if tipo_autor:
             tl = tipo_autor.strip().lower()
-            if tl in ("bancada", "bancadas", "bancada regional"):
-                clausulas.append("LOWER(parlamentar) LIKE 'bancada%'")
-            elif tl in ("parlamentar", "parlamentares", "parlamentar individual"):
-                clausulas.append("LOWER(parlamentar) NOT LIKE 'bancada%'")
+            if tl in ("bancada", "bancadas", "bancada regional", "bancadas regionais"):
+                clausulas.append("LOWER(TRIM(parlamentar)) LIKE 'bancada %'")
+            elif tl in ("parlamentar", "parlamentares", "parlamentar individual", "parlamentares individuais"):
+                clausulas.append("LOWER(TRIM(parlamentar)) NOT LIKE 'bancada %'")
 
         if tipo:
             clausulas.append("(LOWER(tipo) LIKE ? OR LOWER(regra) LIKE ?)")

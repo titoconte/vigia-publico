@@ -92,10 +92,12 @@ def test_perfis_parlamentar_e_municipio_e_feedback(tmp_path: Path) -> None:
 
 
 def test_eh_bancada_regional_e_separacao_autores() -> None:
-    """Verifica se bancadas regionais são diferenciadas de parlamentares individuais com precisão."""
+    """Verifica se bancadas regionais são diferenciadas por iniciar estritamente com 'BANCADA '."""
     assert eh_bancada_regional("BANCADA DA SERRA") is True
     assert eh_bancada_regional("Bancada do Vale do Itajai") is True
     assert eh_bancada_regional("bancada do oeste") is True
+    assert eh_bancada_regional("BANCADA") is False
+    assert eh_bancada_regional("BANCADA_TESTE") is False
     assert eh_bancada_regional("Dep. Paulinha") is False
     assert eh_bancada_regional("Luciane Carminatti") is False
     assert eh_bancada_regional("") is False
