@@ -10,7 +10,11 @@ import pytest
 
 from collect_tce import (
     coletar_dados_abertos_sc,
+    coletar_emendas_tce_sc,
     coletar_populacao_ibge,
+    extrair_cnpj_e_nome_credor,
+    limpar_area_subacao,
+    obter_partido_parlamentar_sc,
     resolver_usar_rede,
 )
 
@@ -122,3 +126,110 @@ def test_coletar_dados_abertos_sc_api_real_despesas_e_ckan_transferencias(tmp_pa
     df_transf = pd.read_csv(caminhos["transferencias"])
     assert len(df_transf) == 2
     assert "TUBARAO" in str(df_transf.iloc[0].to_dict())
+
+
+def test_parsers_credor_area_e_partido_emendas_sc() -> None:
+    """Verifica extração de CNPJ/credor, limpeza da área da subação e mapeamento de partido da ALESC."""
+    cnpj, nome = extrair_cnpj_e_nome_credor("83.006.650/0001-71  FUNDACAO HOSPITALAR ALEX KRIESER")
+    assert cnpj == "83006650000171"
+    assert nome == "FUNDACAO HOSPITALAR ALEX KRIESER"
+
+    assert limpar_area_subacao("Emendas parlamentares impositivas da Saúde") == "Saúde"
+    assert (
+        limpar_area_subacao("Emendas parlamentares impositivas da Infraestrutura e Mobilidade")
+        == "Infraestrutura e Mobilidade"
+    )
+    assert obter_partido_parlamentar_sc("JULIO CESAR GARCIA") == "PSD"
+    assert obter_partido_parlamentar_sc("BANCADA DO OESTE") == "Bancada Regional"
+
+
+def test_coletar_emendas_tce_sc_api_real_portal_transparencia_e_cache(tmp_path: Path) -> None:
+    """Verifica coleta real de emendas (exportcsv + extratoemenda + cache JSON) com as 14 colunas exigidas."""
+    csv_indice = (
+        "ano;numero;parlamentar_bancada;modalidade;liberado_execucao;situacao;valor;empenhado;liquidado;pago\n"
+        '2026;2026EP000001;"NEODI SARETTA";"Transferência Especial";Sim;Ativo;100000;100000;100000;100000\n'
+        '2026;2026EP001979;"JULIO CESAR GARCIA";"Convênio";Sim;Ativo;350000;350000;0;0\n'
+    ).encode("latin-1")
+
+    extratos = {
+        "2026EP000001": {
+            "emenda": {
+                "emendaIdentificacao": {
+                    "nuano": "2026",
+                    "nuemendaparlamentar": "2026EP000001",
+                    "nmparlamentar": "NEODI SARETTA",
+                    "identificacaocredor": "78.511.052/0001-10  MUNICIPIO DE ABDON BATISTA",
+                    "nmlocalidade": "Abdon Batista",
+                    "nmsubacao": "Emendas parlamentares impositivas da Agricultura",
+                    "vlemendaparlamentar": "100000",
+                },
+                "emendaEmpenho": [{"dtlancamento": "2026-06-26 00:00:00"}],
+                "emendaLiquidacao": [{"dtlancamento": "2026-06-26 00:00:00"}],
+                "emendaPagamento": [{"dtlancamento": "2026-06-30 00:00:00"}],
+            }
+        },
+        "2026EP001979": {
+            "emenda": {
+                "emendaIdentificacao": {
+                    "nuano": "2026",
+                    "nuemendaparlamentar": "2026EP001979",
+                    "nmparlamentar": "JULIO CESAR GARCIA",
+                    "identificacaocredor": "83.006.650/0001-71  FUNDACAO HOSPITALAR ALEX KRIESER",
+                    "nmlocalidade": "Florianópolis",
+                    "nmsubacao": "Emendas parlamentares impositivas da Saúde",
+                    "vlemendaparlamentar": "350000",
+                },
+                "emendaEmpenho": [{"dtlancamento": "2026-05-14 00:00:00"}],
+                "emendaLiquidacao": [],
+                "emendaPagamento": [],
+            }
+        },
+    }
+
+    chamadas_extrato: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        """Simula endpoints de exportcsv e extratoemenda do Portal da Transparência SC."""
+        url = str(request.url)
+        if "emendaparlamentar/exportcsv" in url:
+            return httpx.Response(200, content=csv_indice)
+        if "emendaparlamentar/extratoemenda" in url:
+            for codigo, payload in extratos.items():
+                if codigo in url:
+                    chamadas_extrato.append(codigo)
+                    return httpx.Response(200, json=payload)
+        return httpx.Response(404)
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    caminho = coletar_emendas_tce_sc(
+        output_dir=tmp_path,
+        data_ref="20261111",
+        usar_rede=True,
+        max_emendas=10,
+        client=client,
+    )
+
+    assert caminho.exists()
+    assert len(chamadas_extrato) == 2
+
+    df = pd.read_csv(caminho, dtype={"fornecedor_cnpj": str, "codigo_ibge": str})
+    assert len(df) == 2
+    row_convenio = df[df["id_emenda"] == "2026EP001979"].iloc[0]
+    assert row_convenio["fornecedor_cnpj"] == "83006650000171"
+    assert row_convenio["fornecedor_nome"] == "FUNDACAO HOSPITALAR ALEX KRIESER"
+    assert row_convenio["area"] == "Saúde"
+    assert row_convenio["partido"] == "PSD"
+    assert row_convenio["status_execucao"] == "Empenhado"
+    assert row_convenio["data"] == "2026-05-14"
+    assert "2026EP001979" in row_convenio["fonte_url"]
+
+    # Segunda chamada deve reutilizar o cache de extratos em disco sem novas requisições de extrato
+    coletar_emendas_tce_sc(
+        output_dir=tmp_path,
+        data_ref="20261111",
+        usar_rede=True,
+        max_emendas=10,
+        client=client,
+    )
+    assert len(chamadas_extrato) == 2
+

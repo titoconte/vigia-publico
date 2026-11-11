@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 import io
+import json
 import os
 from pathlib import Path
+import re
+import time
 from typing import Any
+import unicodedata
 
 import httpx
 import pandas as pd
@@ -454,27 +459,371 @@ def obter_emendas_tce_sc_referencia() -> list[dict[str, Any]]:
     ]
 
 
+PARTIDOS_PARLAMENTARES_SC: dict[str, str] = {
+    "ALEXANDER BRASIL ALVES PEREIRA": "PL",
+    "ALTAIR SILVA": "PP",
+    "ANA CAMPAGNOLO": "PL",
+    "ANTIDIO LUNELLI": "MDB",
+    "CAMILO NAZARENO PAGANI MARTINS": "PODEMOS",
+    "CARLOS HUMBERTO METZNER SILVA": "PL",
+    "FABIANO DA LUZ": "PT",
+    "FELIPPE LUIZ COLLACO": "PP",
+    "FERNANDO KRELLING": "MDB",
+    "IVAN NAATZ": "PL",
+    "JAIR MIOTTO": "UNIAO",
+    "JERRY EDSON COMPER": "MDB",
+    "JESSE LOPES": "PL",
+    "JOSE MILTON SCHEFFER": "PP",
+    "JULIO CESAR GARCIA": "PSD",
+    "LUCAS FELIPE MELO NEVES": "PODEMOS",
+    "LUCIANE CARMINATTI": "PT",
+    "MARCIUS MACHADO": "PL",
+    "MARCOS DA ROSA": "UNIAO",
+    "MARCOS JOSE ABREU ( MARQUITO)": "PSOL",
+    "MARCOS LUIZ VIEIRA": "PSDB",
+    "MARIO PINTO DA MOTTA JUNIOR": "PSD",
+    "MATHEUS ANDREIS CADORIN": "NOVO",
+    "MAURICIO ESKUDLARK": "PL",
+    "MAURICIO FERNANDO PEIXER": "PL",
+    "MAURO DE NADAL": "MDB",
+    "NAPOLEAO BERNARDES NETO": "PSD",
+    "NEODI SARETTA": "PT",
+    "NILSO JOSE BERLANDA": "PL",
+    "OSCAR GUTZ": "PL",
+    "PADRE PEDRO BALDISSERA": "PT",
+    "PAULINHA": "PODEMOS",
+    "RODRIGO MINOTTO": "PDT",
+    "SARGENTO LIMA": "PL",
+    "SERGIO DA ROSA GUIMARAES": "UNIAO",
+    "SERGIO MOTTA": "REPUBLICANOS",
+    "SILVIO CARDOSO JUNIOR": "PP",
+    "TIAGO ZILLI": "MDB",
+    "VICENTE AUGUSTO CAROPRESO": "PSDB",
+    "VOLNEI WEBER": "MDB",
+}
+
+
+def _normalizar_chave_texto(texto: str | None) -> str:
+    """Remove acentos e padroniza caixa alta e espaços para comparação determinística de nomes."""
+    if not texto:
+        return ""
+    sem_acentos = "".join(
+        ch for ch in unicodedata.normalize("NFD", str(texto).strip()) if unicodedata.category(ch) != "Mn"
+    )
+    return " ".join(sem_acentos.upper().split())
+
+
+def extrair_cnpj_e_nome_credor(identificacao_credor: str | None) -> tuple[str, str]:
+    """Extrai o CNPJ de 14 dígitos e a razão social limpa a partir do campo identificacaocredor do SIGEF/SC."""
+    bruto = str(identificacao_credor or "").strip()
+    if not bruto:
+        return ("82951229000176", "Estado de Santa Catarina / Unidade Gestora")
+
+    padrao_formatado = re.search(r"(\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2})\s*(.*)", bruto)
+    if padrao_formatado:
+        cnpj_limpo = re.sub(r"\D", "", padrao_formatado.group(1)).zfill(14)
+        nome_limpo = " ".join(padrao_formatado.group(2).strip(" -–").split())
+        if not nome_limpo:
+            nome_limpo = f"Credor Público/Privado {cnpj_limpo}"
+        return (cnpj_limpo, nome_limpo)
+
+    digitos = re.sub(r"\D", "", bruto)
+    if len(digitos) == 14:
+        return (digitos, f"Credor Público/Privado {digitos}")
+    return ("82951229000176", " ".join(bruto.split()))
+
+
+def limpar_area_subacao(nmsubacao: str | None) -> str:
+    """Remove prefixos burocráticos padronizados da subação orçamentária para obter a área temática limpa."""
+    texto = " ".join(str(nmsubacao or "").split()).strip()
+    if not texto:
+        return "Geral"
+    limpo = re.sub(
+        r"^emendas?\s+parlamentares?\s+impositivas?\s+(da|do|de|para|em|-)?\s*",
+        "",
+        texto,
+        flags=re.IGNORECASE,
+    ).strip(" -–")
+    return limpo if limpo else texto
+
+
+def obter_partido_parlamentar_sc(nome_parlamentar: str | None) -> str:
+    """Retorna a sigla partidária oficial na ALESC ou identifica bancadas regionais."""
+    chave = _normalizar_chave_texto(nome_parlamentar)
+    if not chave:
+        return "Não informado"
+    if chave.startswith("BANCADA "):
+        return "Bancada Regional"
+    return PARTIDOS_PARLAMENTARES_SC.get(chave, "ALESC")
+
+
+def _converter_valor_monetario(valor: Any) -> float:
+    """Converte strings numéricas brasileiras ou internacionais do Portal da Transparência em float."""
+    if valor is None:
+        return 0.0
+    texto = str(valor).strip()
+    if not texto:
+        return 0.0
+    if "," in texto and "." in texto:
+        texto = texto.replace(".", "").replace(",", ".")
+    elif "," in texto:
+        texto = texto.replace(",", ".")
+    try:
+        return round(float(texto), 2)
+    except ValueError:
+        return 0.0
+
+
+def _selecionar_emendas_prioritarias(df_indice: pd.DataFrame, max_emendas: int) -> pd.DataFrame:
+    """Seleciona amostra estratificada por modalidade, parlamentar e maior valor ou retorna 100% se max_emendas<=0."""
+    df_trab = df_indice.copy()
+    if "situacao" in df_trab.columns:
+        ativas = df_trab[df_trab["situacao"].astype(str).str.strip().str.lower() == "ativo"]
+        if not ativas.empty:
+            df_trab = ativas.copy()
+
+    df_trab["_valor_num"] = df_trab["valor"].apply(_converter_valor_monetario)
+    df_trab = df_trab[df_trab["_valor_num"] > 0].sort_values("_valor_num", ascending=False)
+
+    if max_emendas <= 0 or len(df_trab) <= max_emendas:
+        return df_trab.drop(columns=["_valor_num"]).reset_index(drop=True)
+
+    escolhidos_idx: list[Any] = []
+    vistos: set[Any] = set()
+
+    # 1. Garante ao menos 1 emenda de cada parlamentar/bancada para cobertura integral dos 46 autores
+    if "parlamentar_bancada" in df_trab.columns:
+        for _, grp in df_trab.groupby("parlamentar_bancada", sort=False):
+            idx0 = grp.index[0]
+            if idx0 not in vistos and len(escolhidos_idx) < max_emendas:
+                escolhidos_idx.append(idx0)
+                vistos.add(idx0)
+
+    # 2. Prioriza convênios e termos de fomento (entidades privadas sem fins lucrativos, hospitais e associações)
+    if "modalidade" in df_trab.columns:
+        cota_convenios = max(1, int(max_emendas * 0.45))
+        convenios = df_trab[df_trab["modalidade"].astype(str).str.contains("Conv", case=False, na=False)]
+        adicionados_conv = 0
+        for idx in convenios.index:
+            if idx not in vistos and len(escolhidos_idx) < max_emendas and adicionados_conv < cota_convenios:
+                escolhidos_idx.append(idx)
+                vistos.add(idx)
+                adicionados_conv += 1
+
+    # 3. Preenche o restante com as emendas de maior valor financeiro global
+    for idx in df_trab.index:
+        if len(escolhidos_idx) >= max_emendas:
+            break
+        if idx not in vistos:
+            escolhidos_idx.append(idx)
+            vistos.add(idx)
+
+    return df_trab.loc[escolhidos_idx].drop(columns=["_valor_num"]).reset_index(drop=True)
+
+
+def _obter_extrato_emenda_com_cache(
+    numero_emenda: str,
+    pasta_cache: Path,
+    http: httpx.Client,
+    pausa_segundos: float = 0.0,
+) -> dict[str, Any]:
+    """Consulta o extrato detalhado de uma emenda no Portal da Transparência SC utilizando cache persistente em JSON."""
+    pasta_cache.mkdir(parents=True, exist_ok=True)
+    arquivo_cache = pasta_cache / f"{numero_emenda}.json"
+    if arquivo_cache.exists():
+        try:
+            return json.loads(arquivo_cache.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+
+    url = f"{PORTAL_TRANSPARENCIA_SC_API}/emendaparlamentar/extratoemenda?nuemendaparlamentarfiltro[]={numero_emenda}"
+    for tentativa in range(3):
+        if pausa_segundos > 0:
+            time.sleep(pausa_segundos)
+        resposta = http.get(url)
+        if resposta.status_code == 429:
+            time.sleep(1.5 * (tentativa + 1))
+            continue
+        resposta.raise_for_status()
+        dados = resposta.json()
+        arquivo_cache.write_text(json.dumps(dados, ensure_ascii=False), encoding="utf-8")
+        return dados
+
+    return {}
+
+
+def _montar_linha_emenda_portal_sc(
+    row_indice: pd.Series,
+    payload_extrato: dict[str, Any],
+    mapa_ibge_por_nome: dict[str, tuple[str, str]],
+) -> dict[str, Any]:
+    """Combina uma linha do índice CSV com o JSON do extrato para formar o registro padronizado de 14 colunas."""
+    numero = str(row_indice.get("numero", "")).strip()
+    ano = str(row_indice.get("ano", "2026")).strip() or "2026"
+    emenda_obj = payload_extrato.get("emenda", {}) if isinstance(payload_extrato, dict) else {}
+    ident = emenda_obj.get("emendaIdentificacao", {}) or {}
+
+    parlamentar_bruto = str(ident.get("nmparlamentar") or row_indice.get("parlamentar_bancada") or "").strip()
+    partido = obter_partido_parlamentar_sc(parlamentar_bruto)
+
+    valor_emenda = _converter_valor_monetario(ident.get("vlemendaparlamentar") or row_indice.get("valor"))
+    empenhado = _converter_valor_monetario(row_indice.get("empenhado"))
+    liquidado = _converter_valor_monetario(row_indice.get("liquidado"))
+    pago = _converter_valor_monetario(row_indice.get("pago"))
+
+    if pago > 0:
+        status_execucao = "Pago"
+    elif liquidado > 0:
+        status_execucao = "Liquidado"
+    elif empenhado > 0:
+        status_execucao = "Empenhado"
+    else:
+        status_execucao = "Aprovado"
+
+    cnpj_forn, nome_credor = extrair_cnpj_e_nome_credor(ident.get("identificacaocredor"))
+
+    localidade_bruta = str(ident.get("nmlocalidade") or "").strip()
+    chave_loc = _normalizar_chave_texto(localidade_bruta)
+    if not chave_loc or chave_loc in ("ESTADO", "SANTA CATARINA", "DIVERSOS"):
+        chave_loc = "FLORIANOPOLIS"
+
+    if chave_loc in mapa_ibge_por_nome:
+        codigo_ibge, municipio_oficial = mapa_ibge_por_nome[chave_loc]
+    else:
+        codigo_ibge = "4205407"
+        municipio_oficial = localidade_bruta if localidade_bruta else "Florianópolis"
+
+    area = limpar_area_subacao(ident.get("nmsubacao"))
+
+    datas_lancamento: list[str] = []
+    for chave_lista in ("emendaEmpenho", "emendaLiquidacao", "emendaPagamento"):
+        itens = emenda_obj.get(chave_lista) or []
+        if isinstance(itens, list):
+            for lanc in itens:
+                if isinstance(lanc, dict) and lanc.get("dtlancamento"):
+                    datas_lancamento.append(str(lanc["dtlancamento"])[:10])
+    data_emenda = sorted(datas_lancamento)[0] if datas_lancamento else f"{ano}-02-01"
+
+    return {
+        "id_emenda": numero,
+        "parlamentar": parlamentar_bruto,
+        "partido": partido,
+        "valor": valor_emenda,
+        "municipio": municipio_oficial,
+        "codigo_ibge": codigo_ibge,
+        "entidade_beneficiaria": nome_credor,
+        "area": area,
+        "data": data_emenda,
+        "fornecedor_nome": nome_credor,
+        "fornecedor_cnpj": cnpj_forn,
+        "uf_fornecedor": "SC",
+        "status_execucao": status_execucao,
+        "fonte_url": (
+            f"{PORTAL_TRANSPARENCIA_SC_WEB}/emenda-parlamentar/extratoemenda/"
+            f"?nuemendaparlamentarfiltro[]={numero}"
+        ),
+    }
+
+
 def coletar_emendas_tce_sc(
     output_dir: Path | str = DEFAULT_RAW_DIR,
     data_ref: str | None = None,
     csv_url: str | None = None,
+    usar_rede: bool | None = None,
+    max_emendas: int | None = None,
+    client: httpx.Client | None = None,
 ) -> Path:
-    """Coleta os dados exportáveis do Painel de Emendas do TCE/SC e salva em data/raw/emendas_YYYYMMDD.csv."""
+    """Coleta emendas parlamentares estaduais reais de SC (Portal da Transparência/CIASC) e salva CSV padronizado."""
     pasta = Path(output_dir)
     pasta.mkdir(parents=True, exist_ok=True)
     sufixo_data = data_ref or datetime.now().strftime("%Y%m%d")
     caminho_saida = pasta / f"emendas_{sufixo_data}.csv"
 
-    url_remota = csv_url or os.getenv("TCE_SC_CSV_URL", "").strip()
+    url_remota_custom = csv_url or os.getenv("TCE_SC_CSV_URL", "").strip()
+    deve_usar_rede = resolver_usar_rede(usar_rede)
     df: pd.DataFrame | None = None
 
-    if url_remota:
+    if url_remota_custom:
+        fechar = client is None
+        http = client or httpx.Client(timeout=25.0, follow_redirects=True)
         try:
-            resposta = httpx.get(url_remota, timeout=20.0, follow_redirects=True)
+            resposta = http.get(url_remota_custom)
             resposta.raise_for_status()
-            df = pd.read_csv(io.StringIO(resposta.text), dtype=str)
+            df = pd.read_csv(io.StringIO(_decodificar_bytes_csv(resposta.content)), dtype=str)
         except Exception:
             df = None
+        finally:
+            if fechar:
+                http.close()
+
+    if (df is None or df.empty) and deve_usar_rede:
+        limite = (
+            max_emendas
+            if max_emendas is not None
+            else int(os.getenv("VIGIA_MAX_EMENDAS", "250").strip() or "250")
+        )
+        ano_exercicio = os.getenv("VIGIA_ANO_EXERCICIO", "2026").strip() or "2026"
+
+        caminho_ibge = pasta / "populacao_ibge.csv"
+        if caminho_ibge.exists():
+            df_ibge_local = pd.read_csv(caminho_ibge, dtype={"codigo_ibge": str})
+            registros_ibge = df_ibge_local.to_dict(orient="records")
+        else:
+            registros_ibge = obter_base_populacao_sc_referencia()
+
+        mapa_ibge_por_nome = {
+            _normalizar_chave_texto(str(r["municipio"])): (str(r["codigo_ibge"]), str(r["municipio"]))
+            for r in registros_ibge
+        }
+
+        fechar = client is None
+        http = client or httpx.Client(timeout=25.0, follow_redirects=True)
+        try:
+            url_indice = f"{PORTAL_TRANSPARENCIA_SC_API}/emendaparlamentar/exportcsv?anofiltro[]={ano_exercicio}"
+            resp_idx = http.get(url_indice)
+            resp_idx.raise_for_status()
+            texto_idx = _decodificar_bytes_csv(resp_idx.content)
+            df_indice = pd.read_csv(io.StringIO(texto_idx), sep=";", dtype=str)
+            if not df_indice.empty:
+                (pasta / f"emendas_indice_completo_{ano_exercicio}.csv").write_text(
+                    texto_idx,
+                    encoding="utf-8",
+                )
+                df_selecionadas = _selecionar_emendas_prioritarias(df_indice, max_emendas=limite)
+                pasta_cache = pasta / "extratos_cache"
+                numeros = [str(n).strip() for n in df_selecionadas["numero"].tolist()]
+
+                if client is not None:
+                    extratos_map = {
+                        nu: _obter_extrato_emenda_com_cache(nu, pasta_cache, http, pausa_segundos=0.0)
+                        for nu in numeros
+                    }
+                else:
+                    # Usa pool controlado de 4 threads com leve espaçamento para respeitar o rate-limit de 300 req/min
+                    def _buscar_um(nu: str) -> tuple[str, dict[str, Any]]:
+                        """Auxiliar para busca concorrente controlada de um extrato de emenda."""
+                        arq = pasta_cache / f"{nu}.json"
+                        pausa = 0.0 if arq.exists() else 0.75
+                        return (nu, _obter_extrato_emenda_com_cache(nu, pasta_cache, http, pausa_segundos=pausa))
+
+                    with ThreadPoolExecutor(max_workers=4) as pool:
+                        extratos_map = dict(pool.map(_buscar_um, numeros))
+
+                linhas_finais = [
+                    _montar_linha_emenda_portal_sc(
+                        row_indice=row,
+                        payload_extrato=extratos_map.get(str(row["numero"]).strip(), {}),
+                        mapa_ibge_por_nome=mapa_ibge_por_nome,
+                    )
+                    for _, row in df_selecionadas.iterrows()
+                ]
+                if linhas_finais:
+                    df = pd.DataFrame(linhas_finais)
+        except Exception:
+            df = None
+        finally:
+            if fechar:
+                http.close()
 
     if df is None or df.empty:
         df = pd.DataFrame(obter_emendas_tce_sc_referencia())
@@ -639,11 +988,18 @@ def coletar_dados_abertos_sc(
 def executar_coleta_completa(
     raw_dir: Path | str = DEFAULT_RAW_DIR,
     data_ref: str | None = None,
+    usar_rede: bool | None = None,
+    max_emendas: int | None = None,
 ) -> dict[str, str]:
-    """Executa todas as etapas de coleta de dados da Fase 1 (TCE/SC, IBGE e Dados Abertos SC)."""
-    emendas_csv = coletar_emendas_tce_sc(output_dir=raw_dir, data_ref=data_ref)
-    populacao_csv = coletar_populacao_ibge(output_dir=raw_dir)
-    complementares = coletar_dados_abertos_sc(output_dir=raw_dir)
+    """Executa todas as etapas de coleta de dados da Fase 1 (IBGE, Portal Transparência/TCE SC e Dados Abertos SC)."""
+    populacao_csv = coletar_populacao_ibge(output_dir=raw_dir, usar_api_ibge=usar_rede)
+    emendas_csv = coletar_emendas_tce_sc(
+        output_dir=raw_dir,
+        data_ref=data_ref,
+        usar_rede=usar_rede,
+        max_emendas=max_emendas,
+    )
+    complementares = coletar_dados_abertos_sc(output_dir=raw_dir, usar_rede=usar_rede)
     return {
         "emendas_csv": str(emendas_csv),
         "populacao_csv": str(populacao_csv),
