@@ -785,7 +785,7 @@ def coletar_emendas_tce_sc(
             texto_idx = _decodificar_bytes_csv(resp_idx.content)
             df_indice = pd.read_csv(io.StringIO(texto_idx), sep=";", dtype=str)
             if not df_indice.empty:
-                (pasta / f"emendas_indice_completo_{ano_exercicio}.csv").write_text(
+                (pasta / f"indice_emendas_completo_{ano_exercicio}.csv").write_text(
                     texto_idx,
                     encoding="utf-8",
                 )

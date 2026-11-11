@@ -17,6 +17,8 @@ from collect_tce import (
     obter_partido_parlamentar_sc,
     resolver_usar_rede,
 )
+from enrich_cnpj import enriquecer_cnpj
+from etl import executar_etl
 
 
 def test_resolver_usar_rede_respeita_parametro_env_e_pytest(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -232,4 +234,76 @@ def test_coletar_emendas_tce_sc_api_real_portal_transparencia_e_cache(tmp_path: 
         client=client,
     )
     assert len(chamadas_extrato) == 2
+
+
+def test_enriquecer_cnpj_api_real_brasilapi_e_propagacao_uf_etl(tmp_path: Path) -> None:
+    """Verifica consulta real na BrasilAPI com client injetado e propagação da UF da Receita no ETL."""
+    payload_receita = {
+        "cnpj": "00126152000135",
+        "razao_social": "ASSOCIACAO DOS BOMBEIROS VOLUNTARIOS NO ESTADO DE SC",
+        "data_inicio_atividade": "1994-07-15",
+        "capital_social": 0.0,
+        "cnae_fiscal_descricao": "Atividades de associações de defesa de direitos sociais",
+        "uf": "DF",
+        "municipio": "BRASILIA",
+        "qsa": [{"nome_socio": "IVAN FREDERICO HUDLER"}],
+    }
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        """Simula resposta oficial da BrasilAPI CNPJ v1."""
+        if "00126152000135" in str(request.url):
+            return httpx.Response(200, json=payload_receita)
+        return httpx.Response(404)
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    enriched_dir = tmp_path / "enriched"
+    dados = enriquecer_cnpj(
+        "00.126.152/0001-35",
+        output_dir=enriched_dir,
+        usar_rede=True,
+        nome_fallback="BOMBEIROS VOLUNTARIOS",
+        client=client,
+    )
+    assert dados["uf"] == "DF"
+    assert dados["data_abertura"] == "1994-07-15"
+    assert "IVAN FREDERICO HUDLER" in dados["socios"]
+
+    # Verifica se o ETL propaga a UF real da Receita Federal ("DF") sobre o default "SC" do CSV bruto
+    raw_dir = tmp_path / "raw"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(
+        [
+            {"codigo_ibge": "4209102", "municipio": "Joinville", "populacao": 616317},
+        ]
+    ).to_csv(raw_dir / "populacao_ibge.csv", index=False)
+    pd.DataFrame(
+        [
+            {
+                "id_emenda": "2026EP009011",
+                "parlamentar": "MATHEUS ANDREIS CADORIN",
+                "partido": "NOVO",
+                "valor": 250000.0,
+                "municipio": "Joinville",
+                "codigo_ibge": "4209102",
+                "entidade_beneficiaria": "ASSOCIACAO DOS BOMBEIROS VOLUNTARIOS",
+                "area": "Segurança Pública",
+                "data": "2026-05-10",
+                "fornecedor_nome": "ASSOCIACAO DOS BOMBEIROS VOLUNTARIOS",
+                "fornecedor_cnpj": "00126152000135",
+                "uf_fornecedor": "SC",
+                "status_execucao": "Pago",
+                "fonte_url": "https://www.transparencia.sc.gov.br/emenda-parlamentar/extratoemenda/?nuemendaparlamentarfiltro[]=2026EP009011",
+            }
+        ]
+    ).to_csv(raw_dir / "emendas_20261111.csv", index=False)
+
+    res_etl = executar_etl(
+        raw_dir=raw_dir,
+        enriched_dir=enriched_dir,
+        clean_dir=tmp_path / "clean",
+        db_path=tmp_path / "vigia_real_test.db",
+        usar_rede=False,
+    )
+    assert res_etl["emendas_clean"].iloc[0]["uf_fornecedor"] == "DF"
+
 

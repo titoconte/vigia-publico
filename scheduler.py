@@ -11,10 +11,12 @@ from pathlib import Path
 import smtplib
 from typing import Any
 
+import pandas as pd
+
 from anomalies import executar_motor_anomalias
 from collect_tce import DEFAULT_RAW_DIR, executar_coleta_completa
 from database import DEFAULT_DB_PATH
-from enrich_cnpj import CADASTRO_REFERENCIA_CNPJ, DEFAULT_ENRICHED_DIR, enriquecer_lote_cnpjs
+from enrich_cnpj import DEFAULT_ENRICHED_DIR, enriquecer_lote_cnpjs
 from etl import DEFAULT_CLEAN_DIR, executar_etl
 
 DEFAULT_RELATORIO_HTML = Path("data/clean/relatorio_semanal_top10.html")
@@ -113,11 +115,20 @@ def executar_ciclo_semanal(
     db_path: Path | str = DEFAULT_DB_PATH,
     relatorio_html_path: Path | str = DEFAULT_RELATORIO_HTML,
     enviar_email: bool = True,
+    usar_rede: bool | None = None,
 ) -> dict[str, Any]:
     """Executa o pipeline semanal completo (Coleta -> ETL -> Motor de Anomalias -> Relatório Top 10 HTML -> E-mail)."""
-    executar_coleta_completa(raw_dir=raw_dir)
-    enriquecer_lote_cnpjs(list(CADASTRO_REFERENCIA_CNPJ.keys()), output_dir=enriched_dir, usar_rede=False)
-    executar_etl(raw_dir=raw_dir, enriched_dir=enriched_dir, clean_dir=clean_dir, db_path=db_path)
+    res_coleta = executar_coleta_completa(raw_dir=raw_dir, usar_rede=usar_rede)
+    df_emendas = pd.read_csv(res_coleta["emendas_csv"], dtype={"fornecedor_cnpj": str})
+    cnpjs = df_emendas["fornecedor_cnpj"].dropna().astype(str).unique().tolist()
+    enriquecer_lote_cnpjs(cnpjs, output_dir=enriched_dir, usar_rede=usar_rede)
+    executar_etl(
+        raw_dir=raw_dir,
+        enriched_dir=enriched_dir,
+        clean_dir=clean_dir,
+        db_path=db_path,
+        usar_rede=usar_rede,
+    )
     alertas = executar_motor_anomalias(db_path=db_path)
 
     top_10 = alertas[:10]
