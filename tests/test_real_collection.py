@@ -307,3 +307,66 @@ def test_enriquecer_cnpj_api_real_brasilapi_e_propagacao_uf_etl(tmp_path: Path) 
     assert res_etl["emendas_clean"].iloc[0]["uf_fornecedor"] == "DF"
 
 
+def test_localidade_estadual_e_unicidade_codigo_ibge_no_etl(tmp_path: Path) -> None:
+    """Garante que localidades estaduais ('* Santa Catarina' / 'Estado de Santa Catarina') não dupliquem PK no ETL."""
+    raw_dir = tmp_path / "raw"
+    enriched_dir = tmp_path / "enriched"
+    clean_dir = tmp_path / "clean"
+    db_path = tmp_path / "vigia_pk_test.db"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+
+    pd.DataFrame(
+        [{"codigo_ibge": "4205407", "municipio": "Florianópolis", "populacao": 587486}]
+    ).to_csv(raw_dir / "populacao_ibge.csv", index=False)
+
+    pd.DataFrame(
+        [
+            {
+                "id_emenda": "2026EP000100",
+                "parlamentar": "ANA CAMPAGNOLO",
+                "partido": "PL",
+                "valor": 200000.0,
+                "municipio": "Florianópolis",
+                "codigo_ibge": "4205407",
+                "entidade_beneficiaria": "FUNDO ESTADUAL DE SAUDE",
+                "area": "Saúde",
+                "data": "2026-04-10",
+                "fornecedor_nome": "FUNDO ESTADUAL DE SAUDE",
+                "fornecedor_cnpj": "80673411000187",
+                "uf_fornecedor": "SC",
+                "status_execucao": "Empenhado",
+                "fonte_url": "https://www.transparencia.sc.gov.br/emenda-parlamentar/extratoemenda/?nuemendaparlamentarfiltro[]=2026EP000100",
+            },
+            {
+                "id_emenda": "2026EP000101",
+                "parlamentar": "ANA CAMPAGNOLO",
+                "partido": "PL",
+                "valor": 300000.0,
+                "municipio": "* Santa Catarina",
+                "codigo_ibge": "4205407",
+                "entidade_beneficiaria": "FUNDACAO CATARINENSE DE EDUCACAO ESPECIAL",
+                "area": "Educação",
+                "data": "2026-04-12",
+                "fornecedor_nome": "FUNDACAO CATARINENSE DE EDUCACAO ESPECIAL",
+                "fornecedor_cnpj": "83726845000160",
+                "uf_fornecedor": "SC",
+                "status_execucao": "Empenhado",
+                "fonte_url": "https://www.transparencia.sc.gov.br/emenda-parlamentar/extratoemenda/?nuemendaparlamentarfiltro[]=2026EP000101",
+            },
+        ]
+    ).to_csv(raw_dir / "emendas_20261111.csv", index=False)
+
+    res = executar_etl(
+        raw_dir=raw_dir,
+        enriched_dir=enriched_dir,
+        clean_dir=clean_dir,
+        db_path=db_path,
+        usar_rede=False,
+    )
+    df_mun = res["agregados_municipio"]
+    assert len(df_mun) == 1
+    assert df_mun.iloc[0]["codigo_ibge"] == "4205407"
+    assert float(df_mun.iloc[0]["total_recebido"]) == 500000.0
+
+
+

@@ -96,19 +96,38 @@ def construir_agregados_parlamentar(df_clean: pd.DataFrame) -> pd.DataFrame:
 
 
 def construir_agregados_municipio(df_clean: pd.DataFrame, df_pop: pd.DataFrame) -> pd.DataFrame:
-    """Gera a tabela agregada por município incluindo população IBGE, total recebido e valor per capita."""
+    """Gera a tabela agregada por município (PK única codigo_ibge) incluindo população IBGE e valor per capita."""
+    mapa_nome_oficial = dict(zip(df_pop["codigo_ibge"].astype(str), df_pop["municipio"].astype(str)))
     agrupado = (
-        df_clean.groupby(["codigo_ibge", "municipio", "municipio_normalizado", "populacao"], as_index=False)
+        df_clean.groupby("codigo_ibge", as_index=False)
         .agg(
+            municipio=("municipio", "first"),
+            populacao=("populacao", "max"),
             total_recebido=("valor", "sum"),
             quantidade_emendas=("id_emenda", "count"),
         )
     )
+    agrupado["municipio"] = [
+        mapa_nome_oficial.get(str(cod), str(mun))
+        for cod, mun in zip(agrupado["codigo_ibge"], agrupado["municipio"])
+    ]
+    agrupado["municipio_normalizado"] = agrupado["municipio"].apply(normalizar_municipio)
     agrupado["total_recebido"] = agrupado["total_recebido"].round(2)
     agrupado["valor_per_capita"] = agrupado.apply(
         lambda r: calcular_valor_per_capita(r["total_recebido"], r["populacao"]),
         axis=1,
     )
+    agrupado = agrupado[
+        [
+            "codigo_ibge",
+            "municipio",
+            "municipio_normalizado",
+            "populacao",
+            "total_recebido",
+            "quantidade_emendas",
+            "valor_per_capita",
+        ]
+    ]
 
     codigos_com_emenda = set(agrupado["codigo_ibge"].astype(str))
     extras: list[dict[str, Any]] = []
@@ -133,31 +152,18 @@ def construir_agregados_municipio(df_clean: pd.DataFrame, df_pop: pd.DataFrame) 
 
 
 def construir_agregados_fornecedor(df_clean: pd.DataFrame) -> pd.DataFrame:
-    """Gera a tabela agregada por fornecedor/entidade beneficiária com dados da Receita Federal e totais."""
+    """Gera a tabela agregada por CNPJ único com dados da Receita Federal e totais consolidados."""
     agrupado = (
-        df_clean.groupby(
-            [
-                "fornecedor_cnpj",
-                "fornecedor_nome",
-                "uf_fornecedor",
-                "data_abertura_fornecedor",
-                "capital_social_fornecedor",
-                "cnae_fornecedor",
-            ],
-            dropna=False,
-            as_index=False,
-        )
+        df_clean.groupby("fornecedor_cnpj", dropna=False, as_index=False)
         .agg(
+            fornecedor_nome=("fornecedor_nome", "first"),
+            uf_fornecedor=("uf_fornecedor", "first"),
+            data_abertura=("data_abertura_fornecedor", "first"),
+            capital_social=("capital_social_fornecedor", "max"),
+            cnae_principal=("cnae_fornecedor", "first"),
             total_recebido=("valor", "sum"),
             quantidade_emendas=("id_emenda", "count"),
             parlamentares_distintos=("parlamentar", "nunique"),
-        )
-        .rename(
-            columns={
-                "data_abertura_fornecedor": "data_abertura",
-                "capital_social_fornecedor": "capital_social",
-                "cnae_fornecedor": "cnae_principal",
-            }
         )
     )
     agrupado["total_recebido"] = agrupado["total_recebido"].round(2)

@@ -683,15 +683,20 @@ def _montar_linha_emenda_portal_sc(
     cnpj_forn, nome_credor = extrair_cnpj_e_nome_credor(ident.get("identificacaocredor"))
 
     localidade_bruta = str(ident.get("nmlocalidade") or "").strip()
-    chave_loc = _normalizar_chave_texto(localidade_bruta)
-    if not chave_loc or chave_loc in ("ESTADO", "SANTA CATARINA", "DIVERSOS"):
+    chave_loc = _normalizar_chave_texto(localidade_bruta.lstrip("* ").strip())
+    if not chave_loc or chave_loc in (
+        "ESTADO",
+        "SANTA CATARINA",
+        "ESTADO DE SANTA CATARINA",
+        "DIVERSOS",
+    ):
         chave_loc = "FLORIANOPOLIS"
 
     if chave_loc in mapa_ibge_por_nome:
         codigo_ibge, municipio_oficial = mapa_ibge_por_nome[chave_loc]
     else:
         codigo_ibge = "4205407"
-        municipio_oficial = localidade_bruta if localidade_bruta else "Florianópolis"
+        municipio_oficial = "Florianópolis"
 
     area = limpar_area_subacao(ident.get("nmsubacao"))
 
