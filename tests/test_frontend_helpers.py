@@ -13,9 +13,11 @@ from app import (
     filtrar_emendas_explorador,
     obter_dados_perfil_municipio,
     obter_dados_perfil_parlamentar,
+    obter_quantidade_emendas_por_autor,
     obter_totais_por_ano,
     obter_totais_por_parlamentar,
     obter_totais_por_partido,
+    obter_valor_por_populacao_municipios,
     registrar_feedback_local,
     separar_autores_por_tipo,
 )
@@ -188,3 +190,37 @@ def test_calcular_valor_por_populacao_filtrada(tmp_path: Path) -> None:
     assert resumo_vazio["total_valor"] == 0.0
     assert resumo_vazio["populacao_total"] == 0
     assert resumo_vazio["valor_por_habitante"] == 0.0
+
+
+def test_obter_valor_por_populacao_municipios_e_qtd_emendas(tmp_path: Path) -> None:
+    """Valida a geração das séries para gráficos de Valor/População por município e Número de Emendas por autor."""
+    db_path = _preparar_banco_frontend(tmp_path)
+    dados = carregar_dados_painel(db_path=db_path)
+    df_emendas = dados["emendas"]
+
+    # 1. Gráfico de Valor / População por município
+    serie_per_capita = obter_valor_por_populacao_municipios(df_emendas, top_n=10)
+    assert not serie_per_capita.empty
+    assert len(serie_per_capita) <= 10
+    # Urupema tem população 2656 e valor alto, deve ter razão alta
+    assert serie_per_capita.iloc[0] >= serie_per_capita.iloc[-1]
+
+    # Vazio
+    serie_vazia = obter_valor_por_populacao_municipios(df_emendas.iloc[0:0])
+    assert serie_vazia.empty
+
+    # 2. Gráfico de Quantidade de Emendas por Autor (separando Todos, Bancadas e Parlamentares)
+    qtd_todos = obter_quantidade_emendas_por_autor(df_emendas, tipo_autor="Todos")
+    qtd_bancadas = obter_quantidade_emendas_por_autor(df_emendas, tipo_autor="Bancadas")
+    qtd_individuais = obter_quantidade_emendas_por_autor(df_emendas, tipo_autor="Parlamentares")
+
+    assert not qtd_todos.empty
+    assert not qtd_bancadas.empty
+    assert not qtd_individuais.empty
+    assert qtd_todos.sum() == len(df_emendas)
+    assert qtd_bancadas.sum() + qtd_individuais.sum() == len(df_emendas)
+
+    # Verifica se os índices contêm estritamente bancadas / individuais
+    assert all(eh_bancada_regional(str(b)) for b in qtd_bancadas.index)
+    assert all(not eh_bancada_regional(str(p)) for p in qtd_individuais.index)
+

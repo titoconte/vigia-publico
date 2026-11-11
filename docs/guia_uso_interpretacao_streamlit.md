@@ -132,9 +132,13 @@ Implementada em [`renderizar_pagina_explorador_emendas`](file:///C:/Users/titoc/
 > * **Liquidado:** o órgão público já verificou que o bem foi entregue ou a etapa cumprida e reconheceu a dívida líquida, aguardando apenas a transferência bancária.
 > * **Pago:** o dinheiro efetivamente saiu dos cofres estaduais (ordem bancária emitida).
 
-#### Como ler os 2 Gráficos Inferiores da Página 2
-* **Total por Parlamentar (R$):** mostra quem lidera o envio de verbas dentro do filtro ativo. *Exemplo prático:* filtre `Área = Saúde` e `Município = Joinville` para ver instantaneamente quais deputados mais destinaram recursos de saúde para Joinville.
-* **Total por Município (R$):** revela concentração geográfica. Se você filtrar um único parlamentar no topo, este gráfico passa a mostrar **o mapa de redutos eleitorais/orçamentários** daquele deputado.
+#### Como ler os Gráficos Analíticos da Página 2
+Abaixo da tabela de dados, o Explorador disponibiliza 5 visualizações gráficas segmentadas que refletem os filtros selecionados:
+* **👤 Total por Parlamentar Individual (R$):** ranking financeiro dos parlamentares individuais (exclui bancadas), permitindo comparar cotas de mandatos específicos.
+* **🏛️ Total por Bancada Regional (R$):** ranking financeiro exclusivo das bancadas regionais (iniciadas por `BANCADA `), permitindo avaliar o volume dos blocos suprapartidários regionais.
+* **📈 Valor Total / População por Município (R$ / hab):** indicador per capita que relaciona o total destinado à população residente dos municípios contemplados, destacando municípios com alta concentração proporcional de recursos.
+* **📋 Número Total de Emendas por Autor:** volume quantitativo de emendas/instrumentos alocados por cada parlamentar ou bancada (útil para diagnosticar estratégias de pulverização de repasses).
+* **🏙️ Total Financeiro por Município (R$):** ranking dos municípios catarinenses que mais receberam recursos no recorte filtrado.
 
 ---
 

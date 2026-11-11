@@ -139,6 +139,43 @@ def calcular_valor_por_populacao_filtrada(df_filtrado: pd.DataFrame) -> dict[str
     }
 
 
+def obter_valor_por_populacao_municipios(
+    df_filtrado: pd.DataFrame,
+    top_n: int | None = 20,
+) -> pd.Series:
+    """Calcula a razão (Valor Total / População) para cada município contemplado no recorte filtrado."""
+    if df_filtrado.empty or "municipio" not in df_filtrado.columns or "populacao" not in df_filtrado.columns:
+        return pd.Series(dtype=float)
+    agg = df_filtrado.groupby("municipio").agg({"valor": "sum", "populacao": "first"})
+    agg = agg[agg["populacao"] > 0]
+    serie = (agg["valor"] / agg["populacao"]).round(2).sort_values(ascending=False)
+    if top_n and top_n > 0:
+        return serie.head(top_n)
+    return serie
+
+
+def obter_quantidade_emendas_por_autor(
+    df_filtrado: pd.DataFrame,
+    *,
+    tipo_autor: str = "Todos",
+    top_n: int | None = 20,
+) -> pd.Series:
+    """Calcula o número total de emendas alocadas agrupado por autor (parlamentar individual ou bancada)."""
+    if df_filtrado.empty or "parlamentar" not in df_filtrado.columns:
+        return pd.Series(dtype=int)
+    df = df_filtrado.copy()
+    if tipo_autor in ("Bancadas", "Bancada Regional", "Bancadas Regionais", "Bancada"):
+        df = df[df["parlamentar"].apply(eh_bancada_regional)]
+    elif tipo_autor in ("Parlamentares", "Parlamentar Individual", "Parlamentares Individuais", "Parlamentar"):
+        df = df[~df["parlamentar"].apply(eh_bancada_regional)]
+
+    col_contagem = "id_emenda" if "id_emenda" in df.columns else "valor"
+    serie = df.groupby("parlamentar")[col_contagem].count().sort_values(ascending=False)
+    if top_n and top_n > 0:
+        return serie.head(top_n)
+    return serie
+
+
 def obter_dados_perfil_parlamentar(
     parlamentar: str,
     db_path: Path | str | None = None,
@@ -394,17 +431,52 @@ def renderizar_pagina_explorador_emendas(st: Any, dados: dict[str, pd.DataFrame]
         hide_index=True,
     )
 
+    st.markdown("---")
+    st.subheader("📊 Gráficos Analíticos do Recorte Filtrado")
+
+    # Linha 1: Separação de Total por Parlamentar Individual vs Bancadas Regionais
     g1, g2 = st.columns(2)
     with g1:
-        st.subheader("Total por Parlamentar (R$)")
-        if not df_filtrado.empty:
-            por_parl = df_filtrado.groupby("parlamentar")["valor"].sum().sort_values(ascending=False)
+        st.markdown("##### 👤 Total por Parlamentar Individual (R$)")
+        df_parl = df_filtrado[~df_filtrado["parlamentar"].apply(eh_bancada_regional)]
+        if not df_parl.empty:
+            por_parl = df_parl.groupby("parlamentar")["valor"].sum().sort_values(ascending=False).head(20)
             st.bar_chart(por_parl)
+        else:
+            st.caption("Nenhum parlamentar individual no recorte filtrado.")
+
     with g2:
-        st.subheader("Total por Município (R$)")
-        if not df_filtrado.empty:
-            por_mun = df_filtrado.groupby("municipio")["valor"].sum().sort_values(ascending=False)
-            st.bar_chart(por_mun)
+        st.markdown("##### 🏛️ Total por Bancada Regional (R$)")
+        df_banc = df_filtrado[df_filtrado["parlamentar"].apply(eh_bancada_regional)]
+        if not df_banc.empty:
+            por_banc = df_banc.groupby("parlamentar")["valor"].sum().sort_values(ascending=False)
+            st.bar_chart(por_banc)
+        else:
+            st.caption("Nenhuma bancada regional no recorte filtrado.")
+
+    # Linha 2: Valor Total / População por Município e Número Total de Emendas por Autor
+    g3, g4 = st.columns(2)
+    with g3:
+        st.markdown("##### 📈 Valor Total / População por Município (R$ / hab)")
+        serie_per_capita = obter_valor_por_populacao_municipios(df_filtrado, top_n=20)
+        if not serie_per_capita.empty:
+            st.bar_chart(serie_per_capita)
+        else:
+            st.caption("Sem dados populacionais no recorte selecionado.")
+
+    with g4:
+        st.markdown("##### 📋 Número Total de Emendas por Autor")
+        serie_qtd = obter_quantidade_emendas_por_autor(df_filtrado, top_n=20)
+        if not serie_qtd.empty:
+            st.bar_chart(serie_qtd)
+        else:
+            st.caption("Sem emendas no recorte selecionado.")
+
+    # Linha 3: Total Financeiro por Município
+    st.markdown("##### 🏙️ Total Financeiro por Município (R$)")
+    if not df_filtrado.empty:
+        por_mun = df_filtrado.groupby("municipio")["valor"].sum().sort_values(ascending=False).head(20)
+        st.bar_chart(por_mun)
 
 
 def renderizar_pagina_perfil_parlamentar(st: Any, dados: dict[str, pd.DataFrame]) -> None:
