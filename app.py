@@ -1,4 +1,4 @@
-"""Fase 5 — Frontend Streamlit do Vigia Público SC com 4 páginas interativas para jornalismo investigativo."""
+"""Fase 5 — Frontend Streamlit do Vigia Público SC com 4 páginas interativas para controle social e auditoria cívica."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from database import conectar_banco, resolver_caminho_sqlite
 from main import garantir_dados_iniciais
 
 AVISO_ETICO_FRONTEND = (
-    "⚠️ **Nota Ética e Metodológica:** Esta ferramenta não substitui a verificação jornalística "
+    "⚠️ **Nota Ética e Metodológica:** Esta ferramenta não substitui a verificação documental "
     "nem a apuração oficial. Os alertas indicam padrões estatísticos e cadastrais em dados públicos "
     "que merecem verificação, e não provas de irregularidade."
 )
@@ -47,7 +47,7 @@ def filtrar_emendas_explorador(
     area: str = "Todas",
     valor_minimo: float = 0.0,
 ) -> pd.DataFrame:
-    """Aplica os filtros selecionados pelo jornalista na Página 2 (Explorador de Emendas)."""
+    """Aplica os filtros selecionados pelo usuário na Página 2 (Explorador de Emendas)."""
     df = df_emendas.copy()
     if parlamentar and parlamentar != "Todos":
         df = df[df["parlamentar"] == parlamentar]
@@ -135,13 +135,15 @@ def registrar_feedback_local(
     alerta_id: int,
     avaliacao: str,
     comentario: str = "",
+    usuario: str = "",
     jornalista: str = "",
     db_path: Path | str | None = None,
 ) -> dict[str, Any]:
-    """Registra diretamente no banco o feedback do jornalista ('util' ou 'falso_positivo') a partir do Streamlit."""
+    """Registra diretamente no banco o feedback do usuário/analista ('util' ou 'falso_positivo') a partir do Streamlit."""
     caminho = resolver_caminho_sqlite(db_path)
     agora = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     aval = "util" if avaliacao in ("util", "útil") else "falso_positivo"
+    identificador_autor = usuario or jornalista or ""
 
     with conectar_banco(caminho) as conn:
         conn.execute(
@@ -149,7 +151,7 @@ def registrar_feedback_local(
             INSERT INTO alertas_feedback (alerta_id, avaliacao, comentario, jornalista, criado_em)
             VALUES (?, ?, ?, ?, ?)
             """,
-            (alerta_id, aval, comentario, jornalista, agora),
+            (alerta_id, aval, comentario, identificador_autor, agora),
         )
         if aval == "util":
             conn.execute("UPDATE alertas SET util_count = util_count + 1 WHERE id = ?", (alerta_id,))
@@ -165,7 +167,7 @@ def registrar_feedback_local(
 
 def renderizar_pagina_painel_alertas(st: Any, dados: dict[str, pd.DataFrame]) -> None:
     """Renderiza a Página 1: Painel de Alertas ordenado por pontuação com filtros, detalhes e feedback."""
-    st.header("🚨 Página 1 — Painel de Alertas para Apuração Jornalística")
+    st.header("🚨 Página 1 — Painel de Alertas e Análise de Risco")
     df_alertas = dados["alertas"]
 
     col1, col2, col3, col4 = st.columns(4)
@@ -219,7 +221,7 @@ def renderizar_pagina_painel_alertas(st: Any, dados: dict[str, pd.DataFrame]) ->
                 registrar_feedback_local(alerta_id=int(alerta["id"]), avaliacao="falso_positivo")
                 st.warning("Feedback 'Falso Positivo' registrado para calibragem das regras!")
             c_info.caption(
-                f"Avaliações de jornalistas: 👍 {int(alerta['util_count'])} úteis | "
+                f"Avaliações dos usuários: 👍 {int(alerta['util_count'])} úteis | "
                 f"⚠️ {int(alerta['falso_positivo_count'])} falsos positivos"
             )
 
@@ -372,7 +374,7 @@ def executar_interface_streamlit() -> None:
     st.sidebar.markdown("---")
     st.sidebar.caption(
         "Dados públicos: TCE/SC, IBGE, Portal de Dados Abertos SC e Receita Federal. "
-        "Foco em transparência ativa e apoio ao jornalismo investigativo."
+        "Foco em transparência ativa, controle social e auditoria cívica."
     )
 
     if pagina.startswith("1."):

@@ -53,7 +53,7 @@ def gerar_relatorio_html_top10(alertas: list[dict[str, Any]]) -> str:
 <body style="font-family:Arial,sans-serif;color:#1e293b;line-height:1.5;margin:24px;">
     <h2>🔍 Vigia Público SC — Top 10 Alertas da Semana ({data_geracao})</h2>
     <p style="background:#fef3c7;border-left:4px solid #f59e0b;padding:12px;">
-        <strong>Aviso Ético e Legal:</strong> Esta ferramenta não substitui a verificação jornalística nem a apuração oficial.
+        <strong>Aviso Ético e Legal:</strong> Esta ferramenta não substitui a verificação documental nem a apuração oficial.
         Os alertas apontam padrões estatísticos e cadastrais que merecem verificação, não constituindo prova de irregularidade.
     </p>
     <table style="border-collapse:collapse;width:100%;font-size:14px;">
@@ -81,7 +81,7 @@ def enviar_relatorio_por_email(
     conteudo_html: str,
     destinatarios: list[str] | None = None,
 ) -> bool:
-    """Envia o relatório HTML semanal por e-mail via SMTP para a lista de jornalistas cadastrados."""
+    """Envia o relatório HTML semanal por e-mail via SMTP para a lista de destinatários cadastrados."""
     lista_emails = destinatarios or [
         e.strip() for e in os.getenv("ALERT_RECIPIENTS", "").split(",") if e.strip()
     ]
@@ -95,7 +95,7 @@ def enviar_relatorio_por_email(
         return False
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = "Vigia Público SC — Resumo Semanal: Top 10 Alertas para Apuração"
+    msg["Subject"] = "Vigia Público SC — Resumo Semanal: Top 10 Alertas para Análise"
     msg["From"] = remetente
     msg["To"] = ", ".join(lista_emails)
     msg.attach(MIMEText(conteudo_html, "html", "utf-8"))

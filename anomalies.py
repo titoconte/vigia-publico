@@ -14,7 +14,7 @@ import pandas as pd
 from database import DEFAULT_DB_PATH, conectar_banco, inicializar_schema
 
 NOTA_ETICA_PADRAO = (
-    "Padrão estatístico/cadastral que merece verificação jornalística. "
+    "Padrão estatístico/cadastral que merece verificação e análise documental. "
     "Não constitui prova de irregularidade."
 )
 

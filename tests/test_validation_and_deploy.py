@@ -30,8 +30,8 @@ def test_arquivos_documentacao_e_deploy_existem() -> None:
     assert "Como Rodar Localmente" in texto_readme
     assert "Como Contribuir" in texto_readme
     assert "Limitações Éticas" in texto_readme
-    assert "Esta ferramenta não substitui a verificação jornalística nem a apuração oficial." in texto_readme
+    assert "Esta ferramenta não substitui a verificação documental nem a apuração oficial." in texto_readme
 
     texto_feedback = feedback.read_text(encoding="utf-8")
     assert "Verificação Manual de 5 Alertas" in texto_feedback
-    assert "Feedback de Jornalistas" in texto_feedback
+    assert "Feedback de Especialistas e Usuários" in texto_feedback

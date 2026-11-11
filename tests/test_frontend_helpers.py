@@ -35,7 +35,7 @@ def _preparar_banco_frontend(tmp_path: Path) -> Path:
 def test_aviso_etico_obrigatorio_presente() -> None:
     """Verifica se a frase ética exigida está presente no banner do frontend."""
     assert (
-        "Esta ferramenta não substitui a verificação jornalística nem a apuração oficial."
+        "Esta ferramenta não substitui a verificação documental nem a apuração oficial."
         in AVISO_ETICO_FRONTEND
     )
 

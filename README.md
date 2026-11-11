@@ -1,14 +1,14 @@
 # 🔍 Vigia Público SC
 
-**Monitoramento transparente e auditável de emendas parlamentares estaduais de Santa Catarina para apoio ao jornalismo investigativo.**
+**Monitoramento transparente e auditável de emendas parlamentares estaduais de Santa Catarina para controle social e auditoria cívica.**
 
-> ⚠️ **Aviso Ético Obrigatório:** *Esta ferramenta não substitui a verificação jornalística nem a apuração oficial. Os alertas gerados apontam padrões estatísticos e cadastrais em dados públicos que merecem verificação, não constituindo prova de irregularidade nem acusação.*
+> ⚠️ **Aviso Ético Obrigatório:** *Esta ferramenta não substitui a verificação documental nem a apuração oficial. Os alertas gerados apontam padrões estatísticos e cadastrais em dados públicos que merecem verificação, não constituindo prova de irregularidade nem acusação.*
 
 ---
 
 ## 📌 Descrição do Projeto e Propósito
 
-O **Vigia Público SC** é uma plataforma cívica open source desenvolvida para auxiliar jornalistas, pesquisadores e cidadãos de Santa Catarina no acompanhamento da execução das emendas parlamentares estaduais.
+O **Vigia Público SC** é uma plataforma cívica open source desenvolvida para auxiliar pesquisadores, analistas de controle social e cidadãos de Santa Catarina no acompanhamento da execução das emendas parlamentares estaduais.
 
 A ferramenta automatiza o cruzamento de múltiplas fontes públicas oficiais em tempo real:
 1. **Portal da Transparência SC / SIGEF-CIASC e Painel TCE/SC** (índice integral das ~4.290 emendas estaduais impositivas + extratos oficiais com parlamentar/bancada, valor, município, entidade beneficiária, CNPJ do credor, área temática e status de execução).
@@ -83,7 +83,7 @@ uvicorn main:app --reload --port 8000
   - `GET /api/alertas` — Lista de anomalias detectadas, ordenadas por pontuação
   - `GET /api/alertas/{id}` — Detalhe de um alerta com justificativa e dados de contexto
   - `GET /api/municipios/{codigo}` — Perfil do município (população, total recebido, per capita, emendas, alertas)
-  - `POST /api/alertas/{id}/feedback` — Jornalista marca alerta como `"útil"` ou `"falso positivo"`
+  - `POST /api/alertas/{id}/feedback` — Usuário marca alerta como `"útil"` ou `"falso positivo"`
 
 ### 5. Iniciar o Frontend (Streamlit — 4 Páginas)
 ```bash
@@ -113,7 +113,7 @@ pytest -v
 
 ## 🤝 Como Contribuir
 
-Contribuições de jornalistas de dados, desenvolvedores e auditores cívicos são muito bem-vindas!
+Contribuições de auditores cívicos, pesquisadores, analistas de dados e desenvolvedores são muito bem-vindas!
 
 1. Faça um **Fork** do projeto e crie uma branch a partir da `develop` (`git checkout -b feature/minha-melhoria`).
 2. Adicione testes unitários em `tests/` cobrindo qualquer nova regra ou endpoint (seguimos **TDD**).

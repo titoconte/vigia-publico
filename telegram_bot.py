@@ -24,8 +24,8 @@ def formatar_resumo_top_alertas_texto(
         ).fetchall()
 
     partes = [
-        "🔍 *Vigia Público SC — Top Alertas para Apuração*",
-        "⚠️ _Esta ferramenta não substitui a verificação jornalística nem a apuração oficial._\n",
+        "🔍 *Vigia Público SC — Top Alertas para Análise*",
+        "⚠️ _Esta ferramenta não substitui a verificação documental nem a apuração oficial._\n",
     ]
     for idx, row in enumerate(linhas, start=1):
         partes.append(
@@ -74,7 +74,7 @@ def consultar_parlamentar_texto(
             linhas.append(f"- [{float(a['pontuacao']):.1f} pts] {a['tipo']}: {a['justificativa']}")
     else:
         linhas.append("- Nenhum alerta estatístico associado.")
-    linhas.append("\n⚠️ _Esta ferramenta não substitui a verificação jornalística nem a apuração oficial._")
+    linhas.append("\n⚠️ _Esta ferramenta não substitui a verificação documental nem a apuração oficial._")
     return "\n".join(linhas)
 
 
@@ -102,7 +102,7 @@ def enviar_resumo_telegram(
     bot_token: str | None = None,
     chat_ids: list[str] | None = None,
 ) -> int:
-    """Envia o resumo semanal de alertas via API HTTP do Telegram Bot para os jornalistas cadastrados."""
+    """Envia o resumo semanal de alertas via API HTTP do Telegram Bot para os usuários cadastrados."""
     token = (bot_token or os.getenv("TELEGRAM_BOT_TOKEN", "")).strip()
     destinos = chat_ids or [
         c.strip() for c in os.getenv("TELEGRAM_CHAT_IDS", "").split(",") if c.strip()

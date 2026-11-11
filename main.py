@@ -18,25 +18,29 @@ from enrich_cnpj import CADASTRO_REFERENCIA_CNPJ, enriquecer_lote_cnpjs
 from etl import executar_etl, normalizar_municipio
 
 AVISO_ETICO_API = (
-    "Esta ferramenta não substitui a verificação jornalística nem a apuração oficial. "
+    "Esta ferramenta não substitui a verificação documental nem a apuração oficial. "
     "Os alertas representam padrões estatísticos e cadastrais que merecem verificação."
 )
 
 
 class FeedbackPayload(BaseModel):
-    """Modelo de entrada para registro de feedback de jornalistas sobre um alerta."""
+    """Modelo de entrada para registro de feedback dos usuários e analistas sobre um alerta."""
 
     avaliacao: str = Field(
         ...,
-        description="Classificação do jornalista: 'util' ('útil') ou 'falso_positivo' ('falso positivo').",
+        description="Classificação do analista/usuário: 'util' ('útil') ou 'falso_positivo' ('falso positivo').",
     )
     comentario: str | None = Field(
         default=None,
-        description="Observação opcional da apuração jornalística para calibragem das regras.",
+        description="Observação opcional da análise documental para calibragem das regras.",
+    )
+    usuario: str | None = Field(
+        default=None,
+        description="Identificação opcional do analista ou usuário avaliador.",
     )
     jornalista: str | None = Field(
         default=None,
-        description="Identificação opcional da redação ou jornalista avaliador.",
+        description="Identificação do avaliador (mantido para compatibilidade retroativa).",
     )
 
 
@@ -55,7 +59,7 @@ def garantir_dados_iniciais(db_path: Path | str | None = None) -> Path:
 
 
 def _normalizar_avaliacao_feedback(avaliacao: str) -> str:
-    """Normaliza o texto de avaliação enviado pelo jornalista para 'util' ou 'falso_positivo'."""
+    """Normaliza o texto de avaliação enviado pelo usuário/analista para 'util' ou 'falso_positivo'."""
     limpo = normalizar_municipio(avaliacao).replace("_", " ").strip()
     if limpo in ("UTIL", "RELEVANTE", "POSITIVO"):
         return "util"
@@ -86,7 +90,7 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
         title="Vigia Público SC — API de Monitoramento de Emendas e Anomalias",
         description=(
             "API pública e auditável para monitoramento de emendas parlamentares estaduais de "
-            "Santa Catarina e apoio ao jornalismo investigativo. "
+            "Santa Catarina, controle social e auditoria cívica. "
             f"**Aviso Ético:** {AVISO_ETICO_API}"
         ),
         version="1.0.0",
@@ -251,10 +255,11 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
 
     @app.post("/api/alertas/{id}/feedback", tags=["Alertas"])
     def registrar_feedback_alerta(id: int, payload: FeedbackPayload) -> dict[str, Any]:
-        """Registra a avaliação de um jornalista ('útil' ou 'falso positivo') para calibragem futura das regras."""
+        """Registra a avaliação de um usuário/analista ('útil' ou 'falso positivo') para calibragem futura das regras."""
         caminho = garantir_dados_iniciais(db_path)
         avaliacao_norm = _normalizar_avaliacao_feedback(payload.avaliacao)
         agora = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        identificador_autor = payload.usuario or payload.jornalista
 
         with conectar_banco(caminho) as conn:
             alerta = conn.execute("SELECT * FROM alertas WHERE id = ?", (id,)).fetchone()
@@ -266,7 +271,7 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
                 INSERT INTO alertas_feedback (alerta_id, avaliacao, comentario, jornalista, criado_em)
                 VALUES (?, ?, ?, ?, ?)
                 """,
-                (id, avaliacao_norm, payload.comentario, payload.jornalista, agora),
+                (id, avaliacao_norm, payload.comentario, identificador_autor, agora),
             )
             if avaliacao_norm == "util":
                 conn.execute("UPDATE alertas SET util_count = util_count + 1 WHERE id = ?", (id,))
@@ -282,7 +287,8 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
         resultado["ultimo_feedback"] = {
             "avaliacao": avaliacao_norm,
             "comentario": payload.comentario,
-            "jornalista": payload.jornalista,
+            "usuario": identificador_autor,
+            "jornalista": identificador_autor,
             "criado_em": agora,
         }
         return resultado
