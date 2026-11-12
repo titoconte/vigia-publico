@@ -169,9 +169,42 @@ Diferente da Página 2 (que exibe 12 colunas resumidas), a tabela final das Pág
 ---
 
 ### 🗺️ Página 4 — Perfil do Município Catarinense
-Implementada em [`renderizar_pagina_perfil_municipio`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/app.py#L319-L345), consolida todos os **295 municípios de Santa Catarina** (identificados por nome e código oficial IBGE, ex.: `Florianópolis (4205407)`).
+Implementada em [`renderizar_pagina_perfil_municipio`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/app.py), consolida todos os **295 municípios de Santa Catarina** (identificados por nome e código oficial IBGE, ex.: `Florianópolis (4205407)`), integrando visões macroestaduais e análises locais detalhadas.
 
-#### Como interpretar os dados municipais
+#### 1. Panorama Geral: Macrorregião (IBGE) ou Município
+No topo da página, um seletor dinâmico permite comparar a distribuição orçamentária estadual:
+* **Macrorregião (IBGE):** agrupa todos os 295 municípios nas 6 macrorregiões (mesorregiões) oficiais do IBGE:
+  * *Grande Florianópolis*, *Norte Catarinense*, *Oeste Catarinense*, *Serrana*, *Sul Catarinense* e *Vale do Itajaí*.
+  * **Gráfico 1:** Valor total das emendas (R$) por Macrorregião.
+  * **Gráfico 2:** Número total de emendas por Macrorregião.
+* **Município:** exibe o ranking comparativo de todos os municípios catarinenses:
+  * **Gráfico 1:** Maiores alocações financeiras acumuladas por município.
+  * **Gráfico 2:** Maiores volumes quantitativos de emendas por município.
+
+#### 2. Indicadores do Município Selecionado (KPIs de Topo)
+* **População (IBGE):** população residente oficial utilizada como denominador per capita.
+* **Total Recebido:** volume financeiro bruto somado de todas as emendas destinadas ao município.
+* **Valor Per Capita:** acumulado municipal per capita ($\frac{\text{Total Recebido}}{\text{População}}$).
+* **Emendas Recebidas:** quantidade de instrumentos alocados para o município.
+
+#### 3. Gráficos Analíticos Detalhados (Antes dos Alertas)
+Para o município selecionado, o painel gera 8 visualizações estatísticas antes da lista de alertas:
+1. **Áreas Temáticas Beneficiadas:**
+   * **1.1 Total em Reais (R$) por Área:** ranking financeiro das funções orçamentárias (Saúde, Educação, Infraestrutura, Agricultura, etc.).
+   * **1.2 Número de Emendas por Área:** contagem de instrumentos destinados a cada área temátíca.
+2. **Parlamentares e Emendas Individuais:**
+   * **2.1 Soma Total de Valor por Deputado (R$):** ranking dos parlamentares que mais destinaram recursos ao município.
+   * **2.2 Soma Total do Valor por Emenda Individual (R$):** identificação e valor de cada emenda destinada ao município.
+3. **Distribuição por Partido Político:**
+   * **3.1 Valor Total por Partido (R$):** volume financeiro repassado por cada legenda partidária.
+   * **3.2 Número de Emendas por Partido:** contagem quantitativa de emendas por legenda partidária.
+4. **Favorecidos por CNPJ — Valor Total (Top 50 Maiores):**
+   * Gráfico de barras com os 50 maiores credores/beneficiários por valor financeiro total recebido no município, com CNPJ formatado e razão social.
+5. **Favorecidos por CNPJ — Maior Emenda Individual (Top 50 Maiores):**
+   * Gráfico de barras com a maior emenda individual alocada para cada um dos 50 principais CNPJs beneficiários no município.
+   * Tabela expansível com o resumo cadastral e percentual de participação de cada favorecido.
+
+#### 4. Como interpretar os dados municipais
 * **Municípios com R$ 0,00:** como [`construir_agregados_municipio`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/etl.py#L98-L151) cruza com o censo completo do IBGE, municípios que não receberam nenhuma emenda no recorte atual também aparecem na lista com `Total Recebido = R$ 0.00` e `0 emendas`. Isso permite descobrir quais cidades ficaram desassistidas na amostra analisada.
 * **Diferença entre os dois cálculos de `Valor Per Capita` no sistema:**
   * Na **Página 4 (KPI de topo)**, `Valor Per Capita` é o **acumulado municipal**: $\frac{\text{Soma de todas as emendas do município}}{\text{População IBGE}}$.

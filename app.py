@@ -319,6 +319,226 @@ def obter_dados_perfil_parlamentar(
     }
 
 
+def carregar_mapa_macrorregioes_sc(caminho_json: Path | str | None = None) -> dict[str, str]:
+    """Carrega o mapeamento oficial de código IBGE (7 dígitos) para Macrorregião (Mesorregião IBGE) de SC.
+    
+    Lê o arquivo data/raw/macrorregioes_ibge_sc.json obtido da API de localidades do IBGE.
+    """
+    if caminho_json is None:
+        caminho_json = Path("data/raw/macrorregioes_ibge_sc.json")
+    else:
+        caminho_json = Path(caminho_json)
+
+    if caminho_json.exists():
+        with open(caminho_json, encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+def obter_totais_por_macrorregiao(
+    df_emendas: pd.DataFrame,
+    mapa_macro: dict[str, str] | None = None,
+) -> pd.DataFrame:
+    """Calcula o valor total em reais e a quantidade total de emendas por Macrorregião do IBGE em SC.
+    
+    Mapeia o código IBGE para a mesorregião do IBGE (Grande Florianópolis, Norte Catarinense,
+    Oeste Catarinense, Serrana, Sul Catarinense, Vale do Itajaí) e agrega os valores.
+    """
+    if df_emendas.empty:
+        return pd.DataFrame(columns=["macrorregiao", "valor_total", "quantidade_emendas"])
+
+    if mapa_macro is None:
+        mapa_macro = carregar_mapa_macrorregioes_sc()
+
+    df = df_emendas.copy()
+    df["codigo_ibge_str"] = df["codigo_ibge"].astype(str).str.strip()
+    df["macrorregiao"] = df["codigo_ibge_str"].map(mapa_macro).fillna("Não classificada")
+
+    agregado = (
+        df.groupby("macrorregiao", as_index=False)
+        .agg(
+            valor_total=("valor", "sum"),
+            quantidade_emendas=("id_emenda", "count"),
+        )
+        .sort_values(by="valor_total", ascending=False)
+        .reset_index(drop=True)
+    )
+    return agregado
+
+
+def obter_totais_gerais_municipios(
+    df_emendas: pd.DataFrame,
+    df_municipios: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    """Consolida valor total e quantidade de emendas por município em SC para visualização comparativa."""
+    if df_emendas.empty and (df_municipios is None or df_municipios.empty):
+        return pd.DataFrame(columns=["municipio", "codigo_ibge", "valor_total", "quantidade_emendas"])
+
+    agregado_emendas = (
+        df_emendas.groupby(["codigo_ibge", "municipio"], as_index=False)
+        .agg(
+            valor_total=("valor", "sum"),
+            quantidade_emendas=("id_emenda", "count"),
+        )
+    )
+
+    if df_municipios is not None and not df_municipios.empty:
+        df_base = df_municipios[["codigo_ibge", "municipio"]].copy()
+        df_base["codigo_ibge"] = df_base["codigo_ibge"].astype(str).str.strip()
+        agregado_emendas["codigo_ibge"] = agregado_emendas["codigo_ibge"].astype(str).str.strip()
+        resultado = df_base.merge(
+            agregado_emendas[["codigo_ibge", "valor_total", "quantidade_emendas"]],
+            on="codigo_ibge",
+            how="left",
+            suffixes=("", "_emendas"),
+        )
+        resultado["valor_total"] = resultado["valor_total"].fillna(0.0)
+        resultado["quantidade_emendas"] = resultado["quantidade_emendas"].fillna(0).astype(int)
+    else:
+        resultado = agregado_emendas
+
+    return resultado.sort_values(by="valor_total", ascending=False).reset_index(drop=True)
+
+
+def obter_metricas_detalhadas_municipio(df_emendas_mun: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    """Calcula as métricas detalhadas de um município específico para visualização gráfica antes dos alertas.
+    
+    Retorna os seguintes conjuntos de dados:
+    - 1.1 por_area_valor: Total em reais de valor das emendas por área beneficiada.
+    - 1.2 por_area_qtd: Número de emendas por área.
+    - 2.1 por_deputado_valor: Soma total de valor por deputado em reais.
+    - 2.2 ranking_emendas: Relação das emendas individuais com identificador e valores.
+    - 3.1 por_partido_valor: Valor total por partido em reais.
+    - 3.2 por_partido_qtd: Número total de emendas por partido.
+    - 4 por_cnpj_total_top50: Valor total por CNPJ/favorecido (50 maiores valores).
+    - 5 por_cnpj_maior_emenda_top50: Valor da maior emenda por CNPJ/favorecido (50 maiores valores).
+    """
+    if df_emendas_mun.empty:
+        return {
+            "por_area_valor": pd.DataFrame(columns=["area", "valor_total"]),
+            "por_area_qtd": pd.DataFrame(columns=["area", "quantidade"]),
+            "por_deputado_valor": pd.DataFrame(columns=["parlamentar", "valor_total"]),
+            "ranking_emendas": pd.DataFrame(columns=["id_rotulo", "id_emenda", "parlamentar", "area", "valor"]),
+            "por_partido_valor": pd.DataFrame(columns=["partido", "valor_total"]),
+            "por_partido_qtd": pd.DataFrame(columns=["partido", "quantidade"]),
+            "por_cnpj_total_top50": pd.DataFrame(
+                columns=["identificador_cnpj", "cnpj_formatado", "fornecedor_nome", "valor_total", "quantidade_emendas"]
+            ),
+            "por_cnpj_maior_emenda_top50": pd.DataFrame(
+                columns=["identificador_cnpj", "cnpj_formatado", "fornecedor_nome", "maior_valor", "quantidade_emendas"]
+            ),
+        }
+
+    df = df_emendas_mun.copy()
+
+    # 1.1 e 1.2: Área
+    col_area = "area" if "area" in df.columns else ("funcao" if "funcao" in df.columns else None)
+    if col_area:
+        df["area_ajustada"] = df[col_area].fillna("Não informada")
+        por_area_valor = (
+            df.groupby("area_ajustada", as_index=False)["valor"]
+            .sum()
+            .rename(columns={"area_ajustada": "area", "valor": "valor_total"})
+            .sort_values(by="valor_total", ascending=False)
+            .reset_index(drop=True)
+        )
+        por_area_qtd = (
+            df.groupby("area_ajustada", as_index=False)["id_emenda"]
+            .count()
+            .rename(columns={"area_ajustada": "area", "id_emenda": "quantidade"})
+            .sort_values(by="quantidade", ascending=False)
+            .reset_index(drop=True)
+        )
+    else:
+        por_area_valor = pd.DataFrame(columns=["area", "valor_total"])
+        por_area_qtd = pd.DataFrame(columns=["area", "quantidade"])
+
+    # 2.1: Soma total de valor por deputado em reais
+    por_deputado_valor = (
+        df.groupby("parlamentar", as_index=False)["valor"]
+        .sum()
+        .rename(columns={"valor": "valor_total"})
+        .sort_values(by="valor_total", ascending=False)
+        .reset_index(drop=True)
+    )
+
+    # 2.2: Soma/valor por emenda (individual)
+    df_ranking_emendas = df.copy().sort_values(by="valor", ascending=False).reset_index(drop=True)
+    df_ranking_emendas["id_rotulo"] = df_ranking_emendas.apply(
+        lambda r: f"{r.get('id_emenda', 'Emenda')} ({r.get('parlamentar', 'Autor')} - R$ {float(r.get('valor', 0.0)):,.2f})",
+        axis=1,
+    )
+    cols_ranking = [c for c in ["id_rotulo", "id_emenda", "parlamentar", "area", "valor"] if c in df_ranking_emendas.columns]
+    ranking_emendas = df_ranking_emendas[cols_ranking]
+
+    # 3.1 e 3.2: Partido
+    df["partido_ajustado"] = df["partido"].fillna("Não informado")
+    por_partido_valor = (
+        df.groupby("partido_ajustado", as_index=False)["valor"]
+        .sum()
+        .rename(columns={"partido_ajustado": "partido", "valor": "valor_total"})
+        .sort_values(by="valor_total", ascending=False)
+        .reset_index(drop=True)
+    )
+    por_partido_qtd = (
+        df.groupby("partido_ajustado", as_index=False)["id_emenda"]
+        .count()
+        .rename(columns={"partido_ajustado": "partido", "id_emenda": "quantidade"})
+        .sort_values(by="quantidade", ascending=False)
+        .reset_index(drop=True)
+    )
+
+    # 4 e 5: CNPJs (50 maiores valores totais e 50 maiores emendas individuais)
+    df_cnpj = df[df["fornecedor_cnpj"].notna() & (df["fornecedor_cnpj"].astype(str).str.strip() != "")].copy()
+    if not df_cnpj.empty:
+        df_cnpj["cnpj_formatado"] = df_cnpj["fornecedor_cnpj"].apply(formatar_cpf_cnpj)
+        df_cnpj["fornecedor_nome"] = df_cnpj["fornecedor_nome"].fillna("Não informado")
+        df_cnpj["identificador_cnpj"] = df_cnpj.apply(
+            lambda r: f"{str(r['fornecedor_nome'])[:25]} ({r['cnpj_formatado']})",
+            axis=1,
+        )
+
+        por_cnpj_total_top50 = (
+            df_cnpj.groupby(["identificador_cnpj", "cnpj_formatado", "fornecedor_nome"], as_index=False)
+            .agg(
+                valor_total=("valor", "sum"),
+                quantidade_emendas=("id_emenda", "count"),
+            )
+            .sort_values(by="valor_total", ascending=False)
+            .head(50)
+            .reset_index(drop=True)
+        )
+
+        por_cnpj_maior_emenda_top50 = (
+            df_cnpj.groupby(["identificador_cnpj", "cnpj_formatado", "fornecedor_nome"], as_index=False)
+            .agg(
+                maior_valor=("valor", "max"),
+                quantidade_emendas=("id_emenda", "count"),
+            )
+            .sort_values(by="maior_valor", ascending=False)
+            .head(50)
+            .reset_index(drop=True)
+        )
+    else:
+        por_cnpj_total_top50 = pd.DataFrame(
+            columns=["identificador_cnpj", "cnpj_formatado", "fornecedor_nome", "valor_total", "quantidade_emendas"]
+        )
+        por_cnpj_maior_emenda_top50 = pd.DataFrame(
+            columns=["identificador_cnpj", "cnpj_formatado", "fornecedor_nome", "maior_valor", "quantidade_emendas"]
+        )
+
+    return {
+        "por_area_valor": por_area_valor,
+        "por_area_qtd": por_area_qtd,
+        "por_deputado_valor": por_deputado_valor,
+        "ranking_emendas": ranking_emendas,
+        "por_partido_valor": por_partido_valor,
+        "por_partido_qtd": por_partido_qtd,
+        "por_cnpj_total_top50": por_cnpj_total_top50,
+        "por_cnpj_maior_emenda_top50": por_cnpj_maior_emenda_top50,
+    }
+
+
 def obter_dados_perfil_municipio(
     codigo_ou_nome: str,
     db_path: Path | str | None = None,
@@ -331,7 +551,7 @@ def obter_dados_perfil_municipio(
             (codigo_ou_nome, codigo_ou_nome),
         ).fetchone()
         if not mun_row:
-            return {"resumo": {}, "emendas": pd.DataFrame(), "alertas": []}
+            return {"resumo": {}, "emendas": pd.DataFrame(), "detalhes": {}, "alertas": []}
         resumo = dict(mun_row)
         cod_ibge = str(resumo["codigo_ibge"])
         df_emendas = pd.read_sql_query(
@@ -345,9 +565,11 @@ def obter_dados_perfil_municipio(
             params=(cod_ibge,),
         )
 
+    detalhes = obter_metricas_detalhadas_municipio(df_emendas)
     return {
         "resumo": resumo,
         "emendas": df_emendas,
+        "detalhes": detalhes,
         "alertas": df_alertas.to_dict(orient="records"),
     }
 
@@ -745,9 +967,61 @@ def renderizar_pagina_perfil_parlamentar(st: Any, dados: dict[str, pd.DataFrame]
 
 
 def renderizar_pagina_perfil_municipio(st: Any, dados: dict[str, pd.DataFrame]) -> None:
-    """Renderiza a Página 4: Perfil do Município com população, total recebido, per capita e alertas."""
+    """Renderiza a Página 4: Perfil do Município com macrorregiões do IBGE, gráficos detalhados e alertas."""
     st.header("🗺️ Página 4 — Perfil do Município Catarinense")
     df_mun = dados["municipios"]
+    df_emendas_todas = dados.get("emendas", pd.DataFrame())
+
+    # --- Panorama Geral de Santa Catarina: Macrorregião (IBGE) vs. Município ---
+    st.subheader("📊 Panorama Geral: Macrorregião (IBGE) ou Município")
+    st.caption(
+        "Compare a alocação de recursos em Santa Catarina visualizando por Macrorregião oficial do IBGE "
+        "ou individualmente por Município."
+    )
+    col_sel_pan, _ = st.columns([2, 2])
+    with col_sel_pan:
+        modo_panorama = st.radio(
+            "Visualizar panorama por:",
+            ["Macrorregião (IBGE)", "Município"],
+            horizontal=True,
+            key="modo_panorama_sc",
+        )
+
+    col_pan1, col_pan2 = st.columns(2)
+    if modo_panorama == "Macrorregião (IBGE)":
+        totais_macro = obter_totais_por_macrorregiao(df_emendas_todas)
+        with col_pan1:
+            st.markdown("##### 💰 Valor Total das Emendas por Macrorregião (IBGE)")
+            if not totais_macro.empty:
+                st.bar_chart(totais_macro.set_index("macrorregiao")["valor_total"])
+            else:
+                st.caption("Sem dados de emendas.")
+        with col_pan2:
+            st.markdown("##### 🔢 Número Total de Emendas por Macrorregião (IBGE)")
+            if not totais_macro.empty:
+                st.bar_chart(totais_macro.set_index("macrorregiao")["quantidade_emendas"])
+            else:
+                st.caption("Sem dados de emendas.")
+    else:
+        totais_mun_todos = obter_totais_gerais_municipios(df_emendas_todas, df_mun)
+        with col_pan1:
+            st.markdown("##### 💰 Valor Total das Emendas por Município (Maiores Destinações)")
+            if not totais_mun_todos.empty:
+                st.bar_chart(totais_mun_todos.head(30).set_index("municipio")["valor_total"])
+            else:
+                st.caption("Sem dados de municípios.")
+        with col_pan2:
+            st.markdown("##### 🔢 Número Total de Emendas por Município (Maiores Quantidades)")
+            if not totais_mun_todos.empty:
+                totais_mun_qtd = totais_mun_todos.sort_values(by="quantidade_emendas", ascending=False)
+                st.bar_chart(totais_mun_qtd.head(30).set_index("municipio")["quantidade_emendas"])
+            else:
+                st.caption("Sem dados de municípios.")
+
+    st.markdown("---")
+
+    # --- Seletor e Indicadores do Município Específico ---
+    st.subheader("🎯 Seleção e Indicadores do Município")
     opcoes = [f"{r['municipio']} ({r['codigo_ibge']})" for _, r in df_mun.iterrows()]
     mapa_cod = {f"{r['municipio']} ({r['codigo_ibge']})": str(r["codigo_ibge"]) for _, r in df_mun.iterrows()}
 
@@ -755,6 +1029,7 @@ def renderizar_pagina_perfil_municipio(st: Any, dados: dict[str, pd.DataFrame]) 
     codigo_ibge = mapa_cod[escolha]
     perfil = obter_dados_perfil_municipio(codigo_ibge)
     resumo = perfil["resumo"]
+    detalhes = perfil.get("detalhes", {})
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("População (IBGE)", f"{int(resumo.get('populacao', 0)):,} hab.")
@@ -762,14 +1037,98 @@ def renderizar_pagina_perfil_municipio(st: Any, dados: dict[str, pd.DataFrame]) 
     c3.metric("Valor Per Capita", f"R$ {float(resumo.get('valor_per_capita', 0.0)):,.2f} / hab.")
     c4.metric("Emendas Recebidas", f"{int(resumo.get('quantidade_emendas', 0))}")
 
-    st.subheader("Alertas Associados ao Município")
+    # --- Gráficos Detalhados ANTES dos alertas ---
+    st.subheader(f"📈 Gráficos Detalhados: {resumo.get('municipio', escolha)}")
+
+    # 1.1 e 1.2: Áreas que o município recebeu emenda
+    st.markdown("#### 1. Áreas Temáticas Beneficiadas")
+    c_area1, c_area2 = st.columns(2)
+    with c_area1:
+        st.markdown("###### 1.1 Total em Reais (R$) por Área Beneficiada")
+        df_av = detalhes.get("por_area_valor", pd.DataFrame())
+        if not df_av.empty:
+            st.bar_chart(df_av.set_index("area")["valor_total"])
+        else:
+            st.caption("Sem emendas registradas para este município.")
+    with c_area2:
+        st.markdown("###### 1.2 Número de Emendas por Área Beneficiada")
+        df_aq = detalhes.get("por_area_qtd", pd.DataFrame())
+        if not df_aq.empty:
+            st.bar_chart(df_aq.set_index("area")["quantidade"])
+        else:
+            st.caption("Sem emendas registradas para este município.")
+
+    # 2.1 e 2.2: Deputados e Emendas Individuais
+    st.markdown("#### 2. Parlamentares e Emendas Individuais")
+    c_dep1, c_dep2 = st.columns(2)
+    with c_dep1:
+        st.markdown("###### 2.1 Soma Total de Valor por Deputado (R$)")
+        df_dep = detalhes.get("por_deputado_valor", pd.DataFrame())
+        if not df_dep.empty:
+            st.bar_chart(df_dep.set_index("parlamentar")["valor_total"])
+        else:
+            st.caption("Sem emendas registradas para este município.")
+    with c_dep2:
+        st.markdown("###### 2.2 Soma Total do Valor por Emenda Individual (R$)")
+        df_rank = detalhes.get("ranking_emendas", pd.DataFrame())
+        if not df_rank.empty:
+            st.bar_chart(df_rank.head(40).set_index("id_rotulo")["valor"])
+        else:
+            st.caption("Sem emendas registradas para este município.")
+
+    # 3.1 e 3.2: Partidos Políticos
+    st.markdown("#### 3. Distribuição por Partido Político")
+    c_part1, c_part2 = st.columns(2)
+    with c_part1:
+        st.markdown("###### 3.1 Valor Total por Partido (R$)")
+        df_pv = detalhes.get("por_partido_valor", pd.DataFrame())
+        if not df_pv.empty:
+            st.bar_chart(df_pv.set_index("partido")["valor_total"])
+        else:
+            st.caption("Sem emendas registradas para este município.")
+    with c_part2:
+        st.markdown("###### 3.2 Número de Emendas por Partido")
+        df_pq = detalhes.get("por_partido_qtd", pd.DataFrame())
+        if not df_pq.empty:
+            st.bar_chart(df_pq.set_index("partido")["quantidade"])
+        else:
+            st.caption("Sem emendas registradas para este município.")
+
+    # 4 e 5: Favorecidos por CNPJ (50 maiores valores totais e 50 maiores individuais)
+    st.markdown("#### 4 e 5. Favorecidos e Credores por CNPJ (Top 50)")
+    c_cnpj1, c_cnpj2 = st.columns(2)
+    with c_cnpj1:
+        st.markdown("###### 4. Valor Total por CNPJ (50 Maiores Valores)")
+        df_ctop = detalhes.get("por_cnpj_total_top50", pd.DataFrame())
+        if not df_ctop.empty:
+            st.bar_chart(df_ctop.set_index("identificador_cnpj")["valor_total"])
+        else:
+            st.caption("Nenhum favorecido/CNPJ registrado para este município.")
+    with c_cnpj2:
+        st.markdown("###### 5. Valor da Maior Emenda por CNPJ (50 Maiores Valores)")
+        df_cmax = detalhes.get("por_cnpj_maior_emenda_top50", pd.DataFrame())
+        if not df_cmax.empty:
+            st.bar_chart(df_cmax.set_index("identificador_cnpj")["maior_valor"])
+        else:
+            st.caption("Nenhum favorecido/CNPJ registrado para este município.")
+
+    with st.expander("Ver tabela detalhada dos favorecidos (CNPJ) deste município"):
+        if not df_ctop.empty:
+            df_tab_mun_cnpj = df_ctop[["cnpj_formatado", "fornecedor_nome", "quantidade_emendas", "valor_total"]].copy()
+            df_tab_mun_cnpj.columns = ["CNPJ", "Favorecido", "Nº de Emendas", "Valor Total (R$)"]
+            st.dataframe(df_tab_mun_cnpj, use_container_width=True, hide_index=True)
+
+    # --- Alertas Associados ao Município ---
+    st.markdown("---")
+    st.subheader("⚠️ Alertas Associados ao Município")
     if perfil["alertas"]:
         for alerta in perfil["alertas"]:
             st.warning(f"**[{alerta['pontuacao']} pts] {alerta['tipo']}**: {alerta['justificativa']}")
     else:
         st.success("Nenhum alerta registrado para este município.")
 
-    st.subheader("Emendas Destinadas ao Município")
+    # --- Emendas Destinadas ao Município ---
+    st.subheader("📋 Emendas Destinadas ao Município")
     st.dataframe(perfil["emendas"], use_container_width=True, hide_index=True)
 
 

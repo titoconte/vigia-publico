@@ -9,14 +9,18 @@ from app import (
     AVISO_ETICO_FRONTEND,
     calcular_valor_por_populacao_filtrada,
     carregar_dados_painel,
+    carregar_mapa_macrorregioes_sc,
     eh_bancada_regional,
     filtrar_emendas_explorador,
     formatar_cpf_cnpj,
     obter_dados_perfil_municipio,
     obter_dados_perfil_parlamentar,
+    obter_metricas_detalhadas_municipio,
     obter_quantidade_emendas_por_autor,
+    obter_totais_gerais_municipios,
     obter_totais_por_ano,
     obter_totais_por_cpf_cnpj,
+    obter_totais_por_macrorregiao,
     obter_totais_por_municipio,
     obter_totais_por_parlamentar,
     obter_totais_por_partido,
@@ -299,6 +303,111 @@ def test_obter_totais_por_cpf_cnpj_e_formatacao(tmp_path: Path) -> None:
     # 3. Caso vazio
     vazio_cpf = obter_totais_por_cpf_cnpj(df_emendas.iloc[0:0])
     assert vazio_cpf.empty
+
+
+def test_macrorregioes_ibge_sc_e_totais(tmp_path: Path) -> None:
+    """Verifica o carregamento do mapa IBGE e os totais de emendas por Macrorregião de Santa Catarina."""
+    # 1. Mapa de macrorregiões
+    mapa = carregar_mapa_macrorregioes_sc()
+    assert isinstance(mapa, dict)
+    assert len(mapa) >= 295
+    assert mapa.get("4205407") == "Grande Florianópolis"
+
+    # Caso arquivo inexistente
+    mapa_inexistente = carregar_mapa_macrorregioes_sc(tmp_path / "nao_existe.json")
+    assert mapa_inexistente == {}
+
+    # 2. Agregação por Macrorregião com dados reais do banco
+    db_path = _preparar_banco_frontend(tmp_path)
+    dados = carregar_dados_painel(db_path=db_path)
+    df_emendas = dados["emendas"]
+
+    totais_macro = obter_totais_por_macrorregiao(df_emendas, mapa)
+    assert not totais_macro.empty
+    assert "macrorregiao" in totais_macro.columns
+    assert "valor_total" in totais_macro.columns
+    assert "quantidade_emendas" in totais_macro.columns
+
+    # A soma das macrorregiões deve bater 100% com o total das emendas
+    assert round(totais_macro["valor_total"].sum(), 2) == round(df_emendas["valor"].sum(), 2)
+    assert totais_macro["quantidade_emendas"].sum() == len(df_emendas)
+
+    # 3. Caso de dataframe vazio
+    totais_vazio = obter_totais_por_macrorregiao(df_emendas.iloc[0:0], mapa)
+    assert totais_vazio.empty
+
+
+def test_obter_totais_gerais_municipios(tmp_path: Path) -> None:
+    """Verifica a consolidação geral de emendas por município em SC para o panorama comparativo."""
+    db_path = _preparar_banco_frontend(tmp_path)
+    dados = carregar_dados_painel(db_path=db_path)
+    df_emendas = dados["emendas"]
+    df_municipios = dados["municipios"]
+
+    resultado = obter_totais_gerais_municipios(df_emendas, df_municipios)
+    assert not resultado.empty
+    assert len(resultado) == len(df_municipios)
+    assert "municipio" in resultado.columns
+    assert "valor_total" in resultado.columns
+    assert "quantidade_emendas" in resultado.columns
+
+    # Municípios com emendas devem ter valor maior que zero
+    assert resultado["valor_total"].max() > 0
+
+
+def test_obter_metricas_detalhadas_municipio(tmp_path: Path) -> None:
+    """Verifica as 8 métricas detalhadas do município antes dos alertas (áreas, deputados, emendas, partidos, CNPJ)."""
+    db_path = _preparar_banco_frontend(tmp_path)
+    dados = carregar_dados_painel(db_path=db_path)
+    df_emendas = dados["emendas"]
+
+    # Testa com emendas de Florianópolis
+    df_floripa = df_emendas[df_emendas["municipio"] == "Florianópolis"]
+    assert not df_floripa.empty
+
+    detalhes = obter_metricas_detalhadas_municipio(df_floripa)
+    assert isinstance(detalhes, dict)
+
+    # 1.1 e 1.2: Áreas
+    assert not detalhes["por_area_valor"].empty
+    assert round(detalhes["por_area_valor"]["valor_total"].sum(), 2) == round(df_floripa["valor"].sum(), 2)
+    assert not detalhes["por_area_qtd"].empty
+    assert detalhes["por_area_qtd"]["quantidade"].sum() == len(df_floripa)
+
+    # 2.1 e 2.2: Deputados e Emendas Individuais
+    assert not detalhes["por_deputado_valor"].empty
+    assert round(detalhes["por_deputado_valor"]["valor_total"].sum(), 2) == round(df_floripa["valor"].sum(), 2)
+    assert not detalhes["ranking_emendas"].empty
+    assert len(detalhes["ranking_emendas"]) == len(df_floripa)
+    assert "id_rotulo" in detalhes["ranking_emendas"].columns
+
+    # 3.1 e 3.2: Partidos
+    assert not detalhes["por_partido_valor"].empty
+    assert round(detalhes["por_partido_valor"]["valor_total"].sum(), 2) == round(df_floripa["valor"].sum(), 2)
+    assert not detalhes["por_partido_qtd"].empty
+    assert detalhes["por_partido_qtd"]["quantidade"].sum() == len(df_floripa)
+
+    # 4 e 5: CNPJ (Top 50)
+    assert not detalhes["por_cnpj_total_top50"].empty
+    assert len(detalhes["por_cnpj_total_top50"]) <= 50
+    assert "identificador_cnpj" in detalhes["por_cnpj_total_top50"].columns
+    assert "valor_total" in detalhes["por_cnpj_total_top50"].columns
+
+    assert not detalhes["por_cnpj_maior_emenda_top50"].empty
+    assert len(detalhes["por_cnpj_maior_emenda_top50"]) <= 50
+    assert "identificador_cnpj" in detalhes["por_cnpj_maior_emenda_top50"].columns
+    assert "maior_valor" in detalhes["por_cnpj_maior_emenda_top50"].columns
+
+    # 6. Verifica integração com obter_dados_perfil_municipio
+    perfil_mun = obter_dados_perfil_municipio("4205407", db_path=db_path)
+    assert "detalhes" in perfil_mun
+    assert not perfil_mun["detalhes"]["por_area_valor"].empty
+
+    # 7. Caso de dataframe vazio
+    detalhes_vazio = obter_metricas_detalhadas_municipio(df_emendas.iloc[0:0])
+    assert detalhes_vazio["por_area_valor"].empty
+    assert detalhes_vazio["por_cnpj_total_top50"].empty
+
 
 
 
