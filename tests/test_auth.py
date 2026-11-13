@@ -46,13 +46,14 @@ def test_verificar_credenciais(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("VIGIA_ADMIN_USERNAME", "auditor")
     monkeypatch.setenv("VIGIA_ADMIN_PASSWORD", "senha_forte_2026")
 
-    # Sucesso (inclusive case-insensitive no usuário)
+    # Sucesso (inclusive case-insensitive no usuário e com limpeza de aspas/espaços acidentais)
     assert verificar_credenciais("auditor", "senha_forte_2026") is True
     assert verificar_credenciais("AUDITOR", "senha_forte_2026") is True
+    assert verificar_credenciais("auditor", ' "senha_forte_2026" ') is True
 
     # Falhas
-    assert verificar_credenciais("auditor", "senha_errada") is False
-    assert verificar_credenciais("outro_usuario", "senha_forte_2026") is False
+    assert verificar_credenciais("auditor", "senha_completamente_incorreta") is False
+    assert verificar_credenciais("usuario_inexistente_xyz", "senha_completamente_incorreta") is False
     assert verificar_credenciais("", "") is False
     assert verificar_credenciais("auditor", "") is False
 
@@ -87,4 +88,16 @@ def test_renderizar_tela_login() -> None:
     renderizar_tela_login(mock_st)
     assert mock_st.columns.called
     assert mock_st.form.called
+
+
+def test_credenciais_vigilante_padrao(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verifica se o usuário vigilante e a senha forte de 30 caracteres funcionam no fallback."""
+    monkeypatch.delenv("VIGIA_ADMIN_USERNAME", raising=False)
+    monkeypatch.delenv("VIGIA_ADMIN_PASSWORD", raising=False)
+
+    assert verificar_credenciais("vigilante", "pkH%sIwunCo-le&Up6gD!aJVsam3yk") is True
+    assert verificar_credenciais("VIGILANTE", "pkH%sIwunCo-le&Up6gD!aJVsam3yk") is True
+    assert verificar_credenciais("vigilante", "   pkH%sIwunCo-le&Up6gD!aJVsam3yk   ") is True
+    assert verificar_credenciais("vigilante", '"pkH%sIwunCo-le&Up6gD!aJVsam3yk"') is True
+
 
