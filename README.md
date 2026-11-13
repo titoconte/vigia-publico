@@ -93,7 +93,7 @@ O painel abrirá em `http://localhost:8501` com as 5 páginas:
 1. **Painel de Alertas** (ordenado por pontuação, filtros, memória de cálculo e botões de feedback)
 2. **Explorador de Emendas** (filtros por autor, município, área e grupo de CNPJ — *CNPJs de Municípios* vs. *Outros CNPJs* —, métricas comparativas, gráficos por grupo e seção expansível de CNAEs principal e secundários)
 3. **Perfil do Parlamentar** (totais por fase orçamentária, separação entre CNPJs de Municípios e Outros CNPJs, seção expansível de CNAEs dos favorecidos e alertas associados)
-4. **Perfil do Município** (população IBGE, total recebido, valor *per capita*, separação de favorecidos por grupo de CNPJ, consulta expansível de CNAEs e alertas)
+4. **Perfil do Município** (população IBGE, total recebido, valor *per capita*, separação de favorecidos e filtro direto na tabela de emendas destinadas ao município entre *CNPJs de Municípios* e *Outros CNPJs*, consulta expansível de CNAEs e alertas)
 5. **Regras e Metodologia** (documentação transparente dos critérios estatísticos e cadastrais de cada regra)
 
 ### 6. Executar o Agendador Semanal e Bot do Telegram

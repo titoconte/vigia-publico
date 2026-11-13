@@ -3,6 +3,12 @@
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
+## [1.2.1] - 2026-11-13
+
+### 🚀 Novas Funcionalidades
+- **`[app.py]`**: Adição de filtro dedicado por grupo de CNPJ (`Todos`, `CNPJs de Municípios` e `Outros CNPJs`) diretamente na tabela **Emendas Destinadas ao Município** da aba **4. Perfil do Município**, acompanhado de função auxiliar `filtrar_emendas_destinadas_municipio`, coluna explícita `grupo_cnpj` posicionada antes do favorecido e resumo instantâneo de quantidade e valor total filtrado.
+- **`[tests/test_frontend_helpers.py]`**: Cobertura automatizada em TDD validando a filtragem isolada de `CNPJs de Municípios` vs. `Outros CNPJs` e a renderização do seletor na seção final de emendas municipais.
+
 ## [1.2.0] - 2026-11-13
 
 ### 🚀 Novas Funcionalidades
