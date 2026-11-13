@@ -11,6 +11,7 @@ from typing import Any
 import pandas as pd
 import streamlit as st
 
+from auth import fazer_logout, renderizar_tela_login, usuario_esta_autenticado
 from cnpj_validator import (
     check_cnpj_anomalies,
     check_cnpj_status,
@@ -1350,7 +1351,7 @@ def carregar_estilos_customizados(st: Any, caminho_css: Path | str | None = None
 
 
 def executar_interface_streamlit() -> None:
-    """Inicializa a aplicação Streamlit com navegação centralizada em abas superiores (sem sidebar) e alta performance."""
+    """Inicializa a aplicação Streamlit com autenticação segura, layout em abas e aviso ético."""
     st.set_page_config(
         page_title="Vigia Público SC — Painel de Inteligência & Auditoria Cívica",
         page_icon="🔍",
@@ -1360,8 +1361,15 @@ def executar_interface_streamlit() -> None:
 
     carregar_estilos_customizados(st)
 
+    # Bloqueio de acesso: se não autenticado, renderiza exclusivamente a tela de login
+    if not usuario_esta_autenticado(st):
+        renderizar_tela_login(st)
+        st.stop()
+
+    usuario_ativo = str(st.session_state.get("usuario_logado") or "Admin")
+
     # Topbar institucional e moderna de Painel de Inteligência com controles rápidos
-    c_titulo, c_badge = st.columns([3.6, 1.4])
+    c_titulo, c_badge = st.columns([3.4, 1.6])
     with c_titulo:
         st.markdown(
             """
@@ -1387,14 +1395,17 @@ def executar_interface_streamlit() -> None:
             """,
             unsafe_allow_html=True,
         )
-        c_perf, c_btn = st.columns([1.5, 1.5])
-        with c_perf:
-            st.caption("⚡ Alta Performance Ativa")
-        with c_btn:
-            if st.button("🔄 Limpar Cache", use_container_width=True, help="Força a recarga e invalida caches em memória."):
+        c_user, c_btn_cache, c_btn_logout = st.columns([1.2, 1.2, 1.0])
+        with c_user:
+            st.caption(f"👤 `{usuario_ativo}`")
+        with c_btn_cache:
+            if st.button("🔄 Cache", use_container_width=True, help="Força a recarga e invalida caches em memória."):
                 limpar_cache_aplicacao()
                 st.success("Caches limpos com sucesso!")
                 st.rerun()
+        with c_btn_logout:
+            if st.button("🚪 Sair", use_container_width=True, help="Encerrar sessão de forma segura."):
+                fazer_logout(st)
 
     st.markdown("<hr style='margin: 8px 0 14px 0;'>", unsafe_allow_html=True)
     st.warning(AVISO_ETICO_FRONTEND)

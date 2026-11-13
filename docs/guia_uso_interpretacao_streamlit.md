@@ -73,6 +73,20 @@ Para garantir respostas instantâneas ao alternar entre páginas, filtros e muni
 5. **Botão de Recarga Forçada:**
    * No cabeçalho superior (topbar), o botão **`🔄 Limpar Cache`** permite que o usuário limpe instantaneamente toda a memória de trabalho e recarregue os dados mais recentes do disco.
 
+### 2.5. Arquitetura de Alta Performance e Caching Inteligente
+Para garantir respostas instantâneas ao alternar entre páginas, filtros e municípios, o sistema implementa:
+1. **Cache de Dados em Memória (`@st.cache_data`):**
+   * A base consolidada de 4.176 emendas, agregados e alertas é mantida em memória RAM, eliminando leituras repetitivas do SQLite a cada clique.
+   * As análises analíticas de perfil de parlamentar ([`obter_dados_perfil_parlamentar`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/app.py)), perfil municipal ([`obter_dados_perfil_municipio`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/app.py)) e fluxo de recursos ([`check_fund_usage`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/fund_tracker.py)) são cacheadas por até 30 minutos.
+2. **Invalidação Automática por Timestamp do Banco (`mtime`):**
+   * Qualquer alteração no banco SQLite (`data/vigia_publico.db`), seja por nova coleta ou reprocessamento do ETL, invalida o cache automaticamente sem intervenção manual.
+3. **Cache de Processo em Validação de CNPJs:**
+   * Evita repetição de DDLs de tabelas SQLite e armazena os 1.200+ fornecedores em dicionário Python de processo (`_MEM_CACHE_CNPJ`), reduzindo o tempo de verificação de fluxo de recursos de ~0.50s para menos de 0.005s por consulta.
+4. **Configurações de Servidor (`fastReruns` e `enableStaticServing`):**
+   * Em `.streamlit/config.toml`, a opção `fastReruns = true` descarta execuções intermediárias obsoletas quando o usuário interage rapidamente com múltiplos filtros.
+5. **Botão de Recarga Forçada:**
+   * No cabeçalho superior (topbar), o botão **`🔄 Limpar Cache`** permite que o usuário limpe instantaneamente toda a memória de trabalho e recarregue os dados mais recentes do disco.
+
 ---
 
 ## 3. Guia Módulo por Módulo: Como Usar e Como Interpretar
