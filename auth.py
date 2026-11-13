@@ -13,7 +13,7 @@ import os
 from typing import Any
 
 # Credenciais padrão para ambiente de desenvolvimento local caso nada seja configurado
-DEFAULT_USERNAME = "admin"
+DEFAULT_USERNAME = "vigilante"
 DEFAULT_PASSWORD = "vigia@2026"
 
 
@@ -23,33 +23,33 @@ def calcular_hash_senha(senha: str) -> str:
 
 
 def obter_credenciais_configuradas() -> dict[str, str]:
-    """Recupera o usuário e a senha configurados no cofre st.secrets ou variáveis de ambiente.
+    """Recupera o usuário e a senha configurados em variáveis de ambiente, cofre st.secrets ou fallback.
     
     Ordem de precedência:
-    1. st.secrets (Configurado em Settings -> Secrets no Streamlit Cloud);
-    2. Variáveis de ambiente VIGIA_ADMIN_USERNAME e VIGIA_ADMIN_PASSWORD;
+    1. Variáveis de ambiente VIGIA_ADMIN_USERNAME e VIGIA_ADMIN_PASSWORD (sobrescrevem para CI/CD e testes);
+    2. st.secrets (Configurado em Settings -> Secrets no Streamlit Cloud ou .streamlit/secrets.toml);
     3. Valores padrão de desenvolvimento local.
     """
-    usuario = ""
-    senha = ""
+    # 1. Variáveis de ambiente explícitas
+    usuario = os.getenv("VIGIA_ADMIN_USERNAME", "").strip()
+    senha = os.getenv("VIGIA_ADMIN_PASSWORD", "").strip()
 
-    # 1. Tenta carregar do cofre st.secrets do Streamlit
-    try:
-        import streamlit as st
-        if hasattr(st, "secrets") and "auth" in st.secrets:
-            usuario = str(st.secrets["auth"].get("username", "")).strip()
-            senha = str(st.secrets["auth"].get("password", "")).strip()
-        elif hasattr(st, "secrets") and "VIGIA_ADMIN_PASSWORD" in st.secrets:
-            usuario = str(st.secrets.get("VIGIA_ADMIN_USERNAME", DEFAULT_USERNAME)).strip()
-            senha = str(st.secrets.get("VIGIA_ADMIN_PASSWORD", "")).strip()
-    except Exception:
-        pass
-
-    # 2. Tenta carregar de variáveis de ambiente se não encontrou em secrets
-    if not usuario:
-        usuario = os.getenv("VIGIA_ADMIN_USERNAME", "").strip()
-    if not senha:
-        senha = os.getenv("VIGIA_ADMIN_PASSWORD", "").strip()
+    # 2. Tenta carregar do cofre st.secrets do Streamlit se não veio por env
+    if not usuario or not senha:
+        try:
+            import streamlit as st
+            if hasattr(st, "secrets") and "auth" in st.secrets:
+                if not usuario:
+                    usuario = str(st.secrets["auth"].get("username", "")).strip()
+                if not senha:
+                    senha = str(st.secrets["auth"].get("password", "")).strip()
+            elif hasattr(st, "secrets") and "VIGIA_ADMIN_PASSWORD" in st.secrets:
+                if not usuario:
+                    usuario = str(st.secrets.get("VIGIA_ADMIN_USERNAME", DEFAULT_USERNAME)).strip()
+                if not senha:
+                    senha = str(st.secrets.get("VIGIA_ADMIN_PASSWORD", "")).strip()
+        except Exception:
+            pass
 
     # 3. Fallback de desenvolvimento local
     if not usuario:
@@ -154,3 +154,4 @@ def renderizar_tela_login(st: Any) -> None:
             "🔒 **Segurança e Privacidade:** Credenciais protegidas via cofre `st.secrets` criptografado "
             "sem exposição de senhas no código ou repositório público."
         )
+

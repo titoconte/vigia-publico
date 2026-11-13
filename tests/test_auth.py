@@ -87,3 +87,4 @@ def test_renderizar_tela_login() -> None:
     renderizar_tela_login(mock_st)
     assert mock_st.columns.called
     assert mock_st.form.called
+

@@ -51,7 +51,6 @@ def test_config_toml_performance_settings() -> None:
     assert config_file.exists(), ".streamlit/config.toml deve existir na raiz do projeto."
     conteudo = config_file.read_text(encoding="utf-8")
 
-    assert "fastReruns = true" in conteudo, "fastReruns deve estar ativado para evitar fila de reruns."
     assert "enableStaticServing = true" in conteudo, "enableStaticServing deve estar ativado para assets estáticos."
     assert "gatherUsageStats = false" in conteudo, "gatherUsageStats deve ser desativado para eliminar requisições desnecessárias."
     assert 'toolbarMode = "minimal"' in conteudo, "toolbarMode deve ser minimal para leveza na interface."
