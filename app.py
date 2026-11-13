@@ -9,10 +9,12 @@ import re
 from typing import Any
 
 import pandas as pd
+import streamlit as st
 
 from cnpj_validator import (
     check_cnpj_anomalies,
     check_cnpj_status,
+    limpar_mem_cache_cnpj,
     obter_link_consulta_oficial,
     sincronizar_cnpjs_emendas_no_cache,
 )
@@ -27,9 +29,19 @@ AVISO_ETICO_FRONTEND = (
 )
 
 
-def carregar_dados_painel(db_path: Path | str | None = None) -> dict[str, pd.DataFrame]:
-    """Carrega os DataFrames de alertas, emendas, parlamentares e municípios a partir do banco de dados."""
-    caminho = garantir_dados_iniciais(db_path)
+def limpar_cache_aplicacao() -> None:
+    """Limpa todos os caches de dados em memória do Streamlit e de CNPJs."""
+    limpar_mem_cache_cnpj()
+    try:
+        st.cache_data.clear()
+    except Exception:
+        pass
+
+
+@st.cache_data(show_spinner="Carregando base de inteligência de emendas...", ttl=3600)
+def _carregar_dados_painel_cached(caminho_str: str, mtime: float) -> dict[str, pd.DataFrame]:
+    """Carrega os dados estruturados do banco SQLite com cache de alta performance."""
+    caminho = Path(caminho_str)
     sincronizar_cnpjs_emendas_no_cache(caminho)
     with conectar_banco(caminho) as conn:
         df_alertas = pd.read_sql_query("SELECT * FROM alertas ORDER BY pontuacao DESC, valor DESC", conn)
@@ -46,6 +58,14 @@ def carregar_dados_painel(db_path: Path | str | None = None) -> dict[str, pd.Dat
         "parlamentares": df_parlamentares,
         "municipios": df_municipios,
     }
+
+
+def carregar_dados_painel(db_path: Path | str | None = None) -> dict[str, pd.DataFrame]:
+    """Carrega os DataFrames de alertas, emendas, parlamentares e municípios com cache inteligente."""
+    caminho = garantir_dados_iniciais(db_path)
+    caminho_real = resolver_caminho_sqlite(caminho)
+    mtime = caminho_real.stat().st_mtime if caminho_real.exists() else 0.0
+    return _carregar_dados_painel_cached(str(caminho_real.resolve()), mtime)
 
 
 def eh_bancada_regional(nome_autor: Any) -> bool:
@@ -280,12 +300,14 @@ def obter_totais_por_cpf_cnpj(
     return agg
 
 
-def obter_dados_perfil_parlamentar(
+@st.cache_data(show_spinner=False, ttl=1800)
+def _obter_dados_perfil_parlamentar_cached(
     parlamentar: str,
-    db_path: Path | str | None = None,
+    caminho_str: str,
+    mtime: float,
 ) -> dict[str, Any]:
-    """Consolida os totais, distribuição por área, emendas e alertas associados a um parlamentar (Página 3)."""
-    caminho = resolver_caminho_sqlite(db_path)
+    """Recupera e agrega dados do parlamentar com cache em memória do Streamlit."""
+    caminho = Path(caminho_str)
     with conectar_banco(caminho) as conn:
         resumo_row = conn.execute(
             "SELECT * FROM agregados_parlamentar WHERE parlamentar = ?",
@@ -327,20 +349,34 @@ def obter_dados_perfil_parlamentar(
     }
 
 
-def carregar_mapa_macrorregioes_sc(caminho_json: Path | str | None = None) -> dict[str, str]:
-    """Carrega o mapeamento oficial de código IBGE (7 dígitos) para Macrorregião (Mesorregião IBGE) de SC.
-    
-    Lê o arquivo data/raw/macrorregioes_ibge_sc.json obtido da API de localidades do IBGE.
-    """
-    if caminho_json is None:
-        caminho_json = Path("data/raw/macrorregioes_ibge_sc.json")
-    else:
-        caminho_json = Path(caminho_json)
+def obter_dados_perfil_parlamentar(
+    parlamentar: str,
+    db_path: Path | str | None = None,
+) -> dict[str, Any]:
+    """Consolida os totais, distribuição por área, emendas e alertas associados a um parlamentar (Página 3) com cache."""
+    caminho = resolver_caminho_sqlite(db_path)
+    mtime = caminho.stat().st_mtime if caminho.exists() else 0.0
+    return _obter_dados_perfil_parlamentar_cached(str(parlamentar), str(caminho.resolve()), mtime)
 
+
+@st.cache_data(show_spinner=False)
+def _carregar_mapa_macrorregioes_sc_cached(caminho_str: str, mtime: float) -> dict[str, str]:
+    """Lê o mapeamento do IBGE de Macrorregiões de SC com cache em memória."""
+    caminho_json = Path(caminho_str)
     if caminho_json.exists():
         with open(caminho_json, encoding="utf-8") as f:
             return json.load(f)
     return {}
+
+
+def carregar_mapa_macrorregioes_sc(caminho_json: Path | str | None = None) -> dict[str, str]:
+    """Carrega o mapeamento oficial de código IBGE (7 dígitos) para Macrorregião (Mesorregião IBGE) de SC com cache."""
+    if caminho_json is None:
+        caminho_json = Path("data/raw/macrorregioes_ibge_sc.json")
+    else:
+        caminho_json = Path(caminho_json)
+    mtime = caminho_json.stat().st_mtime if caminho_json.exists() else 0.0
+    return _carregar_mapa_macrorregioes_sc_cached(str(caminho_json.resolve()), mtime)
 
 
 def obter_totais_por_macrorregiao(
@@ -547,12 +583,14 @@ def obter_metricas_detalhadas_municipio(df_emendas_mun: pd.DataFrame) -> dict[st
     }
 
 
-def obter_dados_perfil_municipio(
+@st.cache_data(show_spinner=False, ttl=1800)
+def _obter_dados_perfil_municipio_cached(
     codigo_ou_nome: str,
-    db_path: Path | str | None = None,
+    caminho_str: str,
+    mtime: float,
 ) -> dict[str, Any]:
-    """Consolida população, total recebido, per capita, emendas e alertas de um município (Página 4)."""
-    caminho = resolver_caminho_sqlite(db_path)
+    """Consolida métricas e análises do perfil do município com cache em memória do Streamlit."""
+    caminho = Path(caminho_str)
     with conectar_banco(caminho) as conn:
         mun_row = conn.execute(
             "SELECT * FROM agregados_municipio WHERE codigo_ibge = ? OR municipio = ?",
@@ -580,6 +618,16 @@ def obter_dados_perfil_municipio(
         "detalhes": detalhes,
         "alertas": df_alertas.to_dict(orient="records"),
     }
+
+
+def obter_dados_perfil_municipio(
+    codigo_ou_nome: str,
+    db_path: Path | str | None = None,
+) -> dict[str, Any]:
+    """Consolida população, total recebido, per capita, emendas e alertas de um município (Página 4) com cache."""
+    caminho = resolver_caminho_sqlite(db_path)
+    mtime = caminho.stat().st_mtime if caminho.exists() else 0.0
+    return _obter_dados_perfil_municipio_cached(str(codigo_ou_nome), str(caminho.resolve()), mtime)
 
 
 def registrar_feedback_local(
@@ -1282,6 +1330,12 @@ def renderizar_pagina_fluxo_recursos(st: Any, dados: dict[str, pd.DataFrame]) ->
         st.info("Nenhuma emenda registrada para este município na base de dados.")
 
 
+@st.cache_data(show_spinner=False)
+def _ler_css_customizado_cached(caminho_str: str, mtime: float) -> str:
+    """Lê o arquivo de estilos CSS com cache em memória para evitar I/O repetitivo a cada rerun."""
+    return Path(caminho_str).read_text(encoding="utf-8")
+
+
 def carregar_estilos_customizados(st: Any, caminho_css: Path | str | None = None) -> None:
     """Carrega e injeta o CSS customizado com identidade visual de Painel de Inteligência & Investigação."""
     if caminho_css is None:
@@ -1290,14 +1344,13 @@ def carregar_estilos_customizados(st: Any, caminho_css: Path | str | None = None
         caminho_css = Path(caminho_css)
 
     if caminho_css.exists():
-        css = caminho_css.read_text(encoding="utf-8")
+        mtime = caminho_css.stat().st_mtime
+        css = _ler_css_customizado_cached(str(caminho_css.resolve()), mtime)
         st.markdown(f"<style>\n{css}\n</style>", unsafe_allow_html=True)
 
 
 def executar_interface_streamlit() -> None:
     """Inicializa a aplicação Streamlit com tema dark mode profissional de Painel de Inteligência, navegação e aviso ético."""
-    import streamlit as st
-
     st.set_page_config(
         page_title="Vigia Público SC — Painel de Inteligência & Auditoria Cívica",
         page_icon="🔍",
@@ -1356,6 +1409,20 @@ def executar_interface_streamlit() -> None:
             "5. Rastreabilidade & Fluxo de Recursos (TCE/SC)",
         ],
     )
+    st.sidebar.markdown("---")
+    st.sidebar.markdown(
+        """
+        <div style="font-size: 0.78rem; color: #8B949E; margin-bottom: 8px;">
+            ⚡ <b>Alta Performance Ativa</b>: Dados cacheados em memória com invalidação automática por data do banco.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.sidebar.button("🔄 Atualizar Base / Limpar Cache", use_container_width=True, help="Força a recarga e invalida caches em memória."):
+        limpar_cache_aplicacao()
+        st.sidebar.success("Caches limpos com sucesso!")
+        st.rerun()
+
     st.sidebar.markdown("---")
     st.sidebar.caption(
         "Dados públicos: TCE/SC, IBGE, Portal de Dados Abertos SC e Receita Federal. "

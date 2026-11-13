@@ -94,9 +94,24 @@ def normalizar_situacao_cadastral(situacao_bruta: str | None) -> str:
     return SITUACAO_ATIVA
 
 
+# Cache em memória e controle de inicialização para alta performance
+_TABELAS_CNPJ_CACHE_INICIALIZADAS: set[str] = set()
+_MEM_CACHE_CNPJ: dict[tuple[str, str], dict[str, Any]] = {}
+
+
+def limpar_mem_cache_cnpj() -> None:
+    """Limpa o cache em memória de CNPJs e o registro de tabelas inicializadas (útil para testes e recargas)."""
+    _MEM_CACHE_CNPJ.clear()
+    _TABELAS_CNPJ_CACHE_INICIALIZADAS.clear()
+
+
 def inicializar_tabela_cnpj_cache(db_path: Path | str | None = None) -> None:
-    """Cria a tabela cnpj_cache e seus índices no banco SQLite se não existirem."""
+    """Cria a tabela cnpj_cache e seus índices no banco SQLite se não existirem (com cache de inicialização)."""
     caminho = resolver_caminho_sqlite(db_path)
+    caminho_chave = str(caminho.resolve())
+    if caminho_chave in _TABELAS_CNPJ_CACHE_INICIALIZADAS:
+        return
+
     with conectar_banco(caminho) as conn:
         conn.execute(
             """
@@ -124,15 +139,17 @@ def inicializar_tabela_cnpj_cache(db_path: Path | str | None = None) -> None:
         conn.execute("CREATE INDEX IF NOT EXISTS idx_cnpj_cache_natureza ON cnpj_cache (natureza_juridica_codigo)")
         conn.commit()
 
+    _TABELAS_CNPJ_CACHE_INICIALIZADAS.add(caminho_chave)
+
 
 def salvar_cnpj_cache(dados: dict[str, Any], db_path: Path | str | None = None) -> None:
-    """Insere ou atualiza os dados cadastrais enriquecidos de um CNPJ no cache local persistente."""
+    """Insere ou atualiza os dados cadastrais enriquecidos de um CNPJ no cache local persistente e na memória."""
     cnpj_limpo = limpar_cnpj(dados.get("cnpj"))
     if not cnpj_limpo or len(cnpj_limpo) != 14:
         return
 
-    inicializar_tabela_cnpj_cache(db_path)
     caminho = resolver_caminho_sqlite(db_path)
+    inicializar_tabela_cnpj_cache(caminho)
     agora = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     situacao = normalizar_situacao_cadastral(dados.get("situacao_cadastral"))
@@ -142,6 +159,25 @@ def salvar_cnpj_cache(dados: dict[str, Any], db_path: Path | str | None = None) 
         match_cod = re.search(r"\b(\d{4}|\d{3}-\d)\b", nat_desc)
         if match_cod:
             nat_cod = match_cod.group(1).replace("-", "")
+
+    registro_dict = {
+        "cnpj": cnpj_limpo,
+        "razao_social": str(dados.get("razao_social") or "Não informado"),
+        "nome_fantasia": str(dados.get("nome_fantasia") or ""),
+        "situacao_cadastral": situacao,
+        "data_situacao_cadastral": str(dados.get("data_situacao_cadastral") or ""),
+        "motivo_situacao_cadastral": str(dados.get("motivo_situacao_cadastral") or ""),
+        "data_abertura": str(dados.get("data_abertura") or ""),
+        "natureza_juridica": nat_desc or "Não informada",
+        "natureza_juridica_codigo": nat_cod or "",
+        "capital_social": float(dados.get("capital_social") or 0.0),
+        "cnae_principal": str(dados.get("cnae_principal") or ""),
+        "cnae_descricao": str(dados.get("cnae_descricao") or dados.get("cnae_principal") or ""),
+        "uf": str(dados.get("uf") or "SC").upper(),
+        "municipio": str(dados.get("municipio") or ""),
+        "fonte_consulta": str(dados.get("fonte_consulta") or obter_link_consulta_oficial(cnpj_limpo)),
+        "atualizado_em": agora,
+    }
 
     with conectar_banco(caminho) as conn:
         conn.execute(
@@ -169,40 +205,50 @@ def salvar_cnpj_cache(dados: dict[str, Any], db_path: Path | str | None = None) 
                 atualizado_em = excluded.atualizado_em
             """,
             (
-                cnpj_limpo,
-                str(dados.get("razao_social") or "Não informado"),
-                str(dados.get("nome_fantasia") or ""),
-                situacao,
-                str(dados.get("data_situacao_cadastral") or ""),
-                str(dados.get("motivo_situacao_cadastral") or ""),
-                str(dados.get("data_abertura") or ""),
-                nat_desc or "Não informada",
-                nat_cod or "",
-                float(dados.get("capital_social") or 0.0),
-                str(dados.get("cnae_principal") or ""),
-                str(dados.get("cnae_descricao") or dados.get("cnae_principal") or ""),
-                str(dados.get("uf") or "SC").upper(),
-                str(dados.get("municipio") or ""),
-                str(dados.get("fonte_consulta") or obter_link_consulta_oficial(cnpj_limpo)),
-                agora,
+                registro_dict["cnpj"],
+                registro_dict["razao_social"],
+                registro_dict["nome_fantasia"],
+                registro_dict["situacao_cadastral"],
+                registro_dict["data_situacao_cadastral"],
+                registro_dict["motivo_situacao_cadastral"],
+                registro_dict["data_abertura"],
+                registro_dict["natureza_juridica"],
+                registro_dict["natureza_juridica_codigo"],
+                registro_dict["capital_social"],
+                registro_dict["cnae_principal"],
+                registro_dict["cnae_descricao"],
+                registro_dict["uf"],
+                registro_dict["municipio"],
+                registro_dict["fonte_consulta"],
+                registro_dict["atualizado_em"],
             ),
         )
         conn.commit()
 
+    # Atualiza cache em memória para leituras instantâneas
+    chave = (str(caminho.resolve()), cnpj_limpo)
+    _MEM_CACHE_CNPJ[chave] = registro_dict
+
 
 def obter_cnpj_cache(cnpj: str, db_path: Path | str | None = None) -> dict[str, Any] | None:
-    """Recupera os dados de um CNPJ diretamente da tabela cnpj_cache do banco SQLite."""
+    """Recupera os dados de um CNPJ diretamente da tabela cnpj_cache do banco SQLite com cache em memória."""
     cnpj_limpo = limpar_cnpj(cnpj)
     if not cnpj_limpo:
         return None
 
     caminho = resolver_caminho_sqlite(db_path)
+    chave = (str(caminho.resolve()), cnpj_limpo)
+    if chave in _MEM_CACHE_CNPJ:
+        return _MEM_CACHE_CNPJ[chave]
+
     inicializar_tabela_cnpj_cache(caminho)
 
     with conectar_banco(caminho) as conn:
         row = conn.execute("SELECT * FROM cnpj_cache WHERE cnpj = ?", (cnpj_limpo,)).fetchone()
         if row:
-            return dict(row)
+            resultado = dict(row)
+            _MEM_CACHE_CNPJ[chave] = resultado
+            return resultado
     return None
 
 

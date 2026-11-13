@@ -8,7 +8,14 @@ font = "sans serif"
 
 [client]
 showErrorDetails = true
+toolbarMode = "minimal"
 
 [server]
 headless = true
 enableCORS = false
+enableXsrfProtection = true
+enableStaticServing = true
+fastReruns = true
+
+[browser]
+gatherUsageStats = false

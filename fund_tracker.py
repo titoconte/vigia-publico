@@ -21,6 +21,7 @@ from typing import Any
 import unicodedata
 
 import pandas as pd
+import streamlit as st
 
 from cnpj_validator import check_cnpj_anomalies, limpar_cnpj, obter_link_consulta_oficial
 from database import conectar_banco, resolver_caminho_sqlite
@@ -180,21 +181,15 @@ def avaliar_transparencia_municipal(municipio: str, codigo_ibge: str) -> dict[st
     }
 
 
-def check_fund_usage(
+@st.cache_data(show_spinner=False, ttl=1800)
+def _check_fund_usage_cached(
     codigo_ou_nome_municipio: str,
-    emenda_id: str | None = None,
-    db_path: Path | str | None = None,
+    emenda_id: str | None,
+    caminho_str: str,
+    mtime: float,
 ) -> dict[str, Any]:
-    """Determina o status do fluxo de recursos e lista de verificação de anomalias de um município ou emenda.
-    
-    Cruza as 5 dimensões recomendadas:
-    1. Objeto do plano de trabalho vs. finalidade temática;
-    2. Prestação de contas e tramitação no e-Sfinge do TCE/SC;
-    3. Ritmo de execução financeira (valor repassado vs. estágio contábil);
-    4. Conformidade cadastral do fornecedor final (CNPJ Ativo, EI 2135, data de abertura, etc.);
-    5. Transparência ativa e canais de acesso à informação do município.
-    """
-    caminho = resolver_caminho_sqlite(db_path)
+    """Execução interna auditável com cache do Streamlit e invalidação automática por mtime."""
+    caminho = Path(caminho_str)
 
     with conectar_banco(caminho) as conn:
         mun_row = conn.execute(
@@ -258,7 +253,7 @@ def check_fund_usage(
             valor_emenda=val,
             data_emenda=dt_em,
             area=area_em,
-            db_path=db_path,
+            db_path=caminho,
         )
 
         if not validacao_cnpj["status_valido"]:
@@ -353,4 +348,28 @@ def check_fund_usage(
             "portal_transparencia_municipio": gerar_link_transparencia_municipio(nome_mun, cod_ibge),
         },
     }
+
+
+def check_fund_usage(
+    codigo_ou_nome_municipio: str,
+    emenda_id: str | None = None,
+    db_path: Path | str | None = None,
+) -> dict[str, Any]:
+    """Determina o status do fluxo de recursos e lista de verificação de anomalias de um município ou emenda (com cache de alta performance).
+    
+    Cruza as 5 dimensões recomendadas:
+    1. Objeto do plano de trabalho vs. finalidade temática;
+    2. Prestação de contas e tramitação no e-Sfinge do TCE/SC;
+    3. Ritmo de execução financeira (valor repassado vs. estágio contábil);
+    4. Conformidade cadastral do fornecedor final (CNPJ Ativo, EI 2135, data de abertura, etc.);
+    5. Transparência ativa e canais de acesso à informação do município.
+    """
+    caminho = resolver_caminho_sqlite(db_path)
+    mtime = caminho.stat().st_mtime if caminho.exists() else 0.0
+    return _check_fund_usage_cached(
+        str(codigo_ou_nome_municipio),
+        str(emenda_id) if emenda_id is not None else None,
+        str(caminho.resolve()),
+        mtime,
+    )
 
