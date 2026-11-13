@@ -32,3 +32,7 @@ Thumbs.db
 data/raw/extratos_cache/
 data/enriched/
 downloaded_files/
+
+# Streamlit secrets (credenciais confidenciais nunca comitadas no GitHub)
+.streamlit/secrets.toml
+
