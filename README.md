@@ -14,7 +14,7 @@ A ferramenta automatiza o cruzamento de múltiplas fontes públicas oficiais em 
 1. **Portal da Transparência SC / SIGEF-CIASC e Painel TCE/SC** (índice integral das ~4.290 emendas estaduais impositivas + extratos oficiais com parlamentar/bancada, valor, município, entidade beneficiária, CNPJ do credor, área temática e status de execução).
 2. **IBGE (API de Agregados `6579`)** (estimativa populacional oficial dos **295 municípios catarinenses** para cálculo exato do valor *per capita*).
 3. **Portal de Dados Abertos SC (CKAN / SEF)** (despesas orçamentárias estaduais e transferências voluntárias).
-4. **Receita Federal / BrasilAPI + CNPJ.ws** (data real de abertura do CNPJ, capital social, CNAE principal, UF de sede e quadro societário).
+4. **Receita Federal / BrasilAPI + MinhaReceita + CNPJ.ws** (data real de abertura do CNPJ, natureza jurídica CONCLA, capital social, CNAE principal e CNAEs secundários, UF de sede e quadro societário).
 
 ---
 
@@ -85,15 +85,16 @@ uvicorn main:app --reload --port 8000
   - `GET /api/municipios/{codigo}` — Perfil do município (população, total recebido, per capita, emendas, alertas)
   - `POST /api/alertas/{id}/feedback` — Usuário marca alerta como `"útil"` ou `"falso positivo"`
 
-### 5. Iniciar o Frontend (Streamlit — 4 Páginas)
+### 5. Iniciar o Frontend (Streamlit — 5 Páginas)
 ```bash
 streamlit run app.py
 ```
-O painel abrirá em `http://localhost:8501` com as 4 páginas:
+O painel abrirá em `http://localhost:8501` com as 5 páginas:
 1. **Painel de Alertas** (ordenado por pontuação, filtros, memória de cálculo e botões de feedback)
-2. **Explorador de Emendas** (tabela filtrável e gráficos por parlamentar e município)
-3. **Perfil do Parlamentar** (totais, distribuição por área e alertas associados)
-4. **Perfil do Município** (população IBGE, total recebido, valor per capita e alertas)
+2. **Explorador de Emendas** (filtros por autor, município, área e grupo de CNPJ — *CNPJs de Municípios* vs. *Outros CNPJs* —, métricas comparativas, gráficos por grupo e seção expansível de CNAEs principal e secundários)
+3. **Perfil do Parlamentar** (totais por fase orçamentária, separação entre CNPJs de Municípios e Outros CNPJs, seção expansível de CNAEs dos favorecidos e alertas associados)
+4. **Perfil do Município** (população IBGE, total recebido, valor *per capita*, separação de favorecidos por grupo de CNPJ, consulta expansível de CNAEs e alertas)
+5. **Regras e Metodologia** (documentação transparente dos critérios estatísticos e cadastrais de cada regra)
 
 ### 6. Executar o Agendador Semanal e Bot do Telegram
 ```bash

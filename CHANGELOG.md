@@ -3,6 +3,18 @@
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
+## [1.2.0] - 2026-11-13
+
+### 🚀 Novas Funcionalidades
+- **`[cnpj_validator.py]` e `[schema.sql]`**: Classificação estruturada de favorecidos em dois grupos canônicos (`CNPJ de Município` — Administração Municipal Completa: prefeituras, fundos municipais, câmaras, autarquias e fundações municipais — vs. `Outro CNPJ` — OSCs, associações privadas, empresas, consórcios e órgãos estaduais), além de persistência de `cnaes_secundarios` em `cnpj_cache` com migração automática retrocompatível.
+- **`[app.py]`**: Separação visual e analítica entre **CNPJs de Municípios** e **Outros CNPJs** nas abas **2. Explorador de Emendas**, **3. Perfil do Parlamentar** e **4. Perfil do Município**, incluindo cartões comparativos de volume/participação percentual, filtros rápidos de grupo, coluna `Grupo CNPJ` e seções expansíveis (`st.expander` recolhido por padrão) exibindo o **CNAE Principal** e os **CNAEs Secundários** de cada CNPJ favorecido.
+
+### 🔧 Ajustes e Melhorias
+- **`[enrich_cnpj.py]`**: Extração padronizada do código e descrição do CNAE principal (`XXXX-X/XX - Descrição`), lista de CNAEs secundários e código oficial de natureza jurídica CONCLA na Receita Federal (`BrasilAPI` com *fallback* imediato em `MinhaReceita` e `publica.cnpj.ws`), além da rotina `sanear_cnpjs_fallback` para atualização cadastral em lote.
+
+### 🐛 Correções de Bugs
+- **`[cnpj_validator.py]` e `[enrich_cnpj.py]`**: Correção de falsos positivos de associações privadas cujo nome continha `"DO MUNICIPIO DE ..."` e substituição dos registros legados com CNAE genérico de *fallback* (`4789-0/99 - Comércio e serviços gerais`), aplicando `8411-6/00 - Administração pública em geral` para entes municipais sem retorno externo.
+
 ## [1.1.0] - 2026-11-11
 
 ### 🚀 Novas Funcionalidades
