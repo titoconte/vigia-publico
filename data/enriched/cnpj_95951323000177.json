@@ -1,0 +1,11 @@
+{
+  "cnpj": "95951323000177",
+  "razao_social": "MUNICIPIO DE SANTA TEREZINHA",
+  "data_abertura": "1993-01-06",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "SANTA TEREZINHA",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/95951323000177"
+}

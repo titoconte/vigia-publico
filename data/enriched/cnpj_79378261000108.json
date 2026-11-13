@@ -1,0 +1,13 @@
+{
+  "cnpj": "79378261000108",
+  "razao_social": "ASSOCIACAO DESPORTIVA JARAGUA",
+  "data_abertura": "1992-03-05",
+  "capital_social": 0.0,
+  "cnae_principal": "Clubes sociais, esportivos e similares",
+  "uf": "SC",
+  "municipio": "JARAGUA DO SUL",
+  "socios": [
+    "WANDAIR JOSE GARCIA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/79378261000108"
+}

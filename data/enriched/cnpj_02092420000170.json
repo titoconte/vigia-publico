@@ -1,0 +1,13 @@
+{
+  "cnpj": "02092420000170",
+  "razao_social": "ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS",
+  "data_abertura": "1997-07-31",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "GOVERNADOR CELSO RAMOS",
+  "socios": [
+    "JANDIRA OLIARI"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/02092420000170"
+}

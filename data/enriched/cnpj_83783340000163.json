@@ -1,0 +1,13 @@
+{
+  "cnpj": "83783340000163",
+  "razao_social": "ASSOCIACAO CORPO DE BOMBEIROS VOLUNTARIOS DE IBIRAMA",
+  "data_abertura": "1986-05-06",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "uf": "SC",
+  "municipio": "IBIRAMA",
+  "socios": [
+    "GILBERTO TASSI"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83783340000163"
+}

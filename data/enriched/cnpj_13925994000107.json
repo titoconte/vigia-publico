@@ -1,0 +1,11 @@
+{
+  "cnpj": "13925994000107",
+  "razao_social": "FUNDO DE MELHORIA DA POLICIA MILITAR",
+  "data_abertura": "2011-04-01",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "FLORIANOPOLIS",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/13925994000107"
+}

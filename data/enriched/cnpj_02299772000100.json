@@ -1,0 +1,11 @@
+{
+  "cnpj": "02299772000100",
+  "razao_social": "FUNDACAO MUNICIPAL DO MEIO AMBIENTE E DESENVOLVIMENTO SUSTENTAVEL",
+  "data_abertura": "1997-11-08",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "SAO JOSE",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/02299772000100"
+}

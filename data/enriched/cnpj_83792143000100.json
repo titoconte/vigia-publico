@@ -1,0 +1,13 @@
+{
+  "cnpj": "83792143000100",
+  "razao_social": "ASSOCIACAO JOINVILENSE PARA INTEGRACAO DOS DEFICIENTES VISUAIS",
+  "data_abertura": "1981-08-13",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "JOINVILLE",
+  "socios": [
+    "AGUINALDO CESAR ALVES DE OLIVEIRA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83792143000100"
+}

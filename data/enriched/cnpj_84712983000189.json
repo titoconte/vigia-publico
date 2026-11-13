@@ -1,0 +1,13 @@
+{
+  "cnpj": "84712983000189",
+  "razao_social": "INSTITUICAO BETHESDA",
+  "data_abertura": "1969-09-08",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "JOINVILLE",
+  "socios": [
+    "VALMIR SEBASTIAO BRUSKE"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/84712983000189"
+}

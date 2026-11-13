@@ -59,6 +59,25 @@ CREATE TABLE IF NOT EXISTS agregados_fornecedor (
     parlamentares_distintos INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS cnpj_cache (
+    cnpj TEXT PRIMARY KEY,
+    razao_social TEXT,
+    nome_fantasia TEXT,
+    situacao_cadastral TEXT NOT NULL DEFAULT 'Ativa',
+    data_situacao_cadastral TEXT,
+    motivo_situacao_cadastral TEXT,
+    data_abertura TEXT,
+    natureza_juridica TEXT,
+    natureza_juridica_codigo TEXT,
+    capital_social REAL DEFAULT 0.0,
+    cnae_principal TEXT,
+    cnae_descricao TEXT,
+    uf TEXT,
+    municipio TEXT,
+    fonte_consulta TEXT,
+    atualizado_em TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS alertas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     tipo TEXT NOT NULL,
@@ -103,3 +122,6 @@ CREATE INDEX IF NOT EXISTS idx_alertas_pontuacao ON alertas (pontuacao DESC);
 CREATE INDEX IF NOT EXISTS idx_alertas_parlamentar ON alertas (parlamentar);
 CREATE INDEX IF NOT EXISTS idx_alertas_municipio ON alertas (codigo_ibge);
 CREATE INDEX IF NOT EXISTS idx_alertas_cnpj ON alertas (fornecedor_cnpj);
+
+CREATE INDEX IF NOT EXISTS idx_cnpj_cache_situacao ON cnpj_cache (situacao_cadastral);
+CREATE INDEX IF NOT EXISTS idx_cnpj_cache_natureza ON cnpj_cache (natureza_juridica_codigo);

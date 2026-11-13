@@ -1,0 +1,11 @@
+{
+  "cnpj": "14741096000153",
+  "razao_social": "FUNDO MUNICIPAL DE SAUDE DE CORREIA PINTO",
+  "data_abertura": "1991-11-25",
+  "capital_social": 0.0,
+  "cnae_principal": "Outras atividades de atenção à saúde humana não especificadas anteriormente",
+  "uf": "SC",
+  "municipio": "CORREIA PINTO",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/14741096000153"
+}

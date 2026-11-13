@@ -1,0 +1,13 @@
+{
+  "cnpj": "84307974000102",
+  "razao_social": "FUNDACAO UNIVERSIDADE DO VALE DO ITAJAI",
+  "data_abertura": "1977-04-18",
+  "capital_social": 0.0,
+  "cnae_principal": "Educação superior - pós-graduação e extensão",
+  "uf": "SC",
+  "municipio": "ITAJAI",
+  "socios": [
+    "ROGERIO CORREA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/84307974000102"
+}

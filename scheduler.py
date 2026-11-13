@@ -11,10 +11,12 @@ from pathlib import Path
 import smtplib
 from typing import Any
 
+import pandas as pd
+
 from anomalies import executar_motor_anomalias
 from collect_tce import DEFAULT_RAW_DIR, executar_coleta_completa
 from database import DEFAULT_DB_PATH
-from enrich_cnpj import CADASTRO_REFERENCIA_CNPJ, DEFAULT_ENRICHED_DIR, enriquecer_lote_cnpjs
+from enrich_cnpj import DEFAULT_ENRICHED_DIR, enriquecer_lote_cnpjs
 from etl import DEFAULT_CLEAN_DIR, executar_etl
 
 DEFAULT_RELATORIO_HTML = Path("data/clean/relatorio_semanal_top10.html")
@@ -51,7 +53,7 @@ def gerar_relatorio_html_top10(alertas: list[dict[str, Any]]) -> str:
 <body style="font-family:Arial,sans-serif;color:#1e293b;line-height:1.5;margin:24px;">
     <h2>🔍 Vigia Público SC — Top 10 Alertas da Semana ({data_geracao})</h2>
     <p style="background:#fef3c7;border-left:4px solid #f59e0b;padding:12px;">
-        <strong>Aviso Ético e Legal:</strong> Esta ferramenta não substitui a verificação jornalística nem a apuração oficial.
+        <strong>Aviso Ético e Legal:</strong> Esta ferramenta não substitui a verificação documental nem a apuração oficial.
         Os alertas apontam padrões estatísticos e cadastrais que merecem verificação, não constituindo prova de irregularidade.
     </p>
     <table style="border-collapse:collapse;width:100%;font-size:14px;">
@@ -79,7 +81,7 @@ def enviar_relatorio_por_email(
     conteudo_html: str,
     destinatarios: list[str] | None = None,
 ) -> bool:
-    """Envia o relatório HTML semanal por e-mail via SMTP para a lista de jornalistas cadastrados."""
+    """Envia o relatório HTML semanal por e-mail via SMTP para a lista de destinatários cadastrados."""
     lista_emails = destinatarios or [
         e.strip() for e in os.getenv("ALERT_RECIPIENTS", "").split(",") if e.strip()
     ]
@@ -93,7 +95,7 @@ def enviar_relatorio_por_email(
         return False
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = "Vigia Público SC — Resumo Semanal: Top 10 Alertas para Apuração"
+    msg["Subject"] = "Vigia Público SC — Resumo Semanal: Top 10 Alertas para Análise"
     msg["From"] = remetente
     msg["To"] = ", ".join(lista_emails)
     msg.attach(MIMEText(conteudo_html, "html", "utf-8"))
@@ -113,11 +115,20 @@ def executar_ciclo_semanal(
     db_path: Path | str = DEFAULT_DB_PATH,
     relatorio_html_path: Path | str = DEFAULT_RELATORIO_HTML,
     enviar_email: bool = True,
+    usar_rede: bool | None = None,
 ) -> dict[str, Any]:
     """Executa o pipeline semanal completo (Coleta -> ETL -> Motor de Anomalias -> Relatório Top 10 HTML -> E-mail)."""
-    executar_coleta_completa(raw_dir=raw_dir)
-    enriquecer_lote_cnpjs(list(CADASTRO_REFERENCIA_CNPJ.keys()), output_dir=enriched_dir, usar_rede=False)
-    executar_etl(raw_dir=raw_dir, enriched_dir=enriched_dir, clean_dir=clean_dir, db_path=db_path)
+    res_coleta = executar_coleta_completa(raw_dir=raw_dir, usar_rede=usar_rede)
+    df_emendas = pd.read_csv(res_coleta["emendas_csv"], dtype={"fornecedor_cnpj": str})
+    cnpjs = df_emendas["fornecedor_cnpj"].dropna().astype(str).unique().tolist()
+    enriquecer_lote_cnpjs(cnpjs, output_dir=enriched_dir, usar_rede=usar_rede)
+    executar_etl(
+        raw_dir=raw_dir,
+        enriched_dir=enriched_dir,
+        clean_dir=clean_dir,
+        db_path=db_path,
+        usar_rede=usar_rede,
+    )
     alertas = executar_motor_anomalias(db_path=db_path)
 
     top_10 = alertas[:10]

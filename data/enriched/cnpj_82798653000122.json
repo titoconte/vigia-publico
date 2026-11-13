@@ -1,0 +1,13 @@
+{
+  "cnpj": "82798653000122",
+  "razao_social": "ASSOCIACAO DE SERVICOS SOCIAIS VOLUNTARIOS DE CACADOR",
+  "data_abertura": "1971-09-20",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "uf": "SC",
+  "municipio": "CACADOR",
+  "socios": [
+    "CLAUDEMIR HUBNER"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82798653000122"
+}

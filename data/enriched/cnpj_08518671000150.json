@@ -1,0 +1,13 @@
+{
+  "cnpj": "08518671000150",
+  "razao_social": "ASSOCIACAO INSTITUTO MORIA",
+  "data_abertura": "2006-11-08",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "JOINVILLE",
+  "socios": [
+    "DENER JOSE BONASSOLI BELIN"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/08518671000150"
+}

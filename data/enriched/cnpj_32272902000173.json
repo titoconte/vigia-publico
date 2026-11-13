@@ -1,0 +1,13 @@
+{
+  "cnpj": "32272902000173",
+  "razao_social": "ASSOCIACAO DE PAIS DOS AUTISTAS DO EXTREMO SUL- CATARINENSE - AMA.ESC",
+  "data_abertura": "2018-11-12",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "ARARANGUA",
+  "socios": [
+    "JORDANA APARECIDA FERNANDES CARDOSO"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/32272902000173"
+}

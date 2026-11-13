@@ -1,0 +1,13 @@
+{
+  "cnpj": "60194990000178",
+  "razao_social": "INSTITUTO DAS PEQUENAS MISSIONARIAS DE MARIA IMACULADA",
+  "data_abertura": "1967-04-28",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "uf": "SP",
+  "municipio": "SAO JOSE DOS CAMPOS",
+  "socios": [
+    "VILMA MARLENE DE ANDRADE"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/60194990000178"
+}

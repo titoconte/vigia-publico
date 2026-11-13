@@ -1,0 +1,13 @@
+{
+  "cnpj": "86437845000164",
+  "razao_social": "ASSOCIACAO BENEFICENTE SANTA TERESINHA",
+  "data_abertura": "1967-08-29",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "BRACO DO NORTE",
+  "socios": [
+    "PEDRO MICHELS NETO"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/86437845000164"
+}

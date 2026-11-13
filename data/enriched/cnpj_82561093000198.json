@@ -1,0 +1,11 @@
+{
+  "cnpj": "82561093000198",
+  "razao_social": "MUNICIPIO DE SAO JOAQUIM",
+  "data_abertura": "1974-12-10",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "SAO JOAQUIM",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82561093000198"
+}

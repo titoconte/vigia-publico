@@ -1,0 +1,11 @@
+{
+  "cnpj": "82929407000162",
+  "razao_social": "MUNICIPIO DE SIDEROPOLIS",
+  "data_abertura": "1974-12-10",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "SIDEROPOLIS",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82929407000162"
+}

@@ -1,0 +1,13 @@
+{
+  "cnpj": "30147157000105",
+  "razao_social": "APJ - ASSOCIACAO PARALIMPICA DE JOINVILLE",
+  "data_abertura": "2018-02-28",
+  "capital_social": 0.0,
+  "cnae_principal": "Produção e promoção de eventos esportivos",
+  "uf": "SC",
+  "municipio": "JOINVILLE",
+  "socios": [
+    "TAILA TALITA MIRANDA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/30147157000105"
+}

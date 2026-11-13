@@ -1,0 +1,13 @@
+{
+  "cnpj": "04333808000141",
+  "razao_social": "FEDERACAO CATARINENSE DO DESPORTO ESCOLAR",
+  "data_abertura": "2001-03-14",
+  "capital_social": 0.0,
+  "cnae_principal": "Produção e promoção de eventos esportivos",
+  "uf": "SC",
+  "municipio": "FLORIANOPOLIS",
+  "socios": [
+    "ANTONIO PAULO FERNANDES ZYTKUEWISZ"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/04333808000141"
+}

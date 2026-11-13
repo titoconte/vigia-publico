@@ -1,0 +1,13 @@
+{
+  "cnpj": "79369377000172",
+  "razao_social": "ASS ESPORT CULT TRAD DOS MOTORISTAS DE POUSO REDONDO",
+  "data_abertura": "1989-01-11",
+  "capital_social": 0.0,
+  "cnae_principal": "Clubes sociais, esportivos e similares",
+  "uf": "SC",
+  "municipio": "POUSO REDONDO",
+  "socios": [
+    "ROBERTO MONDINI"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/79369377000172"
+}

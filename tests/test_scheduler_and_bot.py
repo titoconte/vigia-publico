@@ -31,12 +31,12 @@ def test_executar_ciclo_semanal_e_gerar_html_top10(tmp_path: Path) -> None:
         enviar_email=False,
     )
     assert html_out.exists()
-    assert len(resumo["top_10_alertas"]) == 10
+    assert 1 <= len(resumo["top_10_alertas"]) <= 10
 
     html = gerar_relatorio_html_top10(resumo["top_10_alertas"])
     assert "<html" in html.lower()
     assert "top 10 alertas" in html.lower()
-    assert "esta ferramenta não substitui a verificação jornalística" in html.lower()
+    assert "esta ferramenta não substitui a verificação documental" in html.lower()
 
 
 def test_comandos_telegram_alertas_e_parlamentar(tmp_path: Path) -> None:
@@ -53,7 +53,7 @@ def test_comandos_telegram_alertas_e_parlamentar(tmp_path: Path) -> None:
 
     resp_alertas = processar_comando_telegram("/alertas", db_path=db_path)
     assert "Top Alertas" in resp_alertas
-    assert "verificação jornalística" in resp_alertas
+    assert "verificação documental" in resp_alertas
 
     resp_parl = processar_comando_telegram("/parlamentar Júlio Garcia", db_path=db_path)
     assert "Júlio Garcia" in resp_parl

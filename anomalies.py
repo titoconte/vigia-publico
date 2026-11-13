@@ -14,7 +14,7 @@ import pandas as pd
 from database import DEFAULT_DB_PATH, conectar_banco, inicializar_schema
 
 NOTA_ETICA_PADRAO = (
-    "Padrão estatístico/cadastral que merece verificação jornalística. "
+    "Padrão estatístico/cadastral que merece verificação e análise documental. "
     "Não constitui prova de irregularidade."
 )
 
@@ -74,6 +74,178 @@ def _montar_registro_alerta(
         "hash_auditoria": gerar_hash_auditoria(base_hash),
         "data_deteccao": momento,
     }
+
+
+def regra_triplo_desvio_valor_per_capita_area(df: pd.DataFrame) -> list[dict[str, Any]]:
+    """Regra 1: Detecta emendas que cumprem simultaneamente os 3 requisitos estatísticos:
+    
+    1. Valor da emenda acima da média global + 1 STD (desvio padrão);
+    2. Município recebeu valor per capita elevado (acima da média + 1 STD);
+    3. Valor da emenda é muito alto para a respectiva área temática (acima da média + 1 STD da área).
+    """
+    if df.empty or "valor" not in df.columns or "area" not in df.columns:
+        return []
+
+    serie_valor = df["valor"].astype(float)
+    media_val = float(serie_valor.mean())
+    std_val = float(serie_valor.std(ddof=0))
+    limiar_val = media_val + std_val
+
+    # Per capita do município: avalia tanto a emenda individual quanto o aporte acumulado municipal
+    if "valor_per_capita" in df.columns:
+        serie_vpc = df["valor_per_capita"].astype(float)
+    else:
+        serie_vpc = serie_valor / df["populacao"].astype(float).replace(0, 1)
+    media_vpc = float(serie_vpc.mean())
+    std_vpc = float(serie_vpc.std(ddof=0))
+    limiar_vpc = media_vpc + std_vpc
+
+    # Per capita acumulado municipal entre os municípios do conjunto
+    agg_mun = df.groupby("codigo_ibge", as_index=False).agg(
+        total_rec=("valor", "sum"),
+        populacao=("populacao", "first"),
+    )
+    agg_mun["pc_acumulado"] = agg_mun["total_rec"] / agg_mun["populacao"].replace(0, 1)
+    media_pc_acum = float(agg_mun["pc_acumulado"].mean())
+    std_pc_acum = float(agg_mun["pc_acumulado"].std(ddof=0))
+    limiar_pc_acum = media_pc_acum + std_pc_acum
+    muns_pc_acum_alto = set(agg_mun[agg_mun["pc_acumulado"] > limiar_pc_acum]["codigo_ibge"].astype(str))
+
+    # Estatísticas por área temática
+    area_stats = df.groupby("area")["valor"].agg(
+        media="mean",
+        std=lambda s: float(s.std(ddof=0)) if len(s) > 1 else 0.0,
+    ).reset_index()
+    area_stats["limiar_area"] = area_stats["media"] + area_stats["std"]
+    mapa_limiar_area = dict(zip(area_stats["area"], area_stats["limiar_area"]))
+    mapa_media_area = dict(zip(area_stats["area"], area_stats["media"]))
+    mapa_std_area = dict(zip(area_stats["area"], area_stats["std"]))
+
+    alertas: list[dict[str, Any]] = []
+    for _, row in df.iterrows():
+        val = float(row["valor"])
+        cod_mun = str(row["codigo_ibge"])
+        area_nome = str(row["area"])
+        pop_mun = float(row.get("populacao", 1)) or 1.0
+        vpc_individual = float(row.get("valor_per_capita", val / pop_mun))
+
+        # Requisito 1: Valor individual > média + 1 std global
+        atende_req1 = val > limiar_val
+
+        # Requisito 2: Município recebeu valor per capita elevado (> média + 1 std)
+        atende_req2 = (cod_mun in muns_pc_acum_alto) or (vpc_individual > limiar_vpc)
+
+        # Requisito 3: Valor da emenda muito alto para a respectiva área (> média + 1 std da área)
+        lim_area = mapa_limiar_area.get(area_nome, media_val)
+        atende_req3 = val > lim_area
+
+        if atende_req1 and atende_req2 and atende_req3:
+            std_area_val = mapa_std_area.get(area_nome, 1.0) or 1.0
+            z_val = (val - media_val) / max(std_val, 1.0)
+            z_area = (val - mapa_media_area.get(area_nome, media_val)) / max(std_area_val, 1.0)
+            score = 80.0 + min(20.0, (z_val - 1.0) * 5.0 + (z_area - 1.0) * 5.0)
+
+            justificativa = (
+                f"Emenda de R$ {val:,.2f} destinada a {row['municipio']} cumpre cumulativamente os 3 requisitos de exceção estatística: "
+                f"(1) Valor individual superior à média estadual + 1 STD (R$ {val:,.2f} > limiar R$ {limiar_val:,.2f}); "
+                f"(2) Município recebeu valor per capita elevado (R$ {vpc_individual:,.2f}/hab individual e/ou aporte municipal acumulado > média + 1 STD); "
+                f"(3) Valor é muito alto para a área '{area_nome}' (R$ {val:,.2f} > limiar setorial R$ {lim_area:,.2f})."
+            )
+
+            alertas.append(
+                _montar_registro_alerta(
+                    tipo="Triplo Desvio: Valor, Per Capita e Área",
+                    regra="REGRA_1_TRIPLO_DESVIO_VALOR_PER_CAPITA_AREA",
+                    pontuacao=score,
+                    parlamentar=str(row["parlamentar"]),
+                    municipio=str(row["municipio"]),
+                    codigo_ibge=cod_mun,
+                    valor=val,
+                    beneficiario=str(row.get("fornecedor_nome") or row.get("entidade_beneficiaria") or ""),
+                    fornecedor_cnpj=str(row.get("fornecedor_cnpj") or ""),
+                    justificativa=justificativa,
+                    dados_contexto={
+                        "id_emenda": str(row["id_emenda"]),
+                        "area": area_nome,
+                        "valor_emenda": val,
+                        "media_estadual_valor": round(media_val, 2),
+                        "std_estadual_valor": round(std_val, 2),
+                        "limiar_valor_global": round(limiar_val, 2),
+                        "valor_per_capita_emenda": round(vpc_individual, 2),
+                        "limiar_per_capita_emenda": round(limiar_vpc, 2),
+                        "media_area": round(mapa_media_area.get(area_nome, 0.0), 2),
+                        "std_area": round(std_area_val, 2),
+                        "limiar_area": round(lim_area, 2),
+                        "z_score_global": round(z_val, 2),
+                        "z_score_area": round(z_area, 2),
+                    },
+                    fonte_url=str(row["fonte_url"]),
+                )
+            )
+
+    return alertas
+
+
+def regra_valor_area_acima_media_1std(df: pd.DataFrame) -> list[dict[str, Any]]:
+    """Regra 2: Detecta valores de uma emenda específica para uma área acima da média + 1 STD dentre todas as áreas."""
+    if df.empty or "valor" not in df.columns or "area" not in df.columns:
+        return []
+
+    # Estatísticas de cada área temática presente no conjunto
+    area_stats = df.groupby("area")["valor"].agg(
+        media="mean",
+        std=lambda s: float(s.std(ddof=0)) if len(s) > 1 else 0.0,
+    ).reset_index()
+    area_stats["limiar_area"] = area_stats["media"] + area_stats["std"]
+    mapa_limiar = dict(zip(area_stats["area"], area_stats["limiar_area"]))
+    mapa_media = dict(zip(area_stats["area"], area_stats["media"]))
+    mapa_std = dict(zip(area_stats["area"], area_stats["std"]))
+
+    alertas: list[dict[str, Any]] = []
+    for _, row in df.iterrows():
+        val = float(row["valor"])
+        area_nome = str(row["area"])
+        limiar = mapa_limiar.get(area_nome, 0.0)
+        media_setor = mapa_media.get(area_nome, 0.0)
+        std_setor = mapa_std.get(area_nome, 1.0) or 1.0
+
+        if val > limiar:
+            z_score = (val - media_setor) / std_setor
+            score = 70.0 + min(30.0, (z_score - 1.0) * 10.0)
+
+            justificativa = (
+                f"Emenda específica para a área '{area_nome}' no valor de R$ {val:,.2f} "
+                f"destinada a {row['municipio']} situa-se acima da média setorial mais 1 desvio padrão "
+                f"(média da área: R$ {media_setor:,.2f}; STD: R$ {std_setor:,.2f}; "
+                f"limiar: R$ {limiar:,.2f}; Z-score setorial = {z_score:.2f})."
+            )
+
+            alertas.append(
+                _montar_registro_alerta(
+                    tipo="Valor na Área Acima da Média + 1 STD",
+                    regra="REGRA_2_VALOR_AREA_ACIMA_MEDIA_1STD",
+                    pontuacao=score,
+                    parlamentar=str(row["parlamentar"]),
+                    municipio=str(row["municipio"]),
+                    codigo_ibge=str(row["codigo_ibge"]),
+                    valor=val,
+                    beneficiario=str(row.get("fornecedor_nome") or row.get("entidade_beneficiaria") or ""),
+                    fornecedor_cnpj=str(row.get("fornecedor_cnpj") or ""),
+                    justificativa=justificativa,
+                    dados_contexto={
+                        "id_emenda": str(row["id_emenda"]),
+                        "area": area_nome,
+                        "valor_emenda": val,
+                        "media_area": round(media_setor, 2),
+                        "std_area": round(std_setor, 2),
+                        "limiar_media_mais_1std": round(limiar, 2),
+                        "z_score_setorial": round(z_score, 2),
+                    },
+                    fonte_url=str(row["fonte_url"]),
+                )
+            )
+
+    return alertas
 
 
 def regra_valor_absoluto_alto(df: pd.DataFrame) -> list[dict[str, Any]]:
@@ -432,20 +604,16 @@ def regra_discrepancia_geografica(df: pd.DataFrame, uf_esperada: str = "SC") -> 
 
 
 def executar_motor_anomalias(db_path: Path | str = DEFAULT_DB_PATH) -> list[dict[str, Any]]:
-    """Executa todas as 7 regras de anomalia sobre emendas_clean, persiste na tabela alertas e retorna ordenado."""
+    """Executa as regras estatísticas de anomalia (Triplo Desvio e Valor na Área Acima da Média + 1 STD),
+    persiste na tabela alertas e retorna os alertas ordenados por pontuação de prioridade decrescente."""
     inicializar_schema(db_path=db_path)
     with conectar_banco(db_path=db_path) as conn:
         df_clean = pd.read_sql_query("SELECT * FROM emendas_clean", conn)
 
     todos_alertas: list[dict[str, Any]] = []
     regras = (
-        regra_valor_absoluto_alto,
-        regra_valor_per_capita_alto,
-        regra_concentracao_fornecedor,
-        regra_concentracao_temporal,
-        regra_beneficiario_recem_criado,
-        regra_capital_social_baixo,
-        regra_discrepancia_geografica,
+        regra_triplo_desvio_valor_per_capita_area,
+        regra_valor_area_acima_media_1std,
     )
     for funcao_regra in regras:
         todos_alertas.extend(funcao_regra(df_clean))

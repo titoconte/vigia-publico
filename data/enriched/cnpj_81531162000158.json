@@ -1,0 +1,11 @@
+{
+  "cnpj": "81531162000158",
+  "razao_social": "MUNICIPIO DE FORQUILHINHA",
+  "data_abertura": "1989-04-27",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "FORQUILHINHA",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/81531162000158"
+}

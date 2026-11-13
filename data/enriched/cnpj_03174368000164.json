@@ -1,0 +1,13 @@
+{
+  "cnpj": "03174368000164",
+  "razao_social": "CENTRO DE RECUPERACAO DA PACIENCIA VALE EBENEZER",
+  "data_abertura": "1999-02-09",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de assistência psicossocial e à saúde a portadores de distúrbios psíquicos, deficiência mental e dependência química e grupos similares não",
+  "uf": "SC",
+  "municipio": "ITAJAI",
+  "socios": [
+    "JEAN CARLOS MORAIS"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/03174368000164"
+}

@@ -1,0 +1,13 @@
+{
+  "cnpj": "32784229000150",
+  "razao_social": "ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS DE BALNEARIO RINCAO",
+  "data_abertura": "2019-02-06",
+  "capital_social": 0.0,
+  "cnae_principal": "Serviços de assistência social sem alojamento",
+  "uf": "SC",
+  "municipio": "BALNEARIO RINCAO",
+  "socios": [
+    "LAURECI VOLPATO"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/32784229000150"
+}

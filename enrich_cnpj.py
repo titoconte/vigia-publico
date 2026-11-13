@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 from pathlib import Path
 import re
+import time
 from typing import Any
 
 import httpx
+import pandas as pd
+
+from collect_tce import DEFAULT_RAW_DIR, resolver_usar_rede
 
 DEFAULT_ENRICHED_DIR = Path("data/enriched")
 
@@ -121,10 +126,79 @@ def limpar_cnpj(cnpj: str) -> str:
     return apenas_digitos.zfill(14)
 
 
+def _consultar_cnpj_remoto(
+    cnpj_limpo: str,
+    http: httpx.Client,
+) -> dict[str, Any] | None:
+    """Consulta dados cadastrais de CNPJ na BrasilAPI (com retry em rate-limit e fallback em publica.cnpj.ws)."""
+    base_url = os.getenv("BRASILAPI_CNPJ_URL", "https://brasilapi.com.br/api/cnpj/v1").rstrip("/")
+    url_brasilapi = f"{base_url}/{cnpj_limpo}"
+
+    for tentativa in range(3):
+        try:
+            resposta = http.get(url_brasilapi, timeout=12.0)
+            if resposta.status_code == 429:
+                time.sleep(1.2 * (tentativa + 1))
+                continue
+            if resposta.status_code == 200:
+                payload = resposta.json()
+                return {
+                    "cnpj": cnpj_limpo,
+                    "razao_social": payload.get("razao_social") or payload.get("nome_fantasia") or "Não informado",
+                    "data_abertura": payload.get("data_inicio_atividade") or "",
+                    "capital_social": float(payload.get("capital_social") or 0.0),
+                    "cnae_principal": str(payload.get("cnae_fiscal_descricao") or "Não informado"),
+                    "uf": str(payload.get("uf") or "SC").strip().upper(),
+                    "municipio": str(payload.get("municipio") or "Florianópolis"),
+                    "socios": [
+                        str(s.get("nome_socio", ""))
+                        for s in (payload.get("qsa") or [])
+                        if isinstance(s, dict) and s.get("nome_socio")
+                    ],
+                    "fonte_consulta": url_brasilapi,
+                }
+            if resposta.status_code == 404:
+                break
+        except Exception:
+            time.sleep(0.5)
+
+    # Fallback público secundário (CNPJ.ws) caso a BrasilAPI esteja indisponível ou retorne 404/429
+    url_cnpjws = f"https://publica.cnpj.ws/cnpj/{cnpj_limpo}"
+    try:
+        resp_ws = http.get(url_cnpjws, timeout=12.0)
+        if resp_ws.status_code == 200:
+            pl = resp_ws.json()
+            estab = pl.get("estabelecimento") or {}
+            estado = estab.get("estado") or {}
+            cidade = estab.get("cidade") or {}
+            ativ = estab.get("atividade_principal") or {}
+            return {
+                "cnpj": cnpj_limpo,
+                "razao_social": pl.get("razao_social") or estab.get("nome_fantasia") or "Não informado",
+                "data_abertura": estab.get("data_inicio_atividade") or "",
+                "capital_social": float(pl.get("capital_social") or 0.0),
+                "cnae_principal": str(ativ.get("descricao") or "Não informado"),
+                "uf": str(estado.get("sigla") or "SC").strip().upper(),
+                "municipio": str(cidade.get("nome") or "Florianópolis"),
+                "socios": [
+                    str(s.get("nome", ""))
+                    for s in (pl.get("socios") or [])
+                    if isinstance(s, dict) and s.get("nome")
+                ],
+                "fonte_consulta": url_cnpjws,
+            }
+    except Exception:
+        pass
+
+    return None
+
+
 def enriquecer_cnpj(
     cnpj: str,
     output_dir: Path | str = DEFAULT_ENRICHED_DIR,
-    usar_rede: bool = False,
+    usar_rede: bool | None = None,
+    nome_fallback: str | None = None,
+    client: httpx.Client | None = None,
 ) -> dict[str, Any]:
     """Consulta dados cadastrais de um CNPJ na Receita Federal (BrasilAPI ou base local) e salva em JSON."""
     cnpj_limpo = limpar_cnpj(cnpj)
@@ -135,38 +209,38 @@ def enriquecer_cnpj(
     if caminho_json.exists():
         return json.loads(caminho_json.read_text(encoding="utf-8"))
 
+    deve_usar_rede = resolver_usar_rede(usar_rede)
     dados: dict[str, Any] | None = None
-    if usar_rede:
-        base_url = os.getenv("BRASILAPI_CNPJ_URL", "https://brasilapi.com.br/api/cnpj/v1").rstrip("/")
+
+    if deve_usar_rede:
+        fechar = client is None
+        http = client or httpx.Client(timeout=15.0, follow_redirects=True)
         try:
-            resposta = httpx.get(f"{base_url}/{cnpj_limpo}", timeout=10.0)
-            resposta.raise_for_status()
-            payload = resposta.json()
-            dados = {
-                "cnpj": cnpj_limpo,
-                "razao_social": payload.get("razao_social") or payload.get("nome_fantasia") or "Não informado",
-                "data_abertura": payload.get("data_inicio_atividade") or "2020-01-01",
-                "capital_social": float(payload.get("capital_social") or 0.0),
-                "cnae_principal": str(payload.get("cnae_fiscal_descricao") or "Não informado"),
-                "uf": str(payload.get("uf") or "SC"),
-                "municipio": str(payload.get("municipio") or "Florianópolis"),
-                "socios": [
-                    str(s.get("nome_socio", ""))
-                    for s in (payload.get("qsa") or [])
-                    if isinstance(s, dict) and s.get("nome_socio")
-                ],
-                "fonte_consulta": f"{base_url}/{cnpj_limpo}",
-            }
-        except Exception:
-            dados = None
+            dados = _consultar_cnpj_remoto(cnpj_limpo, http=http)
+        finally:
+            if fechar:
+                http.close()
 
     if dados is None:
         if cnpj_limpo in CADASTRO_REFERENCIA_CNPJ:
             dados = dict(CADASTRO_REFERENCIA_CNPJ[cnpj_limpo])
+        elif deve_usar_rede:
+            # Em modo real sem retorno da API, preserva o nome oficial sem fabricar capital/abertura fictícios
+            dados = {
+                "cnpj": cnpj_limpo,
+                "razao_social": nome_fallback or f"Entidade/Credor {cnpj_limpo}",
+                "data_abertura": "",
+                "capital_social": 0.0,
+                "cnae_principal": "Administração pública / entidade conveniada",
+                "uf": "SC",
+                "municipio": "Santa Catarina",
+                "socios": [],
+                "fonte_consulta": f"https://brasilapi.com.br/api/cnpj/v1/{cnpj_limpo}",
+            }
         else:
             dados = {
                 "cnpj": cnpj_limpo,
-                "razao_social": f"Fornecedor Cadastrado {cnpj_limpo[-4:]}",
+                "razao_social": nome_fallback or f"Fornecedor Cadastrado {cnpj_limpo[-4:]}",
                 "data_abertura": "2019-06-01",
                 "capital_social": 150000.00,
                 "cnae_principal": "4789-0/99 - Comércio e serviços gerais",
@@ -183,18 +257,46 @@ def enriquecer_cnpj(
 def enriquecer_lote_cnpjs(
     cnpjs: list[str],
     output_dir: Path | str = DEFAULT_ENRICHED_DIR,
-    usar_rede: bool = False,
+    usar_rede: bool | None = None,
+    client: httpx.Client | None = None,
 ) -> dict[str, dict[str, Any]]:
-    """Enriquece uma lista de CNPJs e retorna um dicionário indexado pelo CNPJ limpo."""
+    """Enriquece uma lista de CNPJs únicos com controle de concorrência e retorna dicionário indexado."""
+    unicos = list(dict.fromkeys(limpar_cnpj(c) for c in cnpjs if c and str(c).strip()))
+    deve_usar_rede = resolver_usar_rede(usar_rede)
+    pasta = Path(output_dir)
+    pasta.mkdir(parents=True, exist_ok=True)
+
+    if not deve_usar_rede or client is not None or len(unicos) <= 4:
+        return {
+            c: enriquecer_cnpj(c, output_dir=pasta, usar_rede=deve_usar_rede, client=client)
+            for c in unicos
+        }
+
     resultado: dict[str, dict[str, Any]] = {}
-    for cnpj in cnpjs:
-        if not cnpj:
-            continue
-        cnpj_limpo = limpar_cnpj(cnpj)
-        resultado[cnpj_limpo] = enriquecer_cnpj(cnpj_limpo, output_dir=output_dir, usar_rede=usar_rede)
+    with httpx.Client(timeout=15.0, follow_redirects=True) as shared_http:
+        def _processar(cnpj_item: str) -> tuple[str, dict[str, Any]]:
+            """Enriquece um único CNPJ com leve espaçamento quando não estiver em cache."""
+            em_cache = (pasta / f"cnpj_{cnpj_item}.json").exists()
+            if not em_cache:
+                time.sleep(0.35)
+            return (
+                cnpj_item,
+                enriquecer_cnpj(cnpj_item, output_dir=pasta, usar_rede=True, client=shared_http),
+            )
+
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            for k, val in pool.map(_processar, unicos):
+                resultado[k] = val
+
     return resultado
 
 
 if __name__ == "__main__":
-    enriquecidos = enriquecer_lote_cnpjs(list(CADASTRO_REFERENCIA_CNPJ.keys()))
+    arquivos_emendas = sorted(DEFAULT_RAW_DIR.glob("emendas_2*.csv"))
+    if arquivos_emendas:
+        df_raw = pd.read_csv(arquivos_emendas[-1], dtype={"fornecedor_cnpj": str})
+        lista_cnpjs = df_raw["fornecedor_cnpj"].dropna().unique().tolist()
+    else:
+        lista_cnpjs = list(CADASTRO_REFERENCIA_CNPJ.keys())
+    enriquecidos = enriquecer_lote_cnpjs(lista_cnpjs, usar_rede=True)
     print(f"Enriquecimento concluído para {len(enriquecidos)} CNPJs.")

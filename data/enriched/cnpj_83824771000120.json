@@ -1,0 +1,13 @@
+{
+  "cnpj": "83824771000120",
+  "razao_social": "ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCI DE NAVEGANTES",
+  "data_abertura": "1980-12-26",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "NAVEGANTES",
+  "socios": [
+    "LILIAN RODRIGUES HINNIG"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83824771000120"
+}

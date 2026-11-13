@@ -1,0 +1,13 @@
+{
+  "cnpj": "01767090000103",
+  "razao_social": "ASSOCIACAO HOSPITALAR BENEFICENTE FREI BRUNO",
+  "data_abertura": "1997-04-16",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "XAXIM",
+  "socios": [
+    "ADRIANO IVO BORTOLANZA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/01767090000103"
+}

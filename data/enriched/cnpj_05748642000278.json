@@ -1,0 +1,13 @@
+{
+  "cnpj": "05748642000278",
+  "razao_social": "ASSOCIACAO RENAL VIDA",
+  "data_abertura": "2004-07-16",
+  "capital_social": 0.0,
+  "cnae_principal": "Serviços de diálise e nefrologia",
+  "uf": "SC",
+  "municipio": "RIO DO SUL",
+  "socios": [
+    "LUIS CLAUDIO FRANCALACCI"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/05748642000278"
+}

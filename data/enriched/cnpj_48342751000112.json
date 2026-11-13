@@ -1,0 +1,13 @@
+{
+  "cnpj": "48342751000112",
+  "razao_social": "HOPE",
+  "data_abertura": "2022-09-02",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "JOINVILLE",
+  "socios": [
+    "FILIPE FALCAO PALHARES DUQUE ESTRADA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/48342751000112"
+}

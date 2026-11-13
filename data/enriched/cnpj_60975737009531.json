@@ -1,0 +1,13 @@
+{
+  "cnpj": "60975737009531",
+  "razao_social": "SOCIEDADE BENEFICENTE SAO CAMILO",
+  "data_abertura": "2020-02-13",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "PORTO UNIAO",
+  "socios": [
+    "MATEUS LOCATELLI"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/60975737009531"
+}

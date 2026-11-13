@@ -18,25 +18,29 @@ from enrich_cnpj import CADASTRO_REFERENCIA_CNPJ, enriquecer_lote_cnpjs
 from etl import executar_etl, normalizar_municipio
 
 AVISO_ETICO_API = (
-    "Esta ferramenta não substitui a verificação jornalística nem a apuração oficial. "
+    "Esta ferramenta não substitui a verificação documental nem a apuração oficial. "
     "Os alertas representam padrões estatísticos e cadastrais que merecem verificação."
 )
 
 
 class FeedbackPayload(BaseModel):
-    """Modelo de entrada para registro de feedback de jornalistas sobre um alerta."""
+    """Modelo de entrada para registro de feedback dos usuários e analistas sobre um alerta."""
 
     avaliacao: str = Field(
         ...,
-        description="Classificação do jornalista: 'util' ('útil') ou 'falso_positivo' ('falso positivo').",
+        description="Classificação do analista/usuário: 'util' ('útil') ou 'falso_positivo' ('falso positivo').",
     )
     comentario: str | None = Field(
         default=None,
-        description="Observação opcional da apuração jornalística para calibragem das regras.",
+        description="Observação opcional da análise documental para calibragem das regras.",
+    )
+    usuario: str | None = Field(
+        default=None,
+        description="Identificação opcional do analista ou usuário avaliador.",
     )
     jornalista: str | None = Field(
         default=None,
-        description="Identificação opcional da redação ou jornalista avaliador.",
+        description="Identificação do avaliador (mantido para compatibilidade retroativa).",
     )
 
 
@@ -55,7 +59,7 @@ def garantir_dados_iniciais(db_path: Path | str | None = None) -> Path:
 
 
 def _normalizar_avaliacao_feedback(avaliacao: str) -> str:
-    """Normaliza o texto de avaliação enviado pelo jornalista para 'util' ou 'falso_positivo'."""
+    """Normaliza o texto de avaliação enviado pelo usuário/analista para 'util' ou 'falso_positivo'."""
     limpo = normalizar_municipio(avaliacao).replace("_", " ").strip()
     if limpo in ("UTIL", "RELEVANTE", "POSITIVO"):
         return "util"
@@ -86,7 +90,7 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
         title="Vigia Público SC — API de Monitoramento de Emendas e Anomalias",
         description=(
             "API pública e auditável para monitoramento de emendas parlamentares estaduais de "
-            "Santa Catarina e apoio ao jornalismo investigativo. "
+            "Santa Catarina, controle social e auditoria cívica. "
             f"**Aviso Ético:** {AVISO_ETICO_API}"
         ),
         version="1.0.0",
@@ -111,13 +115,21 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
         municipio: str | None = Query(default=None, description="Filtra por nome do município (com ou sem acentos)"),
         area: str | None = Query(default=None, description="Filtra pela área temática (ex.: Saúde, Educação, Infraestrutura)"),
         valor_minimo: float | None = Query(default=None, ge=0, description="Filtra emendas com valor igual ou superior"),
+        tipo_autor: str | None = Query(default=None, description="Filtra por 'parlamentar' individual ou 'bancada' regional"),
         limit: int = Query(default=200, ge=1, le=1000, description="Quantidade máxima de registros retornados"),
         offset: int = Query(default=0, ge=0, description="Deslocamento para paginação"),
     ) -> list[dict[str, Any]]:
-        """Lista as emendas parlamentares limpas permitindo filtros combinados por parlamentar, município, área e valor mínimo."""
+        """Lista as emendas parlamentares limpas permitindo filtros combinados por autor, bancada, município, área e valor mínimo."""
         caminho = garantir_dados_iniciais(db_path)
         clausulas: list[str] = ["1=1"]
         parametros: list[Any] = []
+
+        if tipo_autor:
+            tl = tipo_autor.strip().lower()
+            if tl in ("bancada", "bancadas", "bancada regional", "bancadas regionais"):
+                clausulas.append("LOWER(TRIM(parlamentar)) LIKE 'bancada %'")
+            elif tl in ("parlamentar", "parlamentares", "parlamentar individual", "parlamentares individuais"):
+                clausulas.append("LOWER(TRIM(parlamentar)) NOT LIKE 'bancada %'")
 
         if parlamentar:
             clausulas.append("LOWER(parlamentar) LIKE ?")
@@ -146,12 +158,22 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
         return [dict(r) for r in linhas]
 
     @app.get("/api/parlamentares", tags=["Parlamentares"])
-    def listar_parlamentares() -> list[dict[str, Any]]:
+    def listar_parlamentares(
+        tipo_autor: str | None = Query(default=None, description="Filtra por 'parlamentar' individual ou 'bancada' regional"),
+    ) -> list[dict[str, Any]]:
         """Lista todos os parlamentares com totais agregados, médias, principal área e concentração de fornecedor."""
         caminho = garantir_dados_iniciais(db_path)
+        clausula = "1=1"
+        if tipo_autor:
+            tl = tipo_autor.strip().lower()
+            if tl in ("bancada", "bancadas", "bancada regional", "bancadas regionais"):
+                clausula = "LOWER(TRIM(parlamentar)) LIKE 'bancada %'"
+            elif tl in ("parlamentar", "parlamentares", "parlamentar individual", "parlamentares individuais"):
+                clausula = "LOWER(TRIM(parlamentar)) NOT LIKE 'bancada %'"
+
         with conectar_banco(caminho) as conn:
             linhas = conn.execute(
-                "SELECT * FROM agregados_parlamentar ORDER BY total_emendas DESC"
+                f"SELECT * FROM agregados_parlamentar WHERE {clausula} ORDER BY total_emendas DESC"
             ).fetchall()
         return [dict(r) for r in linhas]
 
@@ -161,11 +183,19 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
         parlamentar: str | None = Query(default=None, description="Filtra alertas associados a um parlamentar"),
         municipio: str | None = Query(default=None, description="Filtra alertas associados a um município"),
         pontuacao_minima: float | None = Query(default=None, ge=0, le=100, description="Pontuação mínima do alerta"),
+        tipo_autor: str | None = Query(default=None, description="Filtra por 'parlamentar' individual ou 'bancada' regional"),
     ) -> list[dict[str, Any]]:
-        """Lista as anomalias detectadas ordenadas por pontuação decrescente."""
+        """Lista as anomalias detectadas ordenadas por pontuação decrescente com suporte a filtro por bancada ou parlamentar."""
         caminho = garantir_dados_iniciais(db_path)
         clausulas: list[str] = ["1=1"]
         parametros: list[Any] = []
+
+        if tipo_autor:
+            tl = tipo_autor.strip().lower()
+            if tl in ("bancada", "bancadas", "bancada regional", "bancadas regionais"):
+                clausulas.append("LOWER(TRIM(parlamentar)) LIKE 'bancada %'")
+            elif tl in ("parlamentar", "parlamentares", "parlamentar individual", "parlamentares individuais"):
+                clausulas.append("LOWER(TRIM(parlamentar)) NOT LIKE 'bancada %'")
 
         if tipo:
             clausulas.append("(LOWER(tipo) LIKE ? OR LOWER(regra) LIKE ?)")
@@ -251,10 +281,11 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
 
     @app.post("/api/alertas/{id}/feedback", tags=["Alertas"])
     def registrar_feedback_alerta(id: int, payload: FeedbackPayload) -> dict[str, Any]:
-        """Registra a avaliação de um jornalista ('útil' ou 'falso positivo') para calibragem futura das regras."""
+        """Registra a avaliação de um usuário/analista ('útil' ou 'falso positivo') para calibragem futura das regras."""
         caminho = garantir_dados_iniciais(db_path)
         avaliacao_norm = _normalizar_avaliacao_feedback(payload.avaliacao)
         agora = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        identificador_autor = payload.usuario or payload.jornalista
 
         with conectar_banco(caminho) as conn:
             alerta = conn.execute("SELECT * FROM alertas WHERE id = ?", (id,)).fetchone()
@@ -266,7 +297,7 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
                 INSERT INTO alertas_feedback (alerta_id, avaliacao, comentario, jornalista, criado_em)
                 VALUES (?, ?, ?, ?, ?)
                 """,
-                (id, avaliacao_norm, payload.comentario, payload.jornalista, agora),
+                (id, avaliacao_norm, payload.comentario, identificador_autor, agora),
             )
             if avaliacao_norm == "util":
                 conn.execute("UPDATE alertas SET util_count = util_count + 1 WHERE id = ?", (id,))
@@ -282,7 +313,8 @@ def criar_app(db_path: Path | str | None = None) -> FastAPI:
         resultado["ultimo_feedback"] = {
             "avaliacao": avaliacao_norm,
             "comentario": payload.comentario,
-            "jornalista": payload.jornalista,
+            "usuario": identificador_autor,
+            "jornalista": identificador_autor,
             "criado_em": agora,
         }
         return resultado

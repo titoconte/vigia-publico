@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 import unicodedata
 from typing import Any
 
@@ -10,7 +11,7 @@ import pandas as pd
 
 from collect_tce import DEFAULT_RAW_DIR, executar_coleta_completa
 from database import DEFAULT_DB_PATH, conectar_banco, inicializar_schema
-from enrich_cnpj import DEFAULT_ENRICHED_DIR, enriquecer_cnpj, limpar_cnpj
+from enrich_cnpj import DEFAULT_ENRICHED_DIR, enriquecer_cnpj, enriquecer_lote_cnpjs, limpar_cnpj
 
 DEFAULT_CLEAN_DIR = Path("data/clean")
 
@@ -40,12 +41,14 @@ def calcular_valor_per_capita(valor: float | int | None, populacao: int | float 
     return round(val_float / pop_float, 4)
 
 
-def localizar_arquivo_emendas_recente(raw_dir: Path) -> Path:
+def localizar_arquivo_emendas_recente(raw_dir: Path, usar_rede: bool | None = None) -> Path:
     """Localiza o arquivo emendas_YYYYMMDD.csv mais recente na pasta data/raw (ou executa a coleta se vazio)."""
-    arquivos = sorted(raw_dir.glob("emendas_*.csv"))
+    arquivos = sorted(p for p in raw_dir.glob("emendas_*.csv") if re.match(r"^emendas_\d{8}\.csv$", p.name))
     if not arquivos:
-        executar_coleta_completa(raw_dir=raw_dir)
         arquivos = sorted(raw_dir.glob("emendas_*.csv"))
+    if not arquivos:
+        executar_coleta_completa(raw_dir=raw_dir, usar_rede=usar_rede)
+        arquivos = sorted(p for p in raw_dir.glob("emendas_*.csv") if re.match(r"^emendas_\d{8}\.csv$", p.name))
     return arquivos[-1]
 
 
@@ -93,19 +96,38 @@ def construir_agregados_parlamentar(df_clean: pd.DataFrame) -> pd.DataFrame:
 
 
 def construir_agregados_municipio(df_clean: pd.DataFrame, df_pop: pd.DataFrame) -> pd.DataFrame:
-    """Gera a tabela agregada por município incluindo população IBGE, total recebido e valor per capita."""
+    """Gera a tabela agregada por município (PK única codigo_ibge) incluindo população IBGE e valor per capita."""
+    mapa_nome_oficial = dict(zip(df_pop["codigo_ibge"].astype(str), df_pop["municipio"].astype(str)))
     agrupado = (
-        df_clean.groupby(["codigo_ibge", "municipio", "municipio_normalizado", "populacao"], as_index=False)
+        df_clean.groupby("codigo_ibge", as_index=False)
         .agg(
+            municipio=("municipio", "first"),
+            populacao=("populacao", "max"),
             total_recebido=("valor", "sum"),
             quantidade_emendas=("id_emenda", "count"),
         )
     )
+    agrupado["municipio"] = [
+        mapa_nome_oficial.get(str(cod), str(mun))
+        for cod, mun in zip(agrupado["codigo_ibge"], agrupado["municipio"])
+    ]
+    agrupado["municipio_normalizado"] = agrupado["municipio"].apply(normalizar_municipio)
     agrupado["total_recebido"] = agrupado["total_recebido"].round(2)
     agrupado["valor_per_capita"] = agrupado.apply(
         lambda r: calcular_valor_per_capita(r["total_recebido"], r["populacao"]),
         axis=1,
     )
+    agrupado = agrupado[
+        [
+            "codigo_ibge",
+            "municipio",
+            "municipio_normalizado",
+            "populacao",
+            "total_recebido",
+            "quantidade_emendas",
+            "valor_per_capita",
+        ]
+    ]
 
     codigos_com_emenda = set(agrupado["codigo_ibge"].astype(str))
     extras: list[dict[str, Any]] = []
@@ -130,31 +152,18 @@ def construir_agregados_municipio(df_clean: pd.DataFrame, df_pop: pd.DataFrame) 
 
 
 def construir_agregados_fornecedor(df_clean: pd.DataFrame) -> pd.DataFrame:
-    """Gera a tabela agregada por fornecedor/entidade beneficiária com dados da Receita Federal e totais."""
+    """Gera a tabela agregada por CNPJ único com dados da Receita Federal e totais consolidados."""
     agrupado = (
-        df_clean.groupby(
-            [
-                "fornecedor_cnpj",
-                "fornecedor_nome",
-                "uf_fornecedor",
-                "data_abertura_fornecedor",
-                "capital_social_fornecedor",
-                "cnae_fornecedor",
-            ],
-            dropna=False,
-            as_index=False,
-        )
+        df_clean.groupby("fornecedor_cnpj", dropna=False, as_index=False)
         .agg(
+            fornecedor_nome=("fornecedor_nome", "first"),
+            uf_fornecedor=("uf_fornecedor", "first"),
+            data_abertura=("data_abertura_fornecedor", "first"),
+            capital_social=("capital_social_fornecedor", "max"),
+            cnae_principal=("cnae_fornecedor", "first"),
             total_recebido=("valor", "sum"),
             quantidade_emendas=("id_emenda", "count"),
             parlamentares_distintos=("parlamentar", "nunique"),
-        )
-        .rename(
-            columns={
-                "data_abertura_fornecedor": "data_abertura",
-                "capital_social_fornecedor": "capital_social",
-                "cnae_fornecedor": "cnae_principal",
-            }
         )
     )
     agrupado["total_recebido"] = agrupado["total_recebido"].round(2)
@@ -166,6 +175,7 @@ def executar_etl(
     enriched_dir: Path | str = DEFAULT_ENRICHED_DIR,
     clean_dir: Path | str = DEFAULT_CLEAN_DIR,
     db_path: Path | str = DEFAULT_DB_PATH,
+    usar_rede: bool | None = None,
 ) -> dict[str, pd.DataFrame]:
     """Executa o pipeline ETL completo: normaliza municípios, faz join com IBGE/CNPJ, calcula agregados e salva no banco."""
     pasta_raw = Path(raw_dir)
@@ -173,10 +183,10 @@ def executar_etl(
     pasta_clean = Path(clean_dir)
     pasta_clean.mkdir(parents=True, exist_ok=True)
 
-    arquivo_emendas = localizar_arquivo_emendas_recente(pasta_raw)
+    arquivo_emendas = localizar_arquivo_emendas_recente(pasta_raw, usar_rede=usar_rede)
     arquivo_pop = pasta_raw / "populacao_ibge.csv"
     if not arquivo_pop.exists():
-        executar_coleta_completa(raw_dir=pasta_raw)
+        executar_coleta_completa(raw_dir=pasta_raw, usar_rede=usar_rede)
 
     df_emendas = pd.read_csv(arquivo_emendas, dtype={"fornecedor_cnpj": str, "codigo_ibge": str})
     df_pop = pd.read_csv(arquivo_pop, dtype={"codigo_ibge": str})
@@ -207,6 +217,10 @@ def executar_etl(
     ]
     df_emendas["ano_mes"] = df_emendas["data"].astype(str).str.slice(0, 7)
 
+    # Pré-enriquece CNPJs únicos em lote caso ainda não estejam no cache local
+    cnpjs_unicos = df_emendas["fornecedor_cnpj"].dropna().astype(str).unique().tolist()
+    enriquecer_lote_cnpjs(cnpjs_unicos, output_dir=pasta_enriched, usar_rede=usar_rede)
+
     datas_abertura: list[str] = []
     capitais_sociais: list[float] = []
     cnaes: list[str] = []
@@ -215,13 +229,25 @@ def executar_etl(
 
     for _, row in df_emendas.iterrows():
         cnpj_limpo = limpar_cnpj(str(row["fornecedor_cnpj"]))
-        info_cnpj = enriquecer_cnpj(cnpj_limpo, output_dir=pasta_enriched, usar_rede=False)
+        nome_forn = str(row.get("fornecedor_nome") or "").strip()
+        info_cnpj = enriquecer_cnpj(
+            cnpj_limpo,
+            output_dir=pasta_enriched,
+            usar_rede=usar_rede,
+            nome_fallback=nome_forn,
+        )
         cnpjs_limpos.append(cnpj_limpo)
-        datas_abertura.append(str(info_cnpj.get("data_abertura") or "2018-01-01"))
+        datas_abertura.append(str(info_cnpj.get("data_abertura") or ""))
         capitais_sociais.append(float(info_cnpj.get("capital_social") or 0.0))
         cnaes.append(str(info_cnpj.get("cnae_principal") or "Não informado"))
-        uf_row = str(row.get("uf_fornecedor") or "").strip()
-        ufs_forn.append(uf_row if uf_row else str(info_cnpj.get("uf") or "SC"))
+        uf_row = str(row.get("uf_fornecedor") or "").strip().upper()
+        uf_receita = str(info_cnpj.get("uf") or "").strip().upper()
+        if uf_row and uf_row != "SC":
+            ufs_forn.append(uf_row)
+        elif uf_receita:
+            ufs_forn.append(uf_receita)
+        else:
+            ufs_forn.append(uf_row or "SC")
 
     df_emendas["fornecedor_cnpj"] = cnpjs_limpos
     df_emendas["uf_fornecedor"] = ufs_forn

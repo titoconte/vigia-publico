@@ -1,0 +1,13 @@
+{
+  "cnpj": "95991113000102",
+  "razao_social": "FUNDACAO HOSPITALAR DE CURITIBANOS",
+  "data_abertura": "1993-01-05",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "CURITIBANOS",
+  "socios": [
+    "MARCELO ANTONIO PASOLINI"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/95991113000102"
+}

@@ -1,0 +1,14 @@
+{
+  "cnpj": "24006302000488",
+  "razao_social": "INSTITUTO DE DESENVOLVIMENTO, ENSINO E ASSISTENCIA A SAUDE - IDEAS",
+  "data_abertura": "2018-01-19",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de apoio à gestão de saúde",
+  "uf": "SC",
+  "municipio": "JAGUARUNA",
+  "socios": [
+    "ELTON FERNANDO DA SILVA",
+    "SANDRO NATALINO DEMETRIO"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/24006302000488"
+}

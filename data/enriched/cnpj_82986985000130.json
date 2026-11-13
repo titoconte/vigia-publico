@@ -1,0 +1,13 @@
+{
+  "cnpj": "82986985000130",
+  "razao_social": "HOSPITAL ARQUIDIOCESANO CONSUL CARLOS RENAUX",
+  "data_abertura": "1989-10-13",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "BRUSQUE",
+  "socios": [
+    "GILBERTO BASTIANI"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82986985000130"
+}

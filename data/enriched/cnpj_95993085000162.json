@@ -1,0 +1,11 @@
+{
+  "cnpj": "95993085000162",
+  "razao_social": "MUNICIPIO DE PASSOS MAIA",
+  "data_abertura": "1993-01-04",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "PASSOS MAIA",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/95993085000162"
+}

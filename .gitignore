@@ -27,3 +27,8 @@ Thumbs.db
 *.db-journal
 *.db-wal
 *.db-shm
+
+# Cache incremental individual de extratos de emendas e CNPJs
+data/raw/extratos_cache/
+data/enriched/
+downloaded_files/

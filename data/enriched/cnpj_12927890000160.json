@@ -1,0 +1,13 @@
+{
+  "cnpj": "12927890000160",
+  "razao_social": "GRUPO DE PAIS E AMIGOS PELA UNIDADE INFANTO-JUVENIL DE ONCO-HEMATOLOGIA - GUIDO",
+  "data_abertura": "2010-11-24",
+  "capital_social": 0.0,
+  "cnae_principal": "Centros de apoio a pacientes com câncer e com AIDS",
+  "uf": "SC",
+  "municipio": "CRICIUMA",
+  "socios": [
+    "ROGERIO CAMPOS"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/12927890000160"
+}

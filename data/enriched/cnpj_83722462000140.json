@@ -1,0 +1,11 @@
+{
+  "cnpj": "83722462000140",
+  "razao_social": "FUNDACAO CATARINENSE DE CULTURA",
+  "data_abertura": "1979-05-02",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "FLORIANOPOLIS",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83722462000140"
+}

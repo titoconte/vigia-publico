@@ -1,0 +1,13 @@
+{
+  "cnpj": "06787536000185",
+  "razao_social": "LIONS CLUBE DE JAGUARUNA",
+  "data_abertura": "2004-07-05",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "JAGUARUNA",
+  "socios": [
+    "SILVIO SEBASTIAO GARCIA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/06787536000185"
+}

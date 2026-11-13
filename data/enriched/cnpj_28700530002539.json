@@ -1,0 +1,13 @@
+{
+  "cnpj": "28700530002539",
+  "razao_social": "INSTITUTO MARIA SCHMITT DE DESENVOLVIMENTO DE ENSINO, ASSISTENCIA SOCIAL E SAUDE DO CIDADAO",
+  "data_abertura": "2023-03-16",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de apoio à gestão de saúde",
+  "uf": "SC",
+  "municipio": "FLORIANOPOLIS",
+  "socios": [
+    "WALMIRO MARTINS CHARAO JUNIOR"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/28700530002539"
+}

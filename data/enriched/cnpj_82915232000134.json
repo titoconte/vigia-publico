@@ -1,0 +1,11 @@
+{
+  "cnpj": "82915232000134",
+  "razao_social": "MUNICIPIO DE TIMBE DO SUL",
+  "data_abertura": "1974-12-05",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "TIMBE DO SUL",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82915232000134"
+}

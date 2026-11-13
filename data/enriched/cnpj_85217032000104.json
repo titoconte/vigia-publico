@@ -1,0 +1,13 @@
+{
+  "cnpj": "85217032000104",
+  "razao_social": "INSTITUTO HOSPITALAR E BENEFICENTE NOSSA SENHORA MERCES",
+  "data_abertura": "1970-01-20",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "IPORA DO OESTE",
+  "socios": [
+    "MARIO KLAMT"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/85217032000104"
+}

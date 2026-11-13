@@ -1,0 +1,13 @@
+{
+  "cnpj": "82793944000128",
+  "razao_social": "ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS DE LAGES",
+  "data_abertura": "1972-08-18",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "LAGES",
+  "socios": [
+    "JORGE LUIZ MANFROI"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82793944000128"
+}

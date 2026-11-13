@@ -1,0 +1,11 @@
+{
+  "cnpj": "95778056000188",
+  "razao_social": "MUNICIPIO DE COCAL DO SUL",
+  "data_abertura": "1993-01-04",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "COCAL DO SUL",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/95778056000188"
+}

@@ -1,0 +1,11 @@
+{
+  "cnpj": "03264792000108",
+  "razao_social": "FUNDO MUNICIPAL DE SAUDE DE SAO FRANCISCO DO SUL",
+  "data_abertura": "1999-07-07",
+  "capital_social": 0.0,
+  "cnae_principal": "Outras atividades de atenção à saúde humana não especificadas anteriormente",
+  "uf": "SC",
+  "municipio": "SAO FRANCISCO DO SUL",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/03264792000108"
+}

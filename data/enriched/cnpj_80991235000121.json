@@ -1,0 +1,13 @@
+{
+  "cnpj": "80991235000121",
+  "razao_social": "ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS DE SANTA ROSA DO SUL",
+  "data_abertura": "1991-04-17",
+  "capital_social": 0.0,
+  "cnae_principal": "Ensino fundamental",
+  "uf": "SC",
+  "municipio": "SANTA ROSA DO SUL",
+  "socios": [
+    "FATIMA DE BITENCOURT VARELA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/80991235000121"
+}

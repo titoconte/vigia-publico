@@ -1,0 +1,11 @@
+{
+  "cnpj": "06089125000116",
+  "razao_social": "FUNDO MUNICIPAL DE SAUDE DE IRINEOPOLIS - FMSI",
+  "data_abertura": "1993-07-09",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "IRINEOPOLIS",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/06089125000116"
+}

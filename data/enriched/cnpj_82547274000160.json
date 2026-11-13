@@ -1,0 +1,11 @@
+{
+  "cnpj": "82547274000160",
+  "razao_social": "MUNICIPIO DE SAO JOAO DO SUL",
+  "data_abertura": "1974-12-05",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "SAO JOAO DO SUL",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82547274000160"
+}

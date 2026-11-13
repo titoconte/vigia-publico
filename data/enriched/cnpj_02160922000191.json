@@ -1,0 +1,13 @@
+{
+  "cnpj": "02160922000191",
+  "razao_social": "ASSOCIACAO COMUNITARIA SAO JUDAS TADEU DE MELEIRO",
+  "data_abertura": "1997-10-06",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "uf": "SC",
+  "municipio": "MELEIRO",
+  "socios": [
+    "DORVAL FRANZNER"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/02160922000191"
+}

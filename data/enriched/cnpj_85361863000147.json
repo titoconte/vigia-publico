@@ -1,0 +1,11 @@
+{
+  "cnpj": "85361863000147",
+  "razao_social": "MUNICIPIO DE PALMITOS",
+  "data_abertura": "1969-02-25",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "PALMITOS",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/85361863000147"
+}

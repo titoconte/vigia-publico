@@ -1,0 +1,13 @@
+{
+  "cnpj": "72498900000111",
+  "razao_social": "CLUBE DE BOCHA BELCHIOR",
+  "data_abertura": "1993-07-06",
+  "capital_social": 0.0,
+  "cnae_principal": "Clubes sociais, esportivos e similares",
+  "uf": "SC",
+  "municipio": "GASPAR",
+  "socios": [
+    "HILARIO BOAVENTURA PEREIRA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/72498900000111"
+}

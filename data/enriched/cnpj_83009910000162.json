@@ -1,0 +1,11 @@
+{
+  "cnpj": "83009910000162",
+  "razao_social": "MUNICIPIO DE FAXINAL DOS GUEDES",
+  "data_abertura": "1974-12-18",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "FAXINAL DOS GUEDES",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83009910000162"
+}

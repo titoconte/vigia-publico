@@ -1,0 +1,13 @@
+{
+  "cnpj": "03795934000155",
+  "razao_social": "ASSOCIACAO CORPO DE BOMBEIROS VOLUNTARIOS DE BARRA VELHA",
+  "data_abertura": "1995-11-16",
+  "capital_social": 0.0,
+  "cnae_principal": "Defesa Civil",
+  "uf": "SC",
+  "municipio": "BARRA VELHA",
+  "socios": [
+    "REGINALDO ROSA DOS SANTOS"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/03795934000155"
+}

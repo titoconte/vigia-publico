@@ -1,0 +1,13 @@
+{
+  "cnpj": "79679940000109",
+  "razao_social": "ASSOC DE PAIS E AMIGOS DOS EXCEPCIONAIS DE GAROPABA",
+  "data_abertura": "1986-12-11",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "GAROPABA",
+  "socios": [
+    "SANDRA REGINA SILVEIRA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/79679940000109"
+}

@@ -1,0 +1,13 @@
+{
+  "cnpj": "07447145000184",
+  "razao_social": "ASSOCIACAO MAFRENSE DOS DEFICIENTES VISUAIS - AMADEV",
+  "data_abertura": "2005-06-17",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "MAFRA",
+  "socios": [
+    "MARLENE JORAS"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/07447145000184"
+}

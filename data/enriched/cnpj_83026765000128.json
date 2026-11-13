@@ -1,0 +1,11 @@
+{
+  "cnpj": "83026765000128",
+  "razao_social": "MUNICIPIO DE CAMPO ERE",
+  "data_abertura": "1974-12-17",
+  "capital_social": 0.0,
+  "cnae_principal": "Administração pública em geral",
+  "uf": "SC",
+  "municipio": "CAMPO ERE",
+  "socios": [],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83026765000128"
+}

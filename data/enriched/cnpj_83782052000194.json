@@ -1,0 +1,13 @@
+{
+  "cnpj": "83782052000194",
+  "razao_social": "SERRA CIMA FUTEBOL CLUBE",
+  "data_abertura": "1983-06-09",
+  "capital_social": 0.0,
+  "cnae_principal": "Outras atividades esportivas não especificadas anteriormente",
+  "uf": "SC",
+  "municipio": "AURORA",
+  "socios": [
+    "SIDNEI HANG"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83782052000194"
+}

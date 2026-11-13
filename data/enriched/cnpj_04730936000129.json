@@ -1,0 +1,14 @@
+{
+  "cnpj": "04730936000129",
+  "razao_social": "ASSOCIACAO LUX DE CULTURA E ARTE",
+  "data_abertura": "2001-10-05",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de organizações associativas ligadas à cultura e à arte",
+  "uf": "SC",
+  "municipio": "CORUPA",
+  "socios": [
+    "CICERO CELESTE MURARA",
+    "SILDO CESAR DA COSTA"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/04730936000129"
+}

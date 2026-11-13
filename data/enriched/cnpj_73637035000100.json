@@ -1,0 +1,13 @@
+{
+  "cnpj": "73637035000100",
+  "razao_social": "CENTRO COMUNITARIO ESPORTIVO FORTALEZA",
+  "data_abertura": "1993-11-03",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "BLUMENAU",
+  "socios": [
+    "DELSON LUIZ BIRCK LOPES"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/73637035000100"
+}

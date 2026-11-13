@@ -1,0 +1,14 @@
+{
+  "cnpj": "01269862000187",
+  "razao_social": "ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS A.MORNAS",
+  "data_abertura": "1996-06-13",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "uf": "SC",
+  "municipio": "AGUAS MORNAS",
+  "socios": [
+    "ALEXANDRE MEYER",
+    "ATAIR DERNER FILHO"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/01269862000187"
+}

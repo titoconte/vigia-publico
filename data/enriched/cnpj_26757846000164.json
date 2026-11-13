@@ -1,0 +1,13 @@
+{
+  "cnpj": "26757846000164",
+  "razao_social": "LIONS CLUBE TRES BARRAS",
+  "data_abertura": "2016-12-07",
+  "capital_social": 0.0,
+  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "uf": "SC",
+  "municipio": "TRES BARRAS",
+  "socios": [
+    "GRACILEIA DO ROCIO PADILHA DOS SANTOS"
+  ],
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/26757846000164"
+}
