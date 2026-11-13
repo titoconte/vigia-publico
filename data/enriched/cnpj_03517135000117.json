@@ -1,9 +1,24 @@
 {
   "cnpj": "03517135000117",
   "razao_social": "OBRAS SOCIAIS DA CASA ESPIRITA BEZERRA DE MENEZES",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1999-11-08",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Educação infantil - pré-escola",
+  "cnae_principal": "8512-1/00 - Educação infantil - pré-escola",
+  "cnae_descricao": "8512-1/00 - Educação infantil - pré-escola",
+  "cnaes_secundarios": [
+    "8511-2/00 - Educação infantil - creche",
+    "8513-9/00 - Ensino fundamental",
+    "8531-7/00 - Educação superior - graduação",
+    "8533-3/00 - Educação superior - pós-graduação e extensão",
+    "8541-4/00 - Educação profissional de nível técnico",
+    "8599-6/99 - Outras atividades de ensino não especificadas anteriormente",
+    "8800-6/00 - Serviços de assistência social sem alojamento",
+    "9430-8/00 - Atividades de associações de defesa de direitos sociais"
+  ],
   "uf": "SC",
   "municipio": "JOINVILLE",
   "socios": [

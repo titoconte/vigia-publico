@@ -1,9 +1,15 @@
 {
   "cnpj": "72498900000111",
   "razao_social": "CLUBE DE BOCHA BELCHIOR",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1993-07-06",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Clubes sociais, esportivos e similares",
+  "cnae_principal": "9312-3/00 - Clubes sociais, esportivos e similares",
+  "cnae_descricao": "9312-3/00 - Clubes sociais, esportivos e similares",
+  "cnaes_secundarios": [],
   "uf": "SC",
   "municipio": "GASPAR",
   "socios": [

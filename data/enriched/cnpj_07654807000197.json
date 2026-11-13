@@ -1,9 +1,18 @@
 {
   "cnpj": "07654807000197",
   "razao_social": "CONSORCIO PUBLICO INTERFEDERATIVO DE SAUDE DO ALTO URUGUAI CATARINENSE - CIS AMAUC",
+  "nome_fantasia": "CIS/AMAUC",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2005-10-14",
+  "natureza_juridica": "Consórcio Público de Direito Público (Associação Pública)",
+  "natureza_juridica_codigo": "1210",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "cnae_principal": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnae_descricao": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnaes_secundarios": [
+    "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte",
+    "9499-5/00 - Atividades associativas não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "CONCORDIA",
   "socios": [],

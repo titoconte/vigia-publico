@@ -1,9 +1,22 @@
 {
   "cnpj": "03795934000155",
   "razao_social": "ASSOCIACAO CORPO DE BOMBEIROS VOLUNTARIOS DE BARRA VELHA",
+  "nome_fantasia": "CORPO DE BOMBEIROS VOLUNTARIOS DE BARRA VELHA (SC)",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1995-11-16",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Defesa Civil",
+  "cnae_principal": "8425-6/00 - Defesa Civil",
+  "cnae_descricao": "8425-6/00 - Defesa Civil",
+  "cnaes_secundarios": [
+    "4322-3/03 - Instalações de sistema de prevenção contra incêndio",
+    "8599-6/04 - Treinamento em desenvolvimento profissional e gerencial",
+    "8621-6/02 - Serviços móveis de atendimento a urgências, exceto por UTI móvel",
+    "8800-6/00 - Serviços de assistência social sem alojamento",
+    "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+    "9499-5/00 - Atividades associativas não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "BARRA VELHA",
   "socios": [

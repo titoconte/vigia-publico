@@ -1,9 +1,17 @@
 {
   "cnpj": "83722462000140",
   "razao_social": "FUNDACAO CATARINENSE DE CULTURA",
+  "nome_fantasia": "FCC",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1979-05-02",
+  "natureza_juridica": "Fundação Pública de Direito Público Estadual ou do Distrito Federal",
+  "natureza_juridica_codigo": "1147",
   "capital_social": 0.0,
-  "cnae_principal": "Administração pública em geral",
+  "cnae_principal": "8411-6/00 - Administração pública em geral",
+  "cnae_descricao": "8411-6/00 - Administração pública em geral",
+  "cnaes_secundarios": [
+    "7119-7/99 - Atividades técnicas relacionadas à engenharia e arquitetura não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "FLORIANOPOLIS",
   "socios": [],

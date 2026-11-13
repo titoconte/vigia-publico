@@ -1,11 +1,17 @@
 {
   "cnpj": "80636475000108",
-  "razao_social": "Entidade/Credor 80636475000108",
-  "data_abertura": "",
+  "razao_social": "FUNDO MUNICIPAL DE SAUDE DE CHAPECO",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
+  "data_abertura": "1992-08-10",
+  "natureza_juridica": "Fundo Público da Administração Direta Municipal",
+  "natureza_juridica_codigo": "1333",
   "capital_social": 0.0,
-  "cnae_principal": "Administração pública / entidade conveniada",
+  "cnae_principal": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_descricao": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnaes_secundarios": [],
   "uf": "SC",
-  "municipio": "Santa Catarina",
+  "municipio": "CHAPECO",
   "socios": [],
   "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/80636475000108"
 }

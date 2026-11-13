@@ -1,9 +1,15 @@
 {
   "cnpj": "82763798000430",
   "razao_social": "COMUNIDADE EVANGELICA DE CONFISSAO LUTERANA EM RIO DO SUL",
+  "nome_fantasia": "HOSPITAL SAMARIA",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2000-12-10",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_principal": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_descricao": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnaes_secundarios": [],
   "uf": "SC",
   "municipio": "RIO DO SUL",
   "socios": [

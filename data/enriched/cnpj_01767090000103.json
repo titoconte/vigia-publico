@@ -1,9 +1,19 @@
 {
   "cnpj": "01767090000103",
   "razao_social": "ASSOCIACAO HOSPITALAR BENEFICENTE FREI BRUNO",
+  "nome_fantasia": "HOSPITAL FREI BRUNO",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1997-04-16",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_principal": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_descricao": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnaes_secundarios": [
+    "4771-7/01 - Comércio varejista de produtos farmacêuticos, sem manipulação de fórmulas",
+    "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+    "8640-2/02 - Laboratórios clínicos"
+  ],
   "uf": "SC",
   "municipio": "XAXIM",
   "socios": [

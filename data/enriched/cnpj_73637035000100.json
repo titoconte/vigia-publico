@@ -1,9 +1,18 @@
 {
   "cnpj": "73637035000100",
   "razao_social": "CENTRO COMUNITARIO ESPORTIVO FORTALEZA",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1993-11-03",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "cnae_principal": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnae_descricao": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnaes_secundarios": [
+    "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte",
+    "9499-5/00 - Atividades associativas não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "BLUMENAU",
   "socios": [

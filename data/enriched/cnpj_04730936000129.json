@@ -1,9 +1,21 @@
 {
   "cnpj": "04730936000129",
   "razao_social": "ASSOCIACAO LUX DE CULTURA E ARTE",
+  "nome_fantasia": "LUX",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2001-10-05",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de organizações associativas ligadas à cultura e à arte",
+  "cnae_principal": "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte",
+  "cnae_descricao": "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte",
+  "cnaes_secundarios": [
+    "9102-3/01 - Atividades de museus e de exploração de lugares e prédios históricos e atrações similares",
+    "9102-3/02 - Restauração e conservação de lugares e prédios históricos",
+    "9001-9/01 - Produção teatral",
+    "9001-9/02 - Produção musical",
+    "9101-5/00 - Atividades de bibliotecas e arquivos"
+  ],
   "uf": "SC",
   "municipio": "CORUPA",
   "socios": [

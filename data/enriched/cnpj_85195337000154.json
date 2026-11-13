@@ -1,9 +1,15 @@
 {
   "cnpj": "85195337000154",
   "razao_social": "FUNDACAO SHALOM DA FAMILIA",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1992-10-02",
+  "natureza_juridica": "Fundação Privada",
+  "natureza_juridica_codigo": "3069",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "cnae_principal": "9499-5/00 - Atividades associativas não especificadas anteriormente",
+  "cnae_descricao": "9499-5/00 - Atividades associativas não especificadas anteriormente",
+  "cnaes_secundarios": [],
   "uf": "SC",
   "municipio": "CRICIUMA",
   "socios": [

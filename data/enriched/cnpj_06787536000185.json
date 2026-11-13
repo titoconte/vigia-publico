@@ -1,9 +1,18 @@
 {
   "cnpj": "06787536000185",
   "razao_social": "LIONS CLUBE DE JAGUARUNA",
+  "nome_fantasia": "LIONS CLUBE",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2004-07-05",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "cnae_principal": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnae_descricao": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnaes_secundarios": [
+    "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte",
+    "9499-5/00 - Atividades associativas não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "JAGUARUNA",
   "socios": [

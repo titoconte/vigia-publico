@@ -1,9 +1,18 @@
 {
   "cnpj": "86159340000185",
   "razao_social": "ASSOCIACAO BENEFICENTE BENTO CAVALHEIRO",
+  "nome_fantasia": "HOSPITAL DE CARIDADE CORACAO DE JESUS",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1968-06-03",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_principal": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_descricao": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnaes_secundarios": [
+    "8599-6/99 - Outras atividades de ensino não especificadas anteriormente",
+    "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências"
+  ],
   "uf": "SC",
   "municipio": "SAO JOAQUIM",
   "socios": [

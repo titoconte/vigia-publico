@@ -255,3 +255,42 @@ def test_sanear_cnpjs_fallback_atualiza_json_cache_e_emendas_clean(tmp_path: Pat
     assert cnaes_emendas["00058956000144"].startswith("9430-8/00")
     assert cnaes_emendas["01566620000155"] == "8411-6/00 - Administração pública em geral"
 
+
+def test_enriquecer_cnpj_fallback_minhareceita_quando_brasilapi_retorna_429(tmp_path: Path) -> None:
+    """Verifica fallback imediato em minhareceita.org quando BrasilAPI responde HTTP 429."""
+    import httpx
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        """Simula rate-limit 429 na BrasilAPI e resposta 200 na MinhaReceita."""
+        url = str(request.url)
+        if "brasilapi.com.br" in url:
+            return httpx.Response(429)
+        if "minhareceita.org" in url:
+            return httpx.Response(
+                200,
+                json={
+                    "cnpj": "00086376000160",
+                    "razao_social": "APAE DE COCAL DO SUL",
+                    "descricao_situacao_cadastral": "ATIVA",
+                    "codigo_natureza_juridica": 3999,
+                    "natureza_juridica": "Associação Privada",
+                    "cnae_fiscal": 9430800,
+                    "cnae_fiscal_descricao": "Atividades de associações de defesa de direitos sociais",
+                    "cnaes_secundarios": [
+                        {"codigo": 9499500, "descricao": "Atividades associativas não especificadas anteriormente"}
+                    ],
+                    "uf": "SC",
+                    "municipio": "COCAL DO SUL",
+                },
+            )
+        return httpx.Response(404)
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    dados = enriquecer_cnpj("00086376000160", output_dir=tmp_path, usar_rede=True, client=client)
+    assert dados["cnae_principal"] == "9430-8/00 - Atividades de associações de defesa de direitos sociais"
+    assert dados["cnaes_secundarios"] == [
+        "9499-5/00 - Atividades associativas não especificadas anteriormente"
+    ]
+    assert "minhareceita.org" in dados["fonte_consulta"]
+
+

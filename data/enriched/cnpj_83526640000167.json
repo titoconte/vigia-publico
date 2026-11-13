@@ -1,9 +1,18 @@
 {
   "cnpj": "83526640000167",
   "razao_social": "ASSOCIACAO ASSISTENCIAL LAR BETANIA",
+  "nome_fantasia": "LAR BETANIA",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1978-01-24",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Educação infantil - creche",
+  "cnae_principal": "8511-2/00 - Educação infantil - creche",
+  "cnae_descricao": "8511-2/00 - Educação infantil - creche",
+  "cnaes_secundarios": [
+    "8512-1/00 - Educação infantil - pré-escola",
+    "8800-6/00 - Serviços de assistência social sem alojamento"
+  ],
   "uf": "SC",
   "municipio": "BLUMENAU",
   "socios": [

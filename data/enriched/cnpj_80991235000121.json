@@ -1,9 +1,15 @@
 {
   "cnpj": "80991235000121",
   "razao_social": "ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS DE SANTA ROSA DO SUL",
+  "nome_fantasia": "APAE",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1991-04-17",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Ensino fundamental",
+  "cnae_principal": "8513-9/00 - Ensino fundamental",
+  "cnae_descricao": "8513-9/00 - Ensino fundamental",
+  "cnaes_secundarios": [],
   "uf": "SC",
   "municipio": "SANTA ROSA DO SUL",
   "socios": [

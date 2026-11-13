@@ -1,9 +1,15 @@
 {
   "cnpj": "12927890000160",
   "razao_social": "GRUPO DE PAIS E AMIGOS PELA UNIDADE INFANTO-JUVENIL DE ONCO-HEMATOLOGIA - GUIDO",
+  "nome_fantasia": "GUIDO",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2010-11-24",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Centros de apoio a pacientes com câncer e com AIDS",
+  "cnae_principal": "8711-5/04 - Centros de apoio a pacientes com câncer e com AIDS",
+  "cnae_descricao": "8711-5/04 - Centros de apoio a pacientes com câncer e com AIDS",
+  "cnaes_secundarios": [],
   "uf": "SC",
   "municipio": "CRICIUMA",
   "socios": [

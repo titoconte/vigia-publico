@@ -1,11 +1,17 @@
 {
   "cnpj": "82945718000115",
   "razao_social": "MUNICIPIO DE SAO CARLOS",
+  "nome_fantasia": "SAO CARLOS PREF GABINETE DO PREFEITO",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1974-12-18",
+  "natureza_juridica": "Município",
+  "natureza_juridica_codigo": "1244",
   "capital_social": 0.0,
-  "cnae_principal": "Administração pública em geral",
+  "cnae_principal": "8411-6/00 - Administração pública em geral",
+  "cnae_descricao": "8411-6/00 - Administração pública em geral",
+  "cnaes_secundarios": [],
   "uf": "SC",
-  "municipio": "São Carlos",
+  "municipio": "SAO CARLOS",
   "socios": [],
-  "fonte_consulta": "https://publica.cnpj.ws/cnpj/82945718000115"
+  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82945718000115"
 }

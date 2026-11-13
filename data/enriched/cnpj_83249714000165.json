@@ -1,9 +1,17 @@
 {
   "cnpj": "83249714000165",
   "razao_social": "FUNDACAO MEDICO SOCIAL RURAL SAO SEBASTIAO",
+  "nome_fantasia": "HOSPITAL SAO SEBASTIAO",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1975-12-11",
+  "natureza_juridica": "Fundação Privada",
+  "natureza_juridica_codigo": "3069",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_principal": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_descricao": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnaes_secundarios": [
+    "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências"
+  ],
   "uf": "SC",
   "municipio": "TREZE DE MAIO",
   "socios": [

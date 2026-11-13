@@ -1,9 +1,20 @@
 {
   "cnpj": "82986985000130",
   "razao_social": "HOSPITAL ARQUIDIOCESANO CONSUL CARLOS RENAUX",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1989-10-13",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_principal": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_descricao": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnaes_secundarios": [
+    "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+    "8640-2/10 - Serviços de quimioterapia",
+    "8640-2/11 - Serviços de radioterapia",
+    "8650-0/07 - Atividades de terapia de nutrição enteral e parenteral"
+  ],
   "uf": "SC",
   "municipio": "BRUSQUE",
   "socios": [

@@ -1,9 +1,15 @@
 {
   "cnpj": "95991113000102",
   "razao_social": "FUNDACAO HOSPITALAR DE CURITIBANOS",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1993-01-05",
+  "natureza_juridica": "Fundação Privada",
+  "natureza_juridica_codigo": "3069",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "cnae_principal": "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "cnae_descricao": "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "cnaes_secundarios": [],
   "uf": "SC",
   "municipio": "CURITIBANOS",
   "socios": [

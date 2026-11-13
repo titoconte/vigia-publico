@@ -1,9 +1,18 @@
 {
   "cnpj": "03269695000108",
   "razao_social": "CONSORCIO PUBLICO INTERFEDERATIVO DE SAUDE E SERVICOS DO VALE EUROPEU CISAMVE",
+  "nome_fantasia": "CISAMVE",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1999-06-16",
+  "natureza_juridica": "Consórcio Público de Direito Público (Associação Pública)",
+  "natureza_juridica_codigo": "1210",
   "capital_social": 0.0,
-  "cnae_principal": "Administração pública em geral",
+  "cnae_principal": "8411-6/00 - Administração pública em geral",
+  "cnae_descricao": "8411-6/00 - Administração pública em geral",
+  "cnaes_secundarios": [
+    "8660-7/00 - Atividades de apoio à gestão de saúde",
+    "8690-9/99 - Outras atividades de atenção à saúde humana não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "BLUMENAU",
   "socios": [],

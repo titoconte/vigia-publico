@@ -1,9 +1,26 @@
 {
   "cnpj": "28700530003500",
   "razao_social": "INSTITUTO MARIA SCHMITT DE DESENVOLVIMENTO DE ENSINO, ASSISTENCIA SOCIAL E SAUDE DO CIDADAO",
+  "nome_fantasia": "HOSPITAL HOSCOLA",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2024-03-05",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_principal": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_descricao": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnaes_secundarios": [
+    "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+    "8630-5/01 - Atividade médica ambulatorial com recursos para realização de procedimentos cirúrgicos",
+    "8630-5/02 - Atividade médica ambulatorial com recursos para realização de exames complementares",
+    "8630-5/03 - Atividade médica ambulatorial restrita a consultas",
+    "8640-2/02 - Laboratórios clínicos",
+    "8640-2/04 - Serviços de tomografia",
+    "8640-2/05 - Serviços de diagnóstico por imagem com uso de radiação ionizante, exceto tomografia",
+    "8650-0/99 - Atividades de profissionais da área de saúde não especificadas anteriormente",
+    "8660-7/00 - Atividades de apoio à gestão de saúde",
+    "8690-9/99 - Outras atividades de atenção à saúde humana não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "LUIZ ALVES",
   "socios": [

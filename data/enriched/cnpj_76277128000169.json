@@ -1,9 +1,18 @@
 {
   "cnpj": "76277128000169",
   "razao_social": "ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS DE TURVO",
+  "nome_fantasia": "APAE DE TURVO",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1983-01-31",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "cnae_principal": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnae_descricao": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnaes_secundarios": [
+    "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte",
+    "9499-5/00 - Atividades associativas não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "TURVO",
   "socios": [

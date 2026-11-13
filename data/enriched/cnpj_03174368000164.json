@@ -1,9 +1,19 @@
 {
   "cnpj": "03174368000164",
   "razao_social": "CENTRO DE RECUPERACAO DA PACIENCIA VALE EBENEZER",
+  "nome_fantasia": "VALE EBENEZER",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1999-02-09",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de assistência psicossocial e à saúde a portadores de distúrbios psíquicos, deficiência mental e dependência química e grupos similares não",
+  "cnae_principal": "8720-4/99 - Atividades de assistência psicossocial e à saúde a portadores de distúrbios psíquicos, deficiência mental e dependência química e grupos similares não",
+  "cnae_descricao": "8720-4/99 - Atividades de assistência psicossocial e à saúde a portadores de distúrbios psíquicos, deficiência mental e dependência química e grupos similares não",
+  "cnaes_secundarios": [
+    "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+    "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte",
+    "9499-5/00 - Atividades associativas não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "ITAJAI",
   "socios": [

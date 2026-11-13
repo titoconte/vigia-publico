@@ -1,9 +1,15 @@
 {
   "cnpj": "83566299000173",
   "razao_social": "FUNDACAO DE ESTUDOS E PESQUISAS SOCIO ECONOMICAS",
+  "nome_fantasia": "FEPESE",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1978-03-16",
+  "natureza_juridica": "Fundação Privada",
+  "natureza_juridica_codigo": "3069",
   "capital_social": 0.0,
-  "cnae_principal": "Pesquisa e desenvolvimento experimental em ciências sociais e humanas",
+  "cnae_principal": "7220-7/00 - Pesquisa e desenvolvimento experimental em ciências sociais e humanas",
+  "cnae_descricao": "7220-7/00 - Pesquisa e desenvolvimento experimental em ciências sociais e humanas",
+  "cnaes_secundarios": [],
   "uf": "SC",
   "municipio": "FLORIANOPOLIS",
   "socios": [

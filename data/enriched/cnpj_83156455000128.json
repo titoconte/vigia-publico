@@ -1,9 +1,17 @@
 {
   "cnpj": "83156455000128",
   "razao_social": "FUNDACAO HOSPITALAR DR JOSE ATHANAZIO",
+  "nome_fantasia": "HOSPITAL DR JOSE ATHANAZIO",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1976-01-02",
+  "natureza_juridica": "Fundação Pública de Direito Privado Municipal",
+  "natureza_juridica_codigo": "1279",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_principal": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_descricao": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnaes_secundarios": [
+    "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências"
+  ],
   "uf": "SC",
   "municipio": "CAMPOS NOVOS",
   "socios": [],

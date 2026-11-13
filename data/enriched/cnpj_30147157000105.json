@@ -1,9 +1,15 @@
 {
   "cnpj": "30147157000105",
   "razao_social": "APJ - ASSOCIACAO PARALIMPICA DE JOINVILLE",
+  "nome_fantasia": "APJ - ASSOCIACAO PARALIMPICA DE JOINVILLE",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2018-02-28",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Produção e promoção de eventos esportivos",
+  "cnae_principal": "9319-1/01 - Produção e promoção de eventos esportivos",
+  "cnae_descricao": "9319-1/01 - Produção e promoção de eventos esportivos",
+  "cnaes_secundarios": [],
   "uf": "SC",
   "municipio": "JOINVILLE",
   "socios": [

@@ -1,11 +1,17 @@
 {
   "cnpj": "80989965000198",
-  "razao_social": "Entidade/Credor 80989965000198",
-  "data_abertura": "",
+  "razao_social": "MUNICIPIO DE SANTA ROSA DO SUL",
+  "nome_fantasia": "PREFEITURA MUNICIPAL",
+  "situacao_cadastral": "Ativa",
+  "data_abertura": "1989-05-30",
+  "natureza_juridica": "Município",
+  "natureza_juridica_codigo": "1244",
   "capital_social": 0.0,
-  "cnae_principal": "Administração pública / entidade conveniada",
+  "cnae_principal": "8411-6/00 - Administração pública em geral",
+  "cnae_descricao": "8411-6/00 - Administração pública em geral",
+  "cnaes_secundarios": [],
   "uf": "SC",
-  "municipio": "Santa Catarina",
+  "municipio": "SANTA ROSA DO SUL",
   "socios": [],
   "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/80989965000198"
 }

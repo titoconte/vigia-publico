@@ -1,11 +1,17 @@
 {
   "cnpj": "83021881000154",
-  "razao_social": "Entidade/Credor 83021881000154",
-  "data_abertura": "",
+  "razao_social": "MUNICIPIO DE SAUDADES",
+  "nome_fantasia": "PREFEITURA MUNICIPAL DE SAUDADES - SC",
+  "situacao_cadastral": "Ativa",
+  "data_abertura": "1974-12-20",
+  "natureza_juridica": "Município",
+  "natureza_juridica_codigo": "1244",
   "capital_social": 0.0,
-  "cnae_principal": "Administração pública / entidade conveniada",
+  "cnae_principal": "8411-6/00 - Administração pública em geral",
+  "cnae_descricao": "8411-6/00 - Administração pública em geral",
+  "cnaes_secundarios": [],
   "uf": "SC",
-  "municipio": "Santa Catarina",
+  "municipio": "SAUDADES",
   "socios": [],
   "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83021881000154"
 }

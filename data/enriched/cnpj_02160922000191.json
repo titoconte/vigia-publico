@@ -1,9 +1,19 @@
 {
   "cnpj": "02160922000191",
   "razao_social": "ASSOCIACAO COMUNITARIA SAO JUDAS TADEU DE MELEIRO",
+  "nome_fantasia": "HOSPITAL SAO JUDAS TADEU",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1997-10-06",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "cnae_principal": "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "cnae_descricao": "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "cnaes_secundarios": [
+    "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+    "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+    "9499-5/00 - Atividades associativas não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "MELEIRO",
   "socios": [

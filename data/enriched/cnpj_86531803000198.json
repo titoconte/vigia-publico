@@ -1,9 +1,15 @@
 {
   "cnpj": "86531803000198",
   "razao_social": "HOSPITAL NOSSA SENHORA DA CONCEICAO",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1971-04-30",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "cnae_principal": "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "cnae_descricao": "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "cnaes_secundarios": [],
   "uf": "SC",
   "municipio": "URUSSANGA",
   "socios": [

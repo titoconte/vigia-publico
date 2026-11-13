@@ -1,11 +1,17 @@
 {
   "cnpj": "83000323000102",
-  "razao_social": "Entidade/Credor 83000323000102",
-  "data_abertura": "",
+  "razao_social": "MUNICIPIO DE MORRO DA FUMACA",
+  "nome_fantasia": "MORRO DA FUMACA PREF GABINETE DO PREFEITO",
+  "situacao_cadastral": "Ativa",
+  "data_abertura": "1974-12-10",
+  "natureza_juridica": "Município",
+  "natureza_juridica_codigo": "1244",
   "capital_social": 0.0,
-  "cnae_principal": "Administração pública / entidade conveniada",
+  "cnae_principal": "8411-6/00 - Administração pública em geral",
+  "cnae_descricao": "8411-6/00 - Administração pública em geral",
+  "cnaes_secundarios": [],
   "uf": "SC",
-  "municipio": "Santa Catarina",
+  "municipio": "MORRO DA FUMACA",
   "socios": [],
   "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83000323000102"
 }

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import os
 from pathlib import Path
@@ -26,6 +26,10 @@ from cnpj_validator import (
 from database import conectar_banco, resolver_caminho_sqlite
 
 DEFAULT_ENRICHED_DIR = Path("data/enriched")
+DEFAULT_HTTP_HEADERS: dict[str, str] = {
+    "User-Agent": "VigiaPublicoSC/1.2 (+https://github.com/titoconte/vigia-publico)",
+    "Accept": "application/json",
+}
 
 CADASTRO_REFERENCIA_CNPJ: dict[str, dict[str, Any]] = {
     "83456123000110": {
@@ -165,58 +169,73 @@ def _extrair_cnaes_secundarios_cnpjws(lista_bruta: Any) -> list[str]:
     return resultado
 
 
+def _parsear_payload_receita(
+    cnpj_limpo: str,
+    payload: dict[str, Any],
+    fonte_url: str,
+) -> dict[str, Any]:
+    """Converte o JSON padronizado da Receita Federal (BrasilAPI / MinhaReceita) para o formato interno."""
+    cnae_princ = (
+        formatar_cnae(payload.get("cnae_fiscal"), payload.get("cnae_fiscal_descricao"))
+        or "Não informado"
+    )
+    nat_cod_raw = payload.get("codigo_natureza_juridica")
+    nat_cod = re.sub(r"\D", "", str(nat_cod_raw or ""))[:4]
+    return {
+        "cnpj": cnpj_limpo,
+        "razao_social": payload.get("razao_social") or payload.get("nome_fantasia") or "Não informado",
+        "nome_fantasia": str(payload.get("nome_fantasia") or "").strip(),
+        "situacao_cadastral": normalizar_situacao_cadastral(payload.get("descricao_situacao_cadastral")),
+        "data_abertura": payload.get("data_inicio_atividade") or "",
+        "natureza_juridica": str(payload.get("natureza_juridica") or "Não informada").strip(),
+        "natureza_juridica_codigo": nat_cod,
+        "capital_social": float(payload.get("capital_social") or 0.0),
+        "cnae_principal": cnae_princ,
+        "cnae_descricao": cnae_princ,
+        "cnaes_secundarios": _extrair_cnaes_secundarios_brasilapi(payload.get("cnaes_secundarios")),
+        "uf": str(payload.get("uf") or "SC").strip().upper(),
+        "municipio": str(payload.get("municipio") or "Florianópolis"),
+        "socios": [
+            str(s.get("nome_socio", ""))
+            for s in (payload.get("qsa") or [])
+            if isinstance(s, dict) and s.get("nome_socio")
+        ],
+        "fonte_consulta": fonte_url,
+    }
+
+
 def _consultar_cnpj_remoto(
     cnpj_limpo: str,
     http: httpx.Client,
+    *,
+    usar_fallback_lento: bool = True,
 ) -> dict[str, Any] | None:
-    """Consulta dados cadastrais de CNPJ na BrasilAPI (com retry em rate-limit e fallback em publica.cnpj.ws)."""
+    """Consulta dados cadastrais de CNPJ na BrasilAPI com fallback em MinhaReceita e publica.cnpj.ws."""
     base_url = os.getenv("BRASILAPI_CNPJ_URL", "https://brasilapi.com.br/api/cnpj/v1").rstrip("/")
-    url_brasilapi = f"{base_url}/{cnpj_limpo}"
+    minhareceita_base = os.getenv("MINHARECEITA_CNPJ_URL", "https://minhareceita.org").rstrip("/")
+    endpoints_receita = [
+        f"{base_url}/{cnpj_limpo}",
+        f"{minhareceita_base}/{cnpj_limpo}",
+    ]
 
-    for tentativa in range(3):
+    for url_alvo in endpoints_receita:
         try:
-            resposta = http.get(url_brasilapi, timeout=12.0)
-            if resposta.status_code == 429:
-                time.sleep(1.2 * (tentativa + 1))
-                continue
+            resposta = http.get(url_alvo, headers=DEFAULT_HTTP_HEADERS, timeout=10.0)
             if resposta.status_code == 200:
-                payload = resposta.json()
-                cnae_princ = (
-                    formatar_cnae(payload.get("cnae_fiscal"), payload.get("cnae_fiscal_descricao"))
-                    or "Não informado"
-                )
-                nat_cod_raw = payload.get("codigo_natureza_juridica")
-                nat_cod = re.sub(r"\D", "", str(nat_cod_raw or ""))[:4]
-                return {
-                    "cnpj": cnpj_limpo,
-                    "razao_social": payload.get("razao_social") or payload.get("nome_fantasia") or "Não informado",
-                    "nome_fantasia": str(payload.get("nome_fantasia") or "").strip(),
-                    "situacao_cadastral": normalizar_situacao_cadastral(payload.get("descricao_situacao_cadastral")),
-                    "data_abertura": payload.get("data_inicio_atividade") or "",
-                    "natureza_juridica": str(payload.get("natureza_juridica") or "Não informada").strip(),
-                    "natureza_juridica_codigo": nat_cod,
-                    "capital_social": float(payload.get("capital_social") or 0.0),
-                    "cnae_principal": cnae_princ,
-                    "cnae_descricao": cnae_princ,
-                    "cnaes_secundarios": _extrair_cnaes_secundarios_brasilapi(payload.get("cnaes_secundarios")),
-                    "uf": str(payload.get("uf") or "SC").strip().upper(),
-                    "municipio": str(payload.get("municipio") or "Florianópolis"),
-                    "socios": [
-                        str(s.get("nome_socio", ""))
-                        for s in (payload.get("qsa") or [])
-                        if isinstance(s, dict) and s.get("nome_socio")
-                    ],
-                    "fonte_consulta": url_brasilapi,
-                }
-            if resposta.status_code == 404:
-                break
+                return _parsear_payload_receita(cnpj_limpo, resposta.json(), url_alvo)
+            if resposta.status_code == 429:
+                # Passa imediatamente para o próximo espelho público sem bloquear em sleep longo
+                continue
         except Exception:
-            time.sleep(0.5)
+            continue
 
-    # Fallback público secundário (CNPJ.ws) caso a BrasilAPI esteja indisponível ou retorne 404/429
+    if not usar_fallback_lento:
+        return None
+
+    # Fallback público terciário (CNPJ.ws, limitado a 3 req/min na camada pública)
     url_cnpjws = f"https://publica.cnpj.ws/cnpj/{cnpj_limpo}"
     try:
-        resp_ws = http.get(url_cnpjws, timeout=12.0)
+        resp_ws = http.get(url_cnpjws, headers=DEFAULT_HTTP_HEADERS, timeout=10.0)
         if resp_ws.status_code == 200:
             pl = resp_ws.json()
             estab = pl.get("estabelecimento") or {}
@@ -477,7 +496,7 @@ def sanear_cnpjs_fallback(
         nome_ref = nomes_oficiais.get(cnpj_item, "")
         obtido: dict[str, Any] | None = None
         if deve_usar_rede and http_client is not None:
-            obtido = _consultar_cnpj_remoto(cnpj_item, http=http_client)
+            obtido = _consultar_cnpj_remoto(cnpj_item, http=http_client, usar_fallback_lento=False)
         if obtido is not None:
             if not obtido.get("razao_social") or obtido.get("razao_social") == "Não informado":
                 obtido["razao_social"] = nome_ref or f"Entidade {cnpj_item}"
@@ -493,21 +512,27 @@ def sanear_cnpjs_fallback(
             resultados_saneamento = [_obter_saneado(c, None) for c in pendentes]
         elif client is not None or len(pendentes) <= 2:
             fechar = client is None
-            http_local = client or httpx.Client(timeout=15.0, follow_redirects=True)
+            http_local = client or httpx.Client(headers=DEFAULT_HTTP_HEADERS, timeout=10.0, follow_redirects=True)
             try:
                 resultados_saneamento = [_obter_saneado(c, http_local) for c in pendentes]
             finally:
                 if fechar:
                     http_local.close()
         else:
-            with httpx.Client(timeout=15.0, follow_redirects=True) as shared_http:
+            with httpx.Client(headers=DEFAULT_HTTP_HEADERS, timeout=10.0, follow_redirects=True) as shared_http:
                 def _worker(c_item: str) -> tuple[str, dict[str, Any] | None, str]:
                     """Executa consulta remota com espaçamento leve para respeitar limites públicos."""
-                    time.sleep(0.18)
+                    time.sleep(0.05)
                     return _obter_saneado(c_item, shared_http)
 
                 with ThreadPoolExecutor(max_workers=max_workers) as pool:
-                    resultados_saneamento = list(pool.map(_worker, pendentes))
+                    futuros = {pool.submit(_worker, c_item): c_item for c_item in pendentes}
+                    for futuro in as_completed(futuros):
+                        cnpj_k, novo_dado, origem = futuro.result()
+                        if novo_dado is not None:
+                            arq_inc = pasta / f"cnpj_{cnpj_k}.json"
+                            arq_inc.write_text(json.dumps(novo_dado, ensure_ascii=False, indent=2), encoding="utf-8")
+                        resultados_saneamento.append((cnpj_k, novo_dado, origem))
 
     for cnpj_k, novo_dado, origem in resultados_saneamento:
         if novo_dado is None:

@@ -1,11 +1,17 @@
 {
   "cnpj": "82844754000192",
   "razao_social": "MUNICIPIO DE BOM JARDIM DA SERRA",
-  "data_abertura": "1974-12-18",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
+  "data_abertura": "",
+  "natureza_juridica": "Município",
+  "natureza_juridica_codigo": "1244",
   "capital_social": 0.0,
-  "cnae_principal": "Administração pública em geral",
+  "cnae_principal": "8411-6/00 - Administração pública em geral",
+  "cnae_descricao": "8411-6/00 - Administração pública em geral",
+  "cnaes_secundarios": [],
   "uf": "SC",
-  "municipio": "BOM JARDIM DA SERRA",
+  "municipio": "Santa Catarina",
   "socios": [],
   "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/82844754000192"
 }

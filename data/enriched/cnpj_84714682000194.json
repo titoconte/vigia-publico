@@ -1,9 +1,18 @@
 {
   "cnpj": "84714682000194",
   "razao_social": "FUNDACAO EDUCACIONAL DA REGIAO DE JOINVILLE",
+  "nome_fantasia": "FURJ/UNIVILLE",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1970-02-24",
+  "natureza_juridica": "Fundação Privada",
+  "natureza_juridica_codigo": "3069",
   "capital_social": 0.0,
-  "cnae_principal": "Educação superior - graduação e pós-graduação",
+  "cnae_principal": "8532-5/00 - Educação superior - graduação e pós-graduação",
+  "cnae_descricao": "8532-5/00 - Educação superior - graduação e pós-graduação",
+  "cnaes_secundarios": [
+    "8533-3/00 - Educação superior - pós-graduação e extensão",
+    "8550-3/02 - Atividades de apoio à educação, exceto caixas escolares"
+  ],
   "uf": "SC",
   "municipio": "JOINVILLE",
   "socios": [

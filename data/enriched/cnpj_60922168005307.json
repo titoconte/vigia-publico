@@ -1,13 +1,27 @@
 {
   "cnpj": "60922168005307",
   "razao_social": "ASSOCIACAO CONGREGACAO DE SANTA CATARINA",
+  "nome_fantasia": "HOSPITAL NOSSA SENHORA DA CONCEICAO",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2015-03-18",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_principal": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_descricao": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnaes_secundarios": [
+    "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+    "8630-5/01 - Atividade médica ambulatorial com recursos para realização de procedimentos cirúrgicos",
+    "8630-5/02 - Atividade médica ambulatorial com recursos para realização de exames complementares",
+    "8640-2/04 - Serviços de tomografia",
+    "8640-2/05 - Serviços de diagnóstico por imagem com uso de radiação ionizante, exceto tomografia",
+    "8640-2/07 - Serviços de diagnóstico por imagem sem uso de radiação ionizante, exceto ressonância magnética",
+    "8640-2/12 - Serviços de hemoterapia"
+  ],
   "uf": "SC",
   "municipio": "TUBARAO",
   "socios": [
     "ADELAIDE SCHMOELLER"
   ],
-  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/60922168005307"
+  "fonte_consulta": "https://minhareceita.org/60922168005307"
 }

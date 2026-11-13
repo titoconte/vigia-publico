@@ -1,9 +1,21 @@
 {
   "cnpj": "45878768000109",
   "razao_social": "ASSOCIACAO ONG CASA DE JAIRO - ASSCAJA",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2022-02-15",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Serviços de assistência social sem alojamento",
+  "cnae_principal": "8800-6/00 - Serviços de assistência social sem alojamento",
+  "cnae_descricao": "8800-6/00 - Serviços de assistência social sem alojamento",
+  "cnaes_secundarios": [
+    "8550-3/02 - Atividades de apoio à educação, exceto caixas escolares",
+    "8592-9/99 - Ensino de arte e cultura não especificado anteriormente",
+    "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+    "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte",
+    "9499-5/00 - Atividades associativas não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "BLUMENAU",
   "socios": [

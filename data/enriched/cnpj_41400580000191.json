@@ -1,9 +1,15 @@
 {
   "cnpj": "41400580000191",
   "razao_social": "ASSOCIACAO DE SERVICOS SOCIAIS VOLUNTARIOS DE BALNEARIO RINCAO",
+  "nome_fantasia": "BOMBEIROS VOLUNTARIOS DE BALNEARIO RINCAO",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2021-01-26",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "cnae_principal": "9499-5/00 - Atividades associativas não especificadas anteriormente",
+  "cnae_descricao": "9499-5/00 - Atividades associativas não especificadas anteriormente",
+  "cnaes_secundarios": [],
   "uf": "SC",
   "municipio": "BALNEARIO RINCAO",
   "socios": [

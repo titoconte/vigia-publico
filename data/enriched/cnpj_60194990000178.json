@@ -1,13 +1,23 @@
 {
   "cnpj": "60194990000178",
   "razao_social": "INSTITUTO DAS PEQUENAS MISSIONARIAS DE MARIA IMACULADA",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1967-04-28",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "cnae_principal": "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "cnae_descricao": "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+  "cnaes_secundarios": [
+    "8711-5/02 - Instituições de longa permanência para idosos",
+    "9491-0/00 - Atividades de organizações religiosas ou filosóficas",
+    "8800-6/00 - Serviços de assistência social sem alojamento"
+  ],
   "uf": "SP",
   "municipio": "SAO JOSE DOS CAMPOS",
   "socios": [
     "VILMA MARLENE DE ANDRADE"
   ],
-  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/60194990000178"
+  "fonte_consulta": "https://minhareceita.org/60194990000178"
 }

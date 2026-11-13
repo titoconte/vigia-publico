@@ -1,13 +1,22 @@
 {
   "cnpj": "79679940000109",
   "razao_social": "ASSOC DE PAIS E AMIGOS DOS EXCEPCIONAIS DE GAROPABA",
+  "nome_fantasia": "APAE DE GAROPABA",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1986-12-11",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "cnae_principal": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnae_descricao": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnaes_secundarios": [
+    "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte",
+    "9499-5/00 - Atividades associativas não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "GAROPABA",
   "socios": [
     "SANDRA REGINA SILVEIRA"
   ],
-  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/79679940000109"
+  "fonte_consulta": "https://minhareceita.org/79679940000109"
 }

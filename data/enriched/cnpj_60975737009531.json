@@ -1,13 +1,21 @@
 {
   "cnpj": "60975737009531",
   "razao_social": "SOCIEDADE BENEFICENTE SAO CAMILO",
+  "nome_fantasia": "HOSPITAL SAO BRAZ",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2020-02-13",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_principal": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_descricao": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnaes_secundarios": [
+    "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências"
+  ],
   "uf": "SC",
   "municipio": "PORTO UNIAO",
   "socios": [
     "MATEUS LOCATELLI"
   ],
-  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/60975737009531"
+  "fonte_consulta": "https://minhareceita.org/60975737009531"
 }

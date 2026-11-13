@@ -1,9 +1,20 @@
 {
   "cnpj": "34993140000120",
   "razao_social": "CONSELHO REGIONAL DE TURISMO DO GRANDE OESTE",
+  "nome_fantasia": "CONTUROESTE",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2019-09-10",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "cnae_principal": "9499-5/00 - Atividades associativas não especificadas anteriormente",
+  "cnae_descricao": "9499-5/00 - Atividades associativas não especificadas anteriormente",
+  "cnaes_secundarios": [
+    "7990-2/00 - Serviços de reservas e outros serviços de turismo não especificados anteriormente",
+    "8230-0/01 - Serviços de organização de feiras, congressos, exposições e festas",
+    "8599-6/99 - Outras atividades de ensino não especificadas anteriormente",
+    "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte"
+  ],
   "uf": "SC",
   "municipio": "XANXERE",
   "socios": [

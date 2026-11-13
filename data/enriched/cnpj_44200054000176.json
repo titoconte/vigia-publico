@@ -1,9 +1,19 @@
 {
   "cnpj": "44200054000176",
   "razao_social": "ASSOCIACAO DE PAIS E AMIGOS DE AUTISTAS DO MUNICIPIO DE LAURO MULLER",
+  "nome_fantasia": "AMA-LM/SC",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2021-09-21",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "cnae_principal": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnae_descricao": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnaes_secundarios": [
+    "8513-9/00 - Ensino fundamental",
+    "8599-6/99 - Outras atividades de ensino não especificadas anteriormente",
+    "8720-4/01 - Atividades de centros de assistência psicossocial"
+  ],
   "uf": "SC",
   "municipio": "LAURO MULLER",
   "socios": [

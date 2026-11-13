@@ -1,9 +1,22 @@
 {
   "cnpj": "84706381000119",
   "razao_social": "ASSOCIACAO DE INCLUSAO E PROMOCAO SOCIAL DA ARQUIDIOCESE DE JOINVILLE - ADIPROS",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1968-04-02",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "cnae_principal": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnae_descricao": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnaes_secundarios": [
+    "8230-0/01 - Serviços de organização de feiras, congressos, exposições e festas",
+    "8592-9/99 - Ensino de arte e cultura não especificado anteriormente",
+    "9002-7/02 - Restauração de obras-de-arte",
+    "9102-3/02 - Restauração e conservação de lugares e prédios históricos",
+    "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte",
+    "9499-5/00 - Atividades associativas não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "JOINVILLE",
   "socios": [

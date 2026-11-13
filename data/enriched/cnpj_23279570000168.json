@@ -1,9 +1,18 @@
 {
   "cnpj": "23279570000168",
   "razao_social": "CONSORCIO DA REGIAO DO RIO SARGENTO DE INTEGRACAO MUNICIPAL - CRESIM",
+  "nome_fantasia": "CRESIM",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2015-08-24",
+  "natureza_juridica": "Consórcio Público de Direito Público (Associação Pública)",
+  "natureza_juridica_codigo": "1210",
   "capital_social": 0.0,
-  "cnae_principal": "Regulação das atividades de saúde, educação, serviços culturais e outros serviços sociais",
+  "cnae_principal": "8412-4/00 - Regulação das atividades de saúde, educação, serviços culturais e outros serviços sociais",
+  "cnae_descricao": "8412-4/00 - Regulação das atividades de saúde, educação, serviços culturais e outros serviços sociais",
+  "cnaes_secundarios": [
+    "8411-6/00 - Administração pública em geral",
+    "8690-9/99 - Outras atividades de atenção à saúde humana não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "CAMPO ERE",
   "socios": [],

@@ -1,11 +1,20 @@
 {
   "cnpj": "73360505000130",
-  "razao_social": "Entidade/Credor 73360505000130",
-  "data_abertura": "",
+  "razao_social": "FUNDACAO CATARINENSE DE ESPORTE - FESPORTE",
+  "nome_fantasia": "FESPORTE",
+  "situacao_cadastral": "Ativa",
+  "data_abertura": "1993-09-17",
+  "natureza_juridica": "Fundação Pública de Direito Público Estadual ou do Distrito Federal",
+  "natureza_juridica_codigo": "1147",
   "capital_social": 0.0,
-  "cnae_principal": "Administração pública / entidade conveniada",
+  "cnae_principal": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnae_descricao": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnaes_secundarios": [
+    "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte",
+    "9499-5/00 - Atividades associativas não especificadas anteriormente"
+  ],
   "uf": "SC",
-  "municipio": "Santa Catarina",
+  "municipio": "FLORIANOPOLIS",
   "socios": [],
   "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/73360505000130"
 }

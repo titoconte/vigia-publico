@@ -1,9 +1,15 @@
 {
   "cnpj": "72154347000108",
   "razao_social": "ASS DE PAIS E AMIGOS DOS EXCEP APAE DE POUSO REDONDO",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1993-04-20",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Outras atividades de ensino não especificadas anteriormente",
+  "cnae_principal": "8599-6/99 - Outras atividades de ensino não especificadas anteriormente",
+  "cnae_descricao": "8599-6/99 - Outras atividades de ensino não especificadas anteriormente",
+  "cnaes_secundarios": [],
   "uf": "SC",
   "municipio": "POUSO REDONDO",
   "socios": [

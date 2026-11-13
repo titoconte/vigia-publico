@@ -1,9 +1,18 @@
 {
   "cnpj": "84712991000125",
   "razao_social": "ASSOCIACAO CORPO DE BOMBEIROS VOLUNTARIOS DE JOINVILLE",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1969-09-09",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "cnae_principal": "9499-5/00 - Atividades associativas não especificadas anteriormente",
+  "cnae_descricao": "9499-5/00 - Atividades associativas não especificadas anteriormente",
+  "cnaes_secundarios": [
+    "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+    "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte"
+  ],
   "uf": "SC",
   "municipio": "JOINVILLE",
   "socios": [

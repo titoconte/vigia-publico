@@ -1,9 +1,18 @@
 {
   "cnpj": "08776971000210",
   "razao_social": "INSTITUTO SANTE",
+  "nome_fantasia": "HOSPITAL SAO LUIZ",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2013-08-13",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_principal": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_descricao": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnaes_secundarios": [
+    "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências",
+    "8711-5/02 - Instituições de longa permanência para idosos"
+  ],
   "uf": "SC",
   "municipio": "CAMPO ALEGRE",
   "socios": [

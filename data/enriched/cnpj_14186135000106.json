@@ -1,9 +1,17 @@
 {
   "cnpj": "14186135000106",
   "razao_social": "FUNDO DE MELHORIA DO CORPO DE BOMBEIROS MILITAR",
+  "nome_fantasia": "FUMCBM",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2004-12-27",
+  "natureza_juridica": "Fundo Público da Administração Direta Estadual ou do Distrito Federal",
+  "natureza_juridica_codigo": "1325",
   "capital_social": 0.0,
-  "cnae_principal": "Segurança e ordem pública",
+  "cnae_principal": "8424-8/00 - Segurança e ordem pública",
+  "cnae_descricao": "8424-8/00 - Segurança e ordem pública",
+  "cnaes_secundarios": [
+    "8425-6/00 - Defesa Civil"
+  ],
   "uf": "SC",
   "municipio": "FLORIANOPOLIS",
   "socios": [],

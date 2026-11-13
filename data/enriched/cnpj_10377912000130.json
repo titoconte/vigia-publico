@@ -1,11 +1,17 @@
 {
   "cnpj": "10377912000130",
-  "razao_social": "Entidade/Credor 10377912000130",
-  "data_abertura": "",
+  "razao_social": "FUNDO MUNICIPAL DE SAUDE DE RIO NEGRINHO",
+  "nome_fantasia": "FUNDO MUNICIPAL DE RIO NEGRINHO",
+  "situacao_cadastral": "Ativa",
+  "data_abertura": "2008-09-26",
+  "natureza_juridica": "Fundo Público da Administração Direta Municipal",
+  "natureza_juridica_codigo": "1333",
   "capital_social": 0.0,
-  "cnae_principal": "Administração pública / entidade conveniada",
+  "cnae_principal": "8690-9/99 - Outras atividades de atenção à saúde humana não especificadas anteriormente",
+  "cnae_descricao": "8690-9/99 - Outras atividades de atenção à saúde humana não especificadas anteriormente",
+  "cnaes_secundarios": [],
   "uf": "SC",
-  "municipio": "Santa Catarina",
+  "municipio": "RIO NEGRINHO",
   "socios": [],
   "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/10377912000130"
 }

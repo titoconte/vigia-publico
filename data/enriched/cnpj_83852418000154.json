@@ -1,9 +1,17 @@
 {
   "cnpj": "83852418000154",
   "razao_social": "FUNDACAO SOCIAL HOSPITALAR DE ICARA",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1980-09-30",
+  "natureza_juridica": "Fundação Privada",
+  "natureza_juridica_codigo": "3069",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_principal": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnae_descricao": "8610-1/01 - Atividades de atendimento hospitalar, exceto pronto-socorro e unidades para atendimento a urgências",
+  "cnaes_secundarios": [
+    "8610-1/02 - Atividades de atendimento em pronto-socorro e unidades hospitalares para atendimento a urgências"
+  ],
   "uf": "SC",
   "municipio": "ICARA",
   "socios": [
@@ -11,5 +19,5 @@
     "JANAINA VELASQUES STONE",
     "WASHINGTON VALMOR PEREIRA"
   ],
-  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83852418000154"
+  "fonte_consulta": "https://minhareceita.org/83852418000154"
 }

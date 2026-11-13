@@ -1,9 +1,18 @@
 {
   "cnpj": "17236080000181",
   "razao_social": "AASSC - ASSOCIACAO DE APOIO A SAUDE DE SANTA CATARINA",
+  "nome_fantasia": "AASSC",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2012-11-20",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "cnae_principal": "9499-5/00 - Atividades associativas não especificadas anteriormente",
+  "cnae_descricao": "9499-5/00 - Atividades associativas não especificadas anteriormente",
+  "cnaes_secundarios": [
+    "8630-5/03 - Atividade médica ambulatorial restrita a consultas",
+    "8660-7/00 - Atividades de apoio à gestão de saúde"
+  ],
   "uf": "SC",
   "municipio": "FLORIANOPOLIS",
   "socios": [

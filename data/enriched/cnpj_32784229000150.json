@@ -1,9 +1,15 @@
 {
   "cnpj": "32784229000150",
   "razao_social": "ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS DE BALNEARIO RINCAO",
+  "nome_fantasia": "ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCIONAIS BAL RINCAO",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2019-02-06",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Serviços de assistência social sem alojamento",
+  "cnae_principal": "8800-6/00 - Serviços de assistência social sem alojamento",
+  "cnae_descricao": "8800-6/00 - Serviços de assistência social sem alojamento",
+  "cnaes_secundarios": [],
   "uf": "SC",
   "municipio": "BALNEARIO RINCAO",
   "socios": [

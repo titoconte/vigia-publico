@@ -1,13 +1,22 @@
 {
   "cnpj": "83824771000120",
   "razao_social": "ASSOCIACAO DE PAIS E AMIGOS DOS EXCEPCI DE NAVEGANTES",
+  "nome_fantasia": "APAE",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1980-12-26",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "cnae_principal": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnae_descricao": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnaes_secundarios": [
+    "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte",
+    "9499-5/00 - Atividades associativas não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "NAVEGANTES",
   "socios": [
     "LILIAN RODRIGUES HINNIG"
   ],
-  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83824771000120"
+  "fonte_consulta": "https://minhareceita.org/83824771000120"
 }

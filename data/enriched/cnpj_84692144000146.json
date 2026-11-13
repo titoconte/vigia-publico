@@ -1,13 +1,34 @@
 {
   "cnpj": "84692144000146",
   "razao_social": "INSTITUTO JOINVILLENSE DE EDUCACAO E ASSISTENCIA",
+  "nome_fantasia": "CENTRO EDUCACIONAL DOM BOSCO",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1966-09-02",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "cnae_principal": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnae_descricao": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnaes_secundarios": [
+    "7410-2/99 - atividades de design não especificadas anteriormente",
+    "8230-0/01 - Serviços de organização de feiras, congressos, exposições e festas",
+    "8412-4/00 - Regulação das atividades de saúde, educação, serviços culturais e outros serviços sociais",
+    "8511-2/00 - Educação infantil - creche",
+    "8512-1/00 - Educação infantil - pré-escola",
+    "8591-1/00 - Ensino de esportes",
+    "8592-9/01 - Ensino de dança",
+    "8592-9/02 - Ensino de artes cênicas, exceto dança",
+    "8592-9/03 - Ensino de música",
+    "8592-9/99 - Ensino de arte e cultura não especificado anteriormente",
+    "9001-9/99 - Artes cênicas, espetáculos e atividades complementares não especificadas anteriormente",
+    "9312-3/00 - Clubes sociais, esportivos e similares",
+    "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte",
+    "9499-5/00 - Atividades associativas não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "JOINVILLE",
   "socios": [
     "EDVALDO NOGUEIRA DA SILVA"
   ],
-  "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/84692144000146"
+  "fonte_consulta": "https://minhareceita.org/84692144000146"
 }

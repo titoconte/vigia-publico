@@ -1,9 +1,17 @@
 {
   "cnpj": "81648362000780",
   "razao_social": "CONGREGACAO DAS IRMAS CATEQUISTAS DE SANTANA",
+  "nome_fantasia": "LAR DOS IDOSOS SANT'ANA",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "1993-07-01",
+  "natureza_juridica": "Organização Religiosa",
+  "natureza_juridica_codigo": "3220",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de assistência social prestadas em residências coletivas e particulares não especificadas anteriormente",
+  "cnae_principal": "8730-1/99 - Atividades de assistência social prestadas em residências coletivas e particulares não especificadas anteriormente",
+  "cnae_descricao": "8730-1/99 - Atividades de assistência social prestadas em residências coletivas e particulares não especificadas anteriormente",
+  "cnaes_secundarios": [
+    "9491-0/00 - Atividades de organizações religiosas ou filosóficas"
+  ],
   "uf": "SC",
   "municipio": "IRINEOPOLIS",
   "socios": [

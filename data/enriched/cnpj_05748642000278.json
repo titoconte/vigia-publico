@@ -1,9 +1,18 @@
 {
   "cnpj": "05748642000278",
   "razao_social": "ASSOCIACAO RENAL VIDA",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2004-07-16",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Serviços de diálise e nefrologia",
+  "cnae_principal": "8640-2/03 - Serviços de diálise e nefrologia",
+  "cnae_descricao": "8640-2/03 - Serviços de diálise e nefrologia",
+  "cnaes_secundarios": [
+    "8650-0/99 - Atividades de profissionais da área de saúde não especificadas anteriormente",
+    "9412-0/99 - Outras atividades associativas profissionais"
+  ],
   "uf": "SC",
   "municipio": "RIO DO SUL",
   "socios": [

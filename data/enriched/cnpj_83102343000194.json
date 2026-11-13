@@ -1,11 +1,17 @@
 {
   "cnpj": "83102343000194",
   "razao_social": "MUNICIPIO DE BRUSQUE",
-  "data_abertura": "1974-12-20",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
+  "data_abertura": "",
+  "natureza_juridica": "Município",
+  "natureza_juridica_codigo": "1244",
   "capital_social": 0.0,
-  "cnae_principal": "Administração pública em geral",
+  "cnae_principal": "8411-6/00 - Administração pública em geral",
+  "cnae_descricao": "8411-6/00 - Administração pública em geral",
+  "cnaes_secundarios": [],
   "uf": "SC",
-  "municipio": "BRUSQUE",
+  "municipio": "Santa Catarina",
   "socios": [],
   "fonte_consulta": "https://brasilapi.com.br/api/cnpj/v1/83102343000194"
 }

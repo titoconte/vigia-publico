@@ -1,9 +1,20 @@
 {
   "cnpj": "48342751000112",
   "razao_social": "HOPE",
+  "nome_fantasia": "",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2022-09-02",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades de associações de defesa de direitos sociais",
+  "cnae_principal": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnae_descricao": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+  "cnaes_secundarios": [
+    "8599-6/99 - Outras atividades de ensino não especificadas anteriormente",
+    "8800-6/00 - Serviços de assistência social sem alojamento",
+    "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte",
+    "9499-5/00 - Atividades associativas não especificadas anteriormente"
+  ],
   "uf": "SC",
   "municipio": "JOINVILLE",
   "socios": [

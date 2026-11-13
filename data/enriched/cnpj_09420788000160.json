@@ -1,9 +1,15 @@
 {
   "cnpj": "09420788000160",
   "razao_social": "ASSOCIACAO CULTURAL E DESPORTIVA DE AURORA - ACUDE 5 A",
+  "nome_fantasia": "ACUDE 5 A",
+  "situacao_cadastral": "Ativa",
   "data_abertura": "2008-03-07",
+  "natureza_juridica": "Associação Privada",
+  "natureza_juridica_codigo": "3999",
   "capital_social": 0.0,
-  "cnae_principal": "Atividades associativas não especificadas anteriormente",
+  "cnae_principal": "9499-5/00 - Atividades associativas não especificadas anteriormente",
+  "cnae_descricao": "9499-5/00 - Atividades associativas não especificadas anteriormente",
+  "cnaes_secundarios": [],
   "uf": "SC",
   "municipio": "AURORA",
   "socios": [
