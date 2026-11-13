@@ -608,6 +608,328 @@ def test_abas_2_3_4_possuem_separacao_cnpj_e_expander_cnaes_recolhido() -> None:
         )
 
 
+def test_filtrar_emendas_destinadas_municipio_por_grupo_cnpj(tmp_path: Path) -> None:
+    """Verifica a filtragem da tabela de emendas destinadas ao município entre CNPJs de Municípios e Outros CNPJs."""
+    import pandas as pd
+    from app import filtrar_emendas_destinadas_municipio
+    from cnpj_validator import limpar_mem_cache_cnpj, salvar_cnpj_cache
+    from database import inicializar_schema
+
+    limpar_mem_cache_cnpj()
+    db_path = tmp_path / "filtro_emendas_mun.db"
+    inicializar_schema(db_path)
+
+    salvar_cnpj_cache(
+        {
+            "cnpj": "82577636000165",
+            "razao_social": "MUNICIPIO DE FLORIANOPOLIS",
+            "natureza_juridica": "Município",
+            "natureza_juridica_codigo": "1244",
+            "cnae_principal": "8411-6/00 - Administração pública em geral",
+        },
+        db_path=db_path,
+    )
+    salvar_cnpj_cache(
+        {
+            "cnpj": "11444777000161",
+            "razao_social": "FUNDO MUNICIPAL DE SAUDE DE FLORIANOPOLIS",
+            "natureza_juridica": "Fundo Público da Administração Direta Municipal",
+            "natureza_juridica_codigo": "1333",
+            "cnae_principal": "8411-6/00 - Administração pública em geral",
+        },
+        db_path=db_path,
+    )
+    salvar_cnpj_cache(
+        {
+            "cnpj": "00058956000144",
+            "razao_social": "ASSOCIACAO BENEFICENTE CATARINENSE",
+            "natureza_juridica": "Associação Privada",
+            "natureza_juridica_codigo": "3999",
+            "cnae_principal": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+        },
+        db_path=db_path,
+    )
+
+    df_emendas_mun = pd.DataFrame(
+        [
+            {
+                "id_emenda": "EM-MUN-1",
+                "parlamentar": "Dep. A",
+                "partido": "PSD",
+                "municipio": "Florianópolis",
+                "codigo_ibge": "4205407",
+                "populacao": 537211,
+                "area": "Infraestrutura e Mobilidade",
+                "valor": 500000.0,
+                "entidade_beneficiaria": "MUNICIPIO DE FLORIANOPOLIS",
+                "fornecedor_nome": "MUNICIPIO DE FLORIANOPOLIS",
+                "fornecedor_cnpj": "82577636000165",
+                "status_execucao": "Pago",
+                "data": "2026-03-10",
+            },
+            {
+                "id_emenda": "EM-MUN-2",
+                "parlamentar": "Dep. B",
+                "partido": "MDB",
+                "municipio": "Florianópolis",
+                "codigo_ibge": "4205407",
+                "populacao": 537211,
+                "area": "Saúde",
+                "valor": 300000.0,
+                "entidade_beneficiaria": "FUNDO MUNICIPAL DE SAUDE DE FLORIANOPOLIS",
+                "fornecedor_nome": "FUNDO MUNICIPAL DE SAUDE DE FLORIANOPOLIS",
+                "fornecedor_cnpj": "11444777000161",
+                "status_execucao": "Empenhado",
+                "data": "2026-04-12",
+            },
+            {
+                "id_emenda": "EM-OUT-1",
+                "parlamentar": "Dep. C",
+                "partido": "PL",
+                "municipio": "Florianópolis",
+                "codigo_ibge": "4205407",
+                "populacao": 537211,
+                "area": "Assistência Social",
+                "valor": 200000.0,
+                "entidade_beneficiaria": "ASSOCIACAO BENEFICENTE CATARINENSE",
+                "fornecedor_nome": "ASSOCIACAO BENEFICENTE CATARINENSE",
+                "fornecedor_cnpj": "00058956000144",
+                "status_execucao": "Pago",
+                "data": "2026-05-01",
+            },
+        ]
+    )
+
+    # 1. Opção "Todos" retorna as 3 emendas com coluna grupo_cnpj visível
+    df_todos = filtrar_emendas_destinadas_municipio(df_emendas_mun, grupo_cnpj="Todos", db_path=db_path)
+    assert len(df_todos) == 3
+    assert "grupo_cnpj" in df_todos.columns
+    # A coluna grupo_cnpj deve anteceder fornecedor_nome para leitura imediata na tabela
+    cols_lista = list(df_todos.columns)
+    assert cols_lista.index("grupo_cnpj") < cols_lista.index("fornecedor_nome")
+
+    # 2. Opção "CNPJs de Municípios" retorna apenas Prefeitura + Fundo Municipal (2 emendas = R$ 800k)
+    df_so_mun = filtrar_emendas_destinadas_municipio(
+        df_emendas_mun, grupo_cnpj="CNPJs de Municípios", db_path=db_path
+    )
+    assert len(df_so_mun) == 2
+    assert (df_so_mun["grupo_cnpj"] == "CNPJ de Município").all()
+    assert round(float(df_so_mun["valor"].sum()), 2) == 800000.0
+
+    # 3. Opção "Outros CNPJs" retorna apenas a Associação Privada (1 emenda = R$ 200k)
+    df_so_outros = filtrar_emendas_destinadas_municipio(
+        df_emendas_mun, grupo_cnpj="Outros CNPJs", db_path=db_path
+    )
+    assert len(df_so_outros) == 1
+    assert (df_so_outros["grupo_cnpj"] == "Outro CNPJ").all()
+    assert df_so_outros.iloc[0]["id_emenda"] == "EM-OUT-1"
+    assert round(float(df_so_outros["valor"].sum()), 2) == 200000.0
+
+    # 4. DataFrame vazio mantém integridade sem exceções
+    df_vazio = filtrar_emendas_destinadas_municipio(
+        df_emendas_mun.iloc[0:0], grupo_cnpj="CNPJs de Municípios", db_path=db_path
+    )
+    assert df_vazio.empty
+    assert "grupo_cnpj" in df_vazio.columns
+
+
+def test_renderizar_pagina_perfil_municipio_filtra_tabela_emendas_destinadas(monkeypatch) -> None:
+    """Garante que a tabela 'Emendas Destinadas ao Município' na Aba 4 possui seletor próprio e filtra os dados exibidos."""
+    import pandas as pd
+    import app as app_module
+    from app import renderizar_pagina_perfil_municipio
+
+    df_mun = pd.DataFrame(
+        [
+            {
+                "codigo_ibge": "4205407",
+                "municipio": "Florianópolis",
+                "populacao": 537211,
+                "total_recebido": 750000.0,
+                "quantidade_emendas": 2,
+                "valor_per_capita": 1.40,
+            }
+        ]
+    )
+    df_emendas_todas = pd.DataFrame(
+        [
+            {
+                "id_emenda": "EM-M1",
+                "parlamentar": "Dep. Alpha",
+                "partido": "PSD",
+                "municipio": "Florianópolis",
+                "codigo_ibge": "4205407",
+                "populacao": 537211,
+                "valor_per_capita": 0.93,
+                "entidade_beneficiaria": "PREFEITURA MUNICIPAL DE FLORIANOPOLIS",
+                "area": "Saúde",
+                "data": "2026-02-01",
+                "fornecedor_nome": "PREFEITURA MUNICIPAL DE FLORIANOPOLIS",
+                "fornecedor_cnpj": "82577636000165",
+                "valor": 500000.0,
+                "status_execucao": "Pago",
+            },
+            {
+                "id_emenda": "EM-O1",
+                "parlamentar": "Dep. Beta",
+                "partido": "PL",
+                "municipio": "Florianópolis",
+                "codigo_ibge": "4205407",
+                "populacao": 537211,
+                "valor_per_capita": 0.47,
+                "entidade_beneficiaria": "ASSOCIACAO CULTURAL FLORIPA",
+                "area": "Educação",
+                "data": "2026-03-01",
+                "fornecedor_nome": "ASSOCIACAO CULTURAL FLORIPA",
+                "fornecedor_cnpj": "00058956000144",
+                "valor": 250000.0,
+                "status_execucao": "Empenhado",
+            },
+        ]
+    )
+
+    perfil_fake = {
+        "resumo": df_mun.iloc[0].to_dict(),
+        "emendas": df_emendas_todas.copy(),
+        "detalhes": app_module.obter_metricas_detalhadas_municipio(df_emendas_todas, mapa_cache={}),
+        "alertas": [],
+    }
+    monkeypatch.setattr(app_module, "obter_dados_perfil_municipio", lambda cod: perfil_fake)
+
+    class _DummyCtx:
+        """Context manager falso para simular colunas e expanders do Streamlit durante os testes."""
+
+        def __enter__(self):
+            """Entra no bloco contextual simulado retornando a própria instância."""
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            """Encerra o bloco contextual simulado sem suprimir exceções."""
+            return False
+
+        def radio(self, label, options, **kwargs):
+            """Delega chamadas de radio feitas em colunas para o mock principal do Streamlit."""
+            return self._st.radio(label, options, **kwargs)
+
+        def selectbox(self, label, options, **kwargs):
+            """Delega chamadas de selectbox feitas em colunas para o mock principal do Streamlit."""
+            return self._st.selectbox(label, options, **kwargs)
+
+        def metric(self, *args, **kwargs):
+            """Simula renderização de card de métrica em colunas."""
+            return None
+
+        def markdown(self, *args, **kwargs):
+            """Simula renderização de texto markdown em colunas."""
+            return None
+
+        def caption(self, *args, **kwargs):
+            """Simula renderização de legenda em colunas."""
+            return None
+
+        def bar_chart(self, *args, **kwargs):
+            """Simula renderização de gráfico de barras em colunas."""
+            return None
+
+    class _FakeStreamlit:
+        """Dublê de Streamlit para capturar filtros e DataFrames renderizados após o título da tabela municipal."""
+
+        def __init__(self, escolha_filtro_tabela: str) -> None:
+            """Inicializa o dublê com a opção desejada no filtro da tabela de emendas destinadas ao município."""
+            self.escolha_filtro_tabela = escolha_filtro_tabela
+            self.entrou_secao_tabela_emendas = False
+            self.opcoes_filtro_tabela: list[str] = []
+            self.dataframes_apos_secao: list[pd.DataFrame] = []
+
+        def _criar_ctx(self) -> _DummyCtx:
+            """Instancia um contexto auxiliar vinculado a este dublê de Streamlit."""
+            ctx = _DummyCtx()
+            ctx._st = self
+            return ctx
+
+        def header(self, *args, **kwargs):
+            """Simula cabeçalho principal da página."""
+            return None
+
+        def subheader(self, texto: str, *args, **kwargs):
+            """Detecta a entrada na seção 'Emendas Destinadas ao Município'."""
+            if "Emendas Destinadas ao Município" in str(texto):
+                self.entrou_secao_tabela_emendas = True
+
+        def caption(self, *args, **kwargs):
+            """Simula exibição de legenda."""
+            return None
+
+        def markdown(self, *args, **kwargs):
+            """Simula exibição de markdown."""
+            return None
+
+        def columns(self, spec, **kwargs):
+            """Retorna lista de colunas falsas compatíveis com desempacotamento e context manager."""
+            qtd = spec if isinstance(spec, int) else len(spec)
+            return [self._criar_ctx() for _ in range(qtd)]
+
+        def expander(self, *args, **kwargs):
+            """Simula bloco recolhível st.expander."""
+            return self._criar_ctx()
+
+        def metric(self, *args, **kwargs):
+            """Simula componente st.metric."""
+            return None
+
+        def bar_chart(self, *args, **kwargs):
+            """Simula componente st.bar_chart."""
+            return None
+
+        def radio(self, label: str, options: list[str], **kwargs):
+            """Captura e responde aos seletores st.radio, retornando a opção alvo na seção da tabela final."""
+            if self.entrou_secao_tabela_emendas:
+                self.opcoes_filtro_tabela = list(options)
+                return self.escolha_filtro_tabela
+            return options[0]
+
+        def selectbox(self, label: str, options: list[str], **kwargs):
+            """Captura e responde aos seletores st.selectbox, retornando a opção alvo se usado na tabela final."""
+            if self.entrou_secao_tabela_emendas:
+                self.opcoes_filtro_tabela = list(options)
+                return self.escolha_filtro_tabela
+            return options[0]
+
+        def dataframe(self, df: pd.DataFrame, *args, **kwargs):
+            """Registra os DataFrames renderizados na seção 'Emendas Destinadas ao Município'."""
+            if self.entrou_secao_tabela_emendas:
+                self.dataframes_apos_secao.append(df.copy())
+
+    dados_painel = {"municipios": df_mun, "emendas": df_emendas_todas, "mapa_cnpjs": {}}
+
+    # Caso 1: Filtrando por "CNPJs de Municípios"
+    st_mun = _FakeStreamlit("CNPJs de Municípios")
+    renderizar_pagina_perfil_municipio(st_mun, dados_painel)
+    assert "CNPJs de Municípios" in st_mun.opcoes_filtro_tabela
+    assert "Outros CNPJs" in st_mun.opcoes_filtro_tabela
+    assert len(st_mun.dataframes_apos_secao) == 1
+    df_render_mun = st_mun.dataframes_apos_secao[0]
+    assert len(df_render_mun) == 1
+    assert df_render_mun.iloc[0]["id_emenda"] == "EM-M1"
+    assert df_render_mun.iloc[0]["grupo_cnpj"] == "CNPJ de Município"
+
+    # Caso 2: Filtrando por "Outros CNPJs"
+    st_out = _FakeStreamlit("Outros CNPJs")
+    renderizar_pagina_perfil_municipio(st_out, dados_painel)
+    assert len(st_out.dataframes_apos_secao) == 1
+    df_render_out = st_out.dataframes_apos_secao[0]
+    assert len(df_render_out) == 1
+    assert df_render_out.iloc[0]["id_emenda"] == "EM-O1"
+    assert df_render_out.iloc[0]["grupo_cnpj"] == "Outro CNPJ"
+
+    # Caso 3: Opção "Todos"
+    st_todos = _FakeStreamlit("Todos")
+    renderizar_pagina_perfil_municipio(st_todos, dados_painel)
+    assert len(st_todos.dataframes_apos_secao) == 1
+    assert len(st_todos.dataframes_apos_secao[0]) == 2
+
+
+
 
 
 

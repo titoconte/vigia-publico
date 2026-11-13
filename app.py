@@ -804,6 +804,37 @@ def obter_metricas_detalhadas_municipio(
     }
 
 
+# Filtra a tabela de emendas destinadas a um município separando CNPJs de Municípios e Outros CNPJs
+def filtrar_emendas_destinadas_municipio(
+    df_emendas_mun: pd.DataFrame,
+    *,
+    grupo_cnpj: str = "Todos",
+    db_path: Path | str | None = None,
+    mapa_cache: dict[str, dict[str, Any]] | None = None,
+) -> pd.DataFrame:
+    """Filtra as emendas destinadas ao município por grupo de CNPJ ('Todos', 'CNPJs de Municípios' ou 'Outros CNPJs')."""
+    df = (
+        df_emendas_mun.copy()
+        if "grupo_cnpj" in df_emendas_mun.columns
+        else anexar_grupo_cnpj_emendas(df_emendas_mun, db_path=db_path, mapa_cache=mapa_cache)
+    )
+    alvo_grupo = normalizar_filtro_grupo_cnpj(grupo_cnpj)
+    if alvo_grupo != "Todos" and "grupo_cnpj" in df.columns:
+        df = df[df["grupo_cnpj"] == alvo_grupo]
+
+    cols_sem_grupo = [c for c in df.columns if c != "grupo_cnpj"]
+    if "fornecedor_nome" in cols_sem_grupo:
+        pos = cols_sem_grupo.index("fornecedor_nome")
+        colunas_ordenadas = cols_sem_grupo[:pos] + ["grupo_cnpj"] + cols_sem_grupo[pos:]
+    elif "fornecedor_cnpj" in cols_sem_grupo:
+        pos = cols_sem_grupo.index("fornecedor_cnpj")
+        colunas_ordenadas = cols_sem_grupo[:pos] + ["grupo_cnpj"] + cols_sem_grupo[pos:]
+    else:
+        colunas_ordenadas = cols_sem_grupo + ["grupo_cnpj"]
+
+    return df[colunas_ordenadas].reset_index(drop=True)
+
+
 @st.cache_data(show_spinner=False, ttl=1800)
 def _obter_dados_perfil_municipio_cached(
     codigo_ou_nome: str,
@@ -833,6 +864,7 @@ def _obter_dados_perfil_municipio_cached(
         )
 
     mapa_cnpjs = carregar_mapa_cnpjs_cache(caminho)
+    df_emendas = anexar_grupo_cnpj_emendas(df_emendas, mapa_cache=mapa_cnpjs)
     detalhes = obter_metricas_detalhadas_municipio(df_emendas, mapa_cache=mapa_cnpjs)
     return {
         "resumo": resumo,
@@ -1660,7 +1692,27 @@ def renderizar_pagina_perfil_municipio(st: Any, dados: dict[str, pd.DataFrame]) 
     st.markdown("---")
     st.caption("ℹ️ Os alertas e desvios estatísticos municipais estão concentrados exclusivamente na aba **1. Central de Alertas**.")
     st.subheader("📋 Emendas Destinadas ao Município")
-    st.dataframe(perfil["emendas"], use_container_width=True, hide_index=True)
+    filtro_tabela_emendas_mun = st.radio(
+        "Filtrar tabela por Grupo de CNPJ:",
+        ["Todos", "CNPJs de Municípios", "Outros CNPJs"],
+        horizontal=True,
+        key="p4_filtro_tabela_emendas_grupo_cnpj",
+    )
+    df_emendas_destinadas_filtrada = filtrar_emendas_destinadas_municipio(
+        perfil["emendas"],
+        grupo_cnpj=filtro_tabela_emendas_mun,
+        mapa_cache=mapa_cnpjs,
+    )
+    valor_total_tabela_mun = (
+        float(df_emendas_destinadas_filtrada["valor"].sum())
+        if not df_emendas_destinadas_filtrada.empty and "valor" in df_emendas_destinadas_filtrada.columns
+        else 0.0
+    )
+    st.caption(
+        f"Exibindo **{len(df_emendas_destinadas_filtrada)}** emendas no filtro **{filtro_tabela_emendas_mun}** "
+        f"(Valor total: **R$ {valor_total_tabela_mun:,.2f}**)."
+    )
+    st.dataframe(df_emendas_destinadas_filtrada, use_container_width=True, hide_index=True)
 
 
 def renderizar_pagina_fluxo_recursos(st: Any, dados: dict[str, pd.DataFrame]) -> None:
