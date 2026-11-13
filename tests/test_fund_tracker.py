@@ -88,3 +88,4 @@ def test_check_fund_usage_municipio_real() -> None:
         desc = sinal["descricao"].lower()
         for termo in ("desvio", "corrupção", "fraude", "crime", "roubo"):
             assert termo not in desc
+

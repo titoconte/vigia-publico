@@ -1,0 +1,180 @@
+/* ==============================================================================
+   Vigia Público SC — Estilo Profissional de Painel de Inteligência & Investigação
+   Tema Dark Mode de Alto Contraste com Acentos Ciano (#00B4D8) e Tipografia Técnica
+   ============================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* --- Tipografia Global e Fundo --- */
+html, body, [class*="css"] {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #E6EDF3;
+}
+
+/* --- Títulos e Cabeçalhos com Identidade Investigativa --- */
+h1 {
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+    color: #FFFFFF !important;
+    padding-bottom: 0.2rem !important;
+}
+
+h2, h3 {
+    font-weight: 600 !important;
+    letter-spacing: -0.01em !important;
+    color: #F0F6FC !important;
+}
+
+h4, h5, h6 {
+    font-weight: 600 !important;
+    color: #C9D1D9 !important;
+}
+
+/* --- Cartões de Métricas (KPIs) com Borda Iluminada e Tipografia Monospace --- */
+div[data-testid="stMetric"] {
+    background: linear-gradient(180deg, #161B22 0%, #11141A 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-top: 3px solid #00B4D8 !important;
+    border-radius: 10px !important;
+    padding: 14px 18px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28) !important;
+    transition: transform 0.2s ease, border-top-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+div[data-testid="stMetric"]:hover {
+    transform: translateY(-2px) !important;
+    border-top-color: #90E0EF !important;
+    box-shadow: 0 6px 20px rgba(0, 180, 216, 0.18) !important;
+}
+
+/* Rótulo superior do cartão */
+div[data-testid="stMetricLabel"] {
+    font-size: 0.78rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    color: #8B949E !important;
+    font-weight: 600 !important;
+    margin-bottom: 4px !important;
+}
+
+/* Valor numérico do KPI com fonte técnica monoespaçada */
+div[data-testid="stMetricValue"] {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+    font-size: 1.45rem !important;
+    font-weight: 700 !important;
+    color: #F0F6FC !important;
+    letter-spacing: -0.02em !important;
+}
+
+/* Indicador de delta / variação */
+div[data-testid="stMetricDelta"] {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+}
+
+/* --- Sidebar Refinada de Navegação --- */
+section[data-testid="stSidebar"] {
+    background-color: #0D1117 !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+section[data-testid="stSidebar"] div[role="radiogroup"] > label {
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    margin-bottom: 4px !important;
+    transition: background-color 0.15s ease !important;
+}
+
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* --- Cartões Expansíveis (st.expander) --- */
+div[data-testid="stExpander"] {
+    background-color: #161B22 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
+    margin-bottom: 10px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18) !important;
+    transition: border-color 0.2s ease !important;
+}
+
+div[data-testid="stExpander"]:hover {
+    border-color: rgba(0, 180, 216, 0.3) !important;
+}
+
+/* --- Divisores Horizontais --- */
+hr {
+    border: none !important;
+    border-top: 1px solid #21262D !important;
+    margin: 1.6rem 0 !important;
+}
+
+/* --- Badges Semafóricos de Auditoria --- */
+.badge-status {
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    border-radius: 6px;
+    margin-right: 6px;
+}
+
+.badge-green {
+    background-color: rgba(46, 160, 67, 0.18);
+    color: #3FB950;
+    border: 1px solid rgba(46, 160, 67, 0.4);
+}
+
+.badge-yellow {
+    background-color: rgba(210, 153, 34, 0.18);
+    color: #D29922;
+    border: 1px solid rgba(210, 153, 34, 0.4);
+}
+
+.badge-red {
+    background-color: rgba(248, 81, 73, 0.18);
+    color: #F85149;
+    border: 1px solid rgba(248, 81, 73, 0.4);
+}
+
+.badge-cyan {
+    background-color: rgba(0, 180, 216, 0.16);
+    color: #00B4D8;
+    border: 1px solid rgba(0, 180, 216, 0.4);
+}
+
+/* --- Caixas de Aviso Customizadas (Alerts) --- */
+div[data-testid="stAlert"] {
+    border-radius: 8px !important;
+    border-width: 1px !important;
+    backdrop-filter: blur(4px) !important;
+}
+
+/* --- Tabelas de Dados e Gráficos --- */
+div[data-testid="stDataFrame"] {
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+div[data-testid="stPlotlyChart"], div[data-testid="stVegaLiteChart"], div[data-testid="stArrowVegaLiteChart"] {
+    background-color: #161B22 !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 8px !important;
+    padding: 8px !important;
+}
+
+/* --- Botões de Ação --- */
+button[kind="primary"], button[kind="secondary"] {
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+
+button[kind="secondary"]:hover {
+    border-color: #00B4D8 !important;
+    color: #00B4D8 !important;
+}

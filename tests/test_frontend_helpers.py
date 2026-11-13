@@ -9,6 +9,7 @@ from app import (
     AVISO_ETICO_FRONTEND,
     calcular_valor_por_populacao_filtrada,
     carregar_dados_painel,
+    carregar_estilos_customizados,
     carregar_mapa_macrorregioes_sc,
     eh_bancada_regional,
     filtrar_emendas_explorador,
@@ -407,6 +408,45 @@ def test_obter_metricas_detalhadas_municipio(tmp_path: Path) -> None:
     detalhes_vazio = obter_metricas_detalhadas_municipio(df_emendas.iloc[0:0])
     assert detalhes_vazio["por_area_valor"].empty
     assert detalhes_vazio["por_cnpj_total_top50"].empty
+
+
+def test_carregar_estilos_customizados_e_arquivos_tema(tmp_path: Path) -> None:
+    """Verifica a integridade dos arquivos de tema Dark Mode e a injeção de CSS em carregar_estilos_customizados."""
+    from unittest.mock import MagicMock
+
+    # 1. Valida existência e diretivas de .streamlit/config.toml
+    config_path = Path(".streamlit/config.toml")
+    assert config_path.exists(), "O arquivo .streamlit/config.toml deve existir na raiz do projeto."
+    conteudo_config = config_path.read_text(encoding="utf-8")
+    assert "[theme]" in conteudo_config
+    assert 'base = "dark"' in conteudo_config
+    assert 'primaryColor = "#00B4D8"' in conteudo_config
+    assert 'backgroundColor = "#0E1117"' in conteudo_config
+
+    # 2. Valida existência e regras de assets/style.css
+    css_path = Path("assets/style.css")
+    assert css_path.exists(), "O arquivo assets/style.css deve existir."
+    conteudo_css = css_path.read_text(encoding="utf-8")
+    assert "data-testid=\"stMetric\"" in conteudo_css
+    assert "border-top: 3px solid #00B4D8" in conteudo_css
+    assert "JetBrains Mono" in conteudo_css
+    assert "badge-status" in conteudo_css
+
+    # 3. Testa injeção de CSS com Mock do Streamlit
+    mock_st = MagicMock()
+    carregar_estilos_customizados(mock_st, caminho_css=css_path)
+    assert mock_st.markdown.called
+    args, kwargs = mock_st.markdown.call_args
+    assert "<style>" in args[0]
+    assert "</style>" in args[0]
+    assert kwargs.get("unsafe_allow_html") is True
+
+    # 4. Testa comportamento com arquivo inexistente (graceful skip)
+    mock_st_inexistente = MagicMock()
+    caminho_inexistente = tmp_path / "arquivo_inexistente.css"
+    carregar_estilos_customizados(mock_st_inexistente, caminho_css=caminho_inexistente)
+    assert not mock_st_inexistente.markdown.called
+
 
 
 

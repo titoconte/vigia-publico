@@ -47,10 +47,17 @@ O navegador abrirá automaticamente em `http://localhost:8501`.
 O sistema opera com 100% da base oficial de emendas parlamentares do Estado de Santa Catarina (~4.292 emendas) cobrindo todos os municípios catarinenses. No Explorador de Emendas (Página 2), os gráficos de análise territorial garantem a exibição de todos os 295 municípios de Santa Catarina, permitindo visualizar com precisão tanto os polos mais contemplados quanto os municípios sem repasses no recorte.
 
 ### 2.3. Atalhos Escondidos nas Tabelas do Streamlit (`st.dataframe`)
-Em qualquer uma das 4 páginas, ao passar o mouse sobre o canto superior direito de uma tabela interativa, você tem acesso a três ferramentas nativas muito úteis:
+Em qualquer uma das 5 páginas, ao passar o mouse sobre o canto superior direito de uma tabela interativa, você tem acesso a três ferramentas nativas muito úteis:
 1. **Ordenar por qualquer coluna:** clique diretamente sobre o nome da coluna (ex.: clique em `valor_per_capita` uma vez para ordem crescente e duas vezes para ver os maiores no topo).
 2. **Busca rápida (`🔍`):** clique na lupa da tabela (ou pressione `Ctrl + F` com a tabela selecionada) para procurar um sobrenome, palavra, CNPJ ou código `2026EP...`.
 3. **Exportar CSV (`⬇️`):** baixe exatamente o recorte filtrado na tela para abrir no Excel ou Google Sheets.
+
+### 2.4. Identidade Visual de Inteligência & Investigação Cívica (Dark Mode)
+A interface adota a estética de **Painel de Inteligência / Sala de Situação Investigativa** (inspirado no padrão Bloomberg e ProPublica):
+* **Paleta Dark Mode de Alto Contraste:** fundo grafite escuro (`#0E1117` e `#161B22`), texto nítido em branco-gelo (`#E6EDF3`) e detalhes em ciano elétrico investigativo (`#00B4D8`).
+* **Cartões de Métricas (KPIs) Iluminados:** cartões com borda de acento ciano superior (`border-top: 3px solid #00B4D8`), fundo com leve gradiente translúcido, elevação ao passar o cursor e números renderizados em tipografia monoespaçada técnica (`JetBrains Mono`).
+* **Tags e Badges Semânticos:** `.badge-green` (regular), `.badge-yellow` (atenção cadastral), `.badge-red` (alto risco/anomalia severa) e `.badge-cyan` (fontes oficiais).
+* **Arquitetura de Estilo:** configurada nativamente em `.streamlit/config.toml` (evitando qualquer *flicker* claro/escuro) combinada com a injeção modular de `assets/style.css` pela função [`carregar_estilos_customizados`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/app.py#L1285-L1295).
 
 ---
 
