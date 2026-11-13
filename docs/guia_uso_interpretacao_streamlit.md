@@ -239,6 +239,31 @@ Os alertas do sistema foram reformulados para focar em critérios objetivos de d
 
 ---
 
+### 4.1 Validação Cadastral de CNPJs em 3 Camadas (Padrão TCU)
+
+Para auditar os favorecidos e credores cadastrados na base de emendas, o sistema implementa em [`cnpj_validator.py`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/cnpj_validator.py) uma arquitetura de verificação em 3 camadas inspirada em recomendações do Tribunal de Contas da União (TCU):
+
+#### 1ª Camada: Verificação da Situação Cadastral
+A situação cadastral perante a Receita Federal é o filtro primário de idoneidade jurídica da entidade:
+* **🟢 Ativa:** operação cadastral regular (passa na validação).
+* **🔴 Baixada:** empresa encerrada ainda recebendo emendas parlamentares (alerta severo).
+* **🔴 Inapta:** empresa omissa em declarações fiscais por mais de 2 anos ou não localizada (notas fiscais e certidões podem ser inválidas).
+* **🟡 Suspensa:** empresa temporariamente suspensa por pendências cadastrais ou judiciais (requer verificação manual).
+* **🔴 Nula:** inscrição no CNPJ declarada nula por fraude ou vício insanável.
+
+#### 2ª Camada: Indicadores de Anomalias Cadastrais TCU
+Além do status cadastral, o sistema combina dados societários e contratuais para gerar tags e scores de suspeita:
+1. **Empresa Recém-Criada (`< 180 dias`):** empresas com data de abertura inferior a 6 meses antes da data da emenda. Aponta risco de baixa capacidade técnica e operacional para executar obras ou serviços públicos.
+2. **Empresário Individual (EI 2135) com Alto Valor (`> R$ 500.000`):** apontamento destacado pelo TCU, que identificou distorções em que empresários individuais sem quadro societário complexo recebem emendas de grande vulto incompatíveis com seu porte.
+3. **CNAE Incompatível com a Área da Emenda:** inconsistência entre a atividade econômica principal declarada na Receita Federal e a destinação temática da verba (ex.: empresa de construção civil ou eventos recebendo recursos de Saúde).
+4. **Capital Social Baixo (`< R$ 10.000`) com Emenda Expressiva (`>= R$ 200.000`):** sinaliza descompasso patrimonial que exige confirmação de capacidade instalada e garantias financeiras.
+
+#### 3ª Camada: Cache Local Persistente (`cnpj_cache`) e Consulta Direta no Gov.br
+* **Tabela `cnpj_cache`:** armazena localmente no SQLite o histórico de consultas de todos os fornecedores das emendas, garantindo respostas em milissegundos sem depender de cotas de APIs externas.
+* **Link Direto Gov.br / Portal da Transparência:** cada CNPJ exibido na Central de Alertas e nos Perfis conta com link oficial direto para conferência pública gratuita e sem necessidade de login.
+
+---
+
 ## 5. Roteiro Prático de Análise e Verificação no Painel (Workflow Recomendado)
 
 Use o fluxo abaixo para transformar os dados do Streamlit em checagem técnica e documental sólida sem cair em conclusões precipitadas:

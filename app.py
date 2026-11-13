@@ -10,6 +10,12 @@ from typing import Any
 
 import pandas as pd
 
+from cnpj_validator import (
+    check_cnpj_anomalies,
+    check_cnpj_status,
+    obter_link_consulta_oficial,
+    sincronizar_cnpjs_emendas_no_cache,
+)
 from database import conectar_banco, resolver_caminho_sqlite
 from main import garantir_dados_iniciais
 
@@ -23,6 +29,7 @@ AVISO_ETICO_FRONTEND = (
 def carregar_dados_painel(db_path: Path | str | None = None) -> dict[str, pd.DataFrame]:
     """Carrega os DataFrames de alertas, emendas, parlamentares e municípios a partir do banco de dados."""
     caminho = garantir_dados_iniciais(db_path)
+    sincronizar_cnpjs_emendas_no_cache(caminho)
     with conectar_banco(caminho) as conn:
         df_alertas = pd.read_sql_query("SELECT * FROM alertas ORDER BY pontuacao DESC, valor DESC", conn)
         df_emendas = pd.read_sql_query("SELECT * FROM emendas_clean ORDER BY valor DESC", conn)
@@ -702,6 +709,21 @@ def renderizar_pagina_painel_alertas(st: Any, dados: dict[str, pd.DataFrame]) ->
         with st.expander(titulo_card):
             st.markdown(f"**Justificativa Técnica:** {alerta['justificativa']}")
             st.markdown(f"**Beneficiário / Fornecedor:** `{alerta['beneficiario']}` (CNPJ `{alerta['fornecedor_cnpj']}`)")
+
+            # Validação cadastral do CNPJ com as tags recomendadas (Situação, Recém-criada, EI 2135, etc.)
+            cnpj_forn = str(alerta.get("fornecedor_cnpj") or "")
+            val_emenda = float(alerta.get("valor") or 0.0)
+            validacao_cnpj = check_cnpj_anomalies(cnpj_forn, val_emenda)
+            tags_formatadas = " ".join([f"`{t}`" for t in validacao_cnpj["tags"]])
+            st.markdown(f"**Validação Cadastral CNPJ:** {tags_formatadas}")
+            st.markdown(
+                f"🔗 [Consultar CNPJ no Gov.br / Portal da Transparência]({validacao_cnpj['link_consulta_oficial']}) "
+                f"*(verificação manual pública e gratuita sem login)*"
+            )
+            if validacao_cnpj["anomalias_detectadas"]:
+                for anom in validacao_cnpj["anomalias_detectadas"]:
+                    st.warning(f"⚠️ **Anomalia Cadastral ({anom['categoria'].replace('_', ' ').title()})**: {anom['descricao']}")
+
             st.markdown(f"**Fonte Oficial:** [{alerta['fonte_url']}]({alerta['fonte_url']})")
             st.markdown(f"**Hash de Auditoria SHA-256:** `{alerta['hash_auditoria']}`")
 
@@ -970,14 +992,29 @@ def renderizar_pagina_perfil_parlamentar(st: Any, dados: dict[str, pd.DataFrame]
     with st.expander("Ver detalhamento dos favorecidos (CPF / CNPJ) deste autor"):
         if not perfil["por_cpf_cnpj"].empty:
             df_tab_cpf = perfil["por_cpf_cnpj"][
-                ["doc_formatado", "fornecedor_nome", "quantidade_emendas", "valor_total"]
+                ["doc_formatado", "fornecedor_nome", "fornecedor_cnpj", "quantidade_emendas", "valor_total"]
             ].copy()
-            df_tab_cpf.columns = ["CPF / CNPJ", "Favorecido", "Nº de Emendas", "Valor Total (R$)"]
             total_autor_val = float(resumo.get("total_emendas", 0.0))
             if total_autor_val > 0:
-                df_tab_cpf["% do Total do Autor"] = (
-                    df_tab_cpf["Valor Total (R$)"] / total_autor_val * 100
+                df_tab_cpf["% do Total"] = (
+                    df_tab_cpf["valor_total"] / total_autor_val * 100
                 ).round(2)
+            df_tab_cpf["Situação Cadastral"] = [
+                check_cnpj_status(cnpj)["situacao_cadastral"] for cnpj in df_tab_cpf["fornecedor_cnpj"]
+            ]
+            df_tab_cpf["Link Gov.br"] = [
+                obter_link_consulta_oficial(cnpj) for cnpj in df_tab_cpf["fornecedor_cnpj"]
+            ]
+            df_tab_cpf = df_tab_cpf.drop(columns=["fornecedor_cnpj"])
+            cols_ordem = ["doc_formatado", "fornecedor_nome", "Situação Cadastral", "quantidade_emendas", "valor_total"]
+            if "% do Total" in df_tab_cpf.columns:
+                cols_ordem.append("% do Total")
+            cols_ordem.append("Link Gov.br")
+            df_tab_cpf = df_tab_cpf[cols_ordem]
+            df_tab_cpf.columns = [
+                "CPF / CNPJ", "Favorecido", "Situação Cadastral", "Nº de Emendas",
+                "Valor Total (R$)", *(["% do Total"] if "% do Total" in cols_ordem else []), "Consulta Gov.br"
+            ]
             st.dataframe(df_tab_cpf, use_container_width=True, hide_index=True)
 
     c_graf1, c_graf2 = st.columns(2)
@@ -1145,7 +1182,16 @@ def renderizar_pagina_perfil_municipio(st: Any, dados: dict[str, pd.DataFrame]) 
     with st.expander("Ver tabela detalhada dos favorecidos (CNPJ) deste município"):
         if not df_ctop.empty:
             df_tab_mun_cnpj = df_ctop[["cnpj_formatado", "fornecedor_nome", "quantidade_emendas", "valor_total"]].copy()
-            df_tab_mun_cnpj.columns = ["CNPJ", "Favorecido", "Nº de Emendas", "Valor Total (R$)"]
+            df_tab_mun_cnpj["Situação Cadastral"] = [
+                check_cnpj_status(cnpj)["situacao_cadastral"] for cnpj in df_tab_mun_cnpj["cnpj_formatado"]
+            ]
+            df_tab_mun_cnpj["Consulta Gov.br"] = [
+                obter_link_consulta_oficial(cnpj) for cnpj in df_tab_mun_cnpj["cnpj_formatado"]
+            ]
+            df_tab_mun_cnpj = df_tab_mun_cnpj[
+                ["cnpj_formatado", "fornecedor_nome", "Situação Cadastral", "quantidade_emendas", "valor_total", "Consulta Gov.br"]
+            ]
+            df_tab_mun_cnpj.columns = ["CNPJ", "Favorecido", "Situação Cadastral", "Nº de Emendas", "Valor Total (R$)", "Consulta Gov.br"]
             st.dataframe(df_tab_mun_cnpj, use_container_width=True, hide_index=True)
 
     st.markdown("---")
