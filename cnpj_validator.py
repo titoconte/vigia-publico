@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import re
 from typing import Any
+import unicodedata
 
 from database import conectar_banco, resolver_caminho_sqlite
 
@@ -35,6 +36,63 @@ SITUACOES_VALIDAS = {
 
 # Códigos de Natureza Jurídica para Empresário Individual (foco no relatório do TCU - código 2135)
 CODIGOS_EMPRESARIO_INDIVIDUAL = {"2135", "213-5", "2135-0"}
+
+# Rótulos canônicos para separação entre Administração Municipal e demais CNPJs
+GRUPO_CNPJ_MUNICIPIO = "CNPJ de Município"
+GRUPO_OUTRO_CNPJ = "Outro CNPJ"
+CNAE_PADRAO_MUNICIPIO = "8411-6/00 - Administração pública em geral"
+CNAES_FALLBACK_GENERICOS = {
+    "4789-0/99 - Comércio e serviços gerais",
+    "Administração pública em geral",
+    "Administração pública / entidade conveniada",
+    "Não informado",
+    "",
+}
+
+# Códigos CONCLA/IBGE da Administração Pública Municipal (direta e indireta)
+CODIGOS_NATUREZA_MUNICIPAL = {
+    "1031",  # Órgão Público do Poder Executivo Municipal
+    "1066",  # Órgão Público do Poder Legislativo Municipal
+    "1120",  # Autarquia Municipal
+    "1155",  # Fundação Pública de Direito Público Municipal
+    "1180",  # Órgão Público Autônomo Municipal
+    "1244",  # Município
+    "1279",  # Fundação Pública de Direito Privado Municipal
+    "1309",  # Fundo Público da Administração Indireta Municipal
+    "1333",  # Fundo Público da Administração Direta Municipal
+}
+
+# Prefixos nominais de entidades privadas, consórcios ou órgãos estaduais que nunca são administração municipal
+PREFIXOS_EXCLUSAO_NAO_MUNICIPAL = (
+    "ASSOCIACAO ",
+    "ASSOC ",
+    "APAE ",
+    "APAE -",
+    "SOCIEDADE ",
+    "FEDERACAO ",
+    "CONFEDERACAO ",
+    "REDE FEMININA",
+    "ROTARY ",
+    "LIGA ",
+    "COMUNIDADE ",
+    "CENTRO ",
+    "CLUBE ",
+    "SINDICATO ",
+    "COOPERATIVA ",
+    "MITRA ",
+    "PAROQUIA ",
+    "IGREJA ",
+    "CONSORCIO ",
+    "SECRETARIA DE ESTADO",
+    "SECRETARIA EXECUTIVA",
+    "ESTADO DE ",
+    "FUNDO ESTADUAL",
+    "FUNDO DE MELHORIA",
+    "FUNDACAO CATARINENSE",
+    "FUNDACAO UNIVERSIDADE",
+    "FUNDACAO UNIVERSITARIA",
+    "FUNDACAO DE AMPARO",
+)
 
 # Mapeamento setorial de compatibilidade entre áreas de emendas e prefixos de códigos CNAE
 CNAE_COMPATIBILIDADE_AREA: dict[str, list[str]] = {
@@ -94,6 +152,146 @@ def normalizar_situacao_cadastral(situacao_bruta: str | None) -> str:
     return SITUACAO_ATIVA
 
 
+def _normalizar_texto_sem_acentos(valor: Any) -> str:
+    """Normaliza uma string para maiúsculas sem acentos e com espaços simples para comparação nominal."""
+    texto = str(valor or "").strip()
+    if not texto:
+        return ""
+    sem_acentos = "".join(
+        ch for ch in unicodedata.normalize("NFD", texto) if unicodedata.category(ch) != "Mn"
+    )
+    return " ".join(sem_acentos.upper().split())
+
+
+def formatar_cnae(codigo: Any = "", descricao: Any = "") -> str:
+    """Formata um código CNAE de 7 dígitos e sua descrição no padrão oficial 'XXXX-X/XX - Descrição'."""
+    desc_limpa = " ".join(str(descricao or "").strip().split())
+    digitos = re.sub(r"\D", "", str(codigo or ""))
+    if digitos and int(digitos) > 0:
+        cod_7 = digitos.zfill(7)[:7]
+        cod_fmt = f"{cod_7[:4]}-{cod_7[4]}/{cod_7[5:7]}"
+        if desc_limpa:
+            # Evita duplicar o código caso já esteja no início da descrição
+            desc_sem_prefixo = re.sub(r"^\d{4}-?\d/?\d{2}\s*-\s*", "", desc_limpa).strip()
+            return f"{cod_fmt} - {desc_sem_prefixo}" if desc_sem_prefixo else cod_fmt
+        return cod_fmt
+
+    if not desc_limpa:
+        return ""
+    match_desc = re.match(r"^(\d{7})\s*-\s*(.+)$", desc_limpa)
+    if match_desc:
+        c7, resto = match_desc.group(1), match_desc.group(2).strip()
+        return f"{c7[:4]}-{c7[4]}/{c7[5:7]} - {resto}"
+    return desc_limpa
+
+
+def _parsear_lista_cnaes_secundarios(valor_bruto: Any) -> list[str]:
+    """Converte o campo cnaes_secundarios (lista Python ou JSON serializado) em lista limpa de strings CNAE."""
+    if not valor_bruto:
+        return []
+    itens: list[Any] = []
+    if isinstance(valor_bruto, list):
+        itens = valor_bruto
+    elif isinstance(valor_bruto, str):
+        texto = valor_bruto.strip()
+        if not texto or texto == "[]":
+            return []
+        try:
+            carregado = json.loads(texto)
+            if isinstance(carregado, list):
+                itens = carregado
+            elif carregado:
+                itens = [str(carregado)]
+        except Exception:
+            itens = [p.strip() for p in texto.split(";") if p.strip()]
+
+    resultado: list[str] = []
+    for item in itens:
+        if isinstance(item, dict):
+            fmt = formatar_cnae(item.get("codigo"), item.get("descricao"))
+        else:
+            fmt = formatar_cnae("", str(item))
+        if fmt and fmt not in resultado:
+            resultado.append(fmt)
+    return resultado
+
+
+def eh_cnpj_municipio(
+    cnpj: str | None = "",
+    nome_favorecido: str | None = "",
+    natureza_juridica_codigo: str | None = "",
+    natureza_juridica: str | None = "",
+) -> bool:
+    """Identifica se um CNPJ pertence à Administração Municipal (Prefeitura, Fundo, Fundação, Câmara ou Autarquia)."""
+    nat_cod = re.sub(r"\D", "", str(natureza_juridica_codigo or ""))[:4]
+    if nat_cod in CODIGOS_NATUREZA_MUNICIPAL:
+        return True
+
+    # Códigos oficiais CONCLA confirmados de esferas estadual/federal, consórcios ou entidades privadas sem fins lucrativos
+    if nat_cod and nat_cod != "2062" and nat_cod not in CODIGOS_NATUREZA_MUNICIPAL:
+        if nat_cod.startswith(("1", "3")) or nat_cod in {"2046", "2054", "2135", "2143", "2305"}:
+            return False
+
+    nat_desc_norm = _normalizar_texto_sem_acentos(natureza_juridica)
+    if nat_desc_norm in {"MUNICIPIO"} or (
+        "MUNICIPAL" in nat_desc_norm and "INTERMUNICIPAL" not in nat_desc_norm
+    ):
+        return True
+
+    nome_norm = _normalizar_texto_sem_acentos(nome_favorecido)
+    if not nome_norm:
+        return False
+
+    if nome_norm.startswith(PREFIXOS_EXCLUSAO_NAO_MUNICIPAL):
+        return False
+
+    prefixos_municipais = (
+        "MUNICIPIO DE ",
+        "MUNICIPIO DO ",
+        "MUNICIPIO DA ",
+        "PREFEITURA ",
+        "CAMARA MUNICIPAL",
+        "CAMARA DE VEREADORES",
+        "FUNDO MUNICIPAL",
+        "AUTARQUIA MUNICIPAL",
+        "SECRETARIA MUNICIPAL",
+        "SAMAE ",
+        "SIMAE ",
+    )
+    if nome_norm.startswith(prefixos_municipais) or nome_norm in {"FUNDO MUNICIPAL DE SAUDE", "FUNDO MUNICIPAL DA SAUDE", "SAMAE", "SIMAE"}:
+        return True
+
+    termos_internos_municipais = (
+        "- FUNDO MUNICIPAL",
+        "FUNDO DE SAUDE DE ",
+        "FUNDO DE SAUDE DO MUNICIPIO",
+        "FUNDACAO MUNICIPAL",
+        "FUNDACAO HOSPITALAR MUNICIPAL",
+        "FACULDADE MUNICIPAL",
+        "HOSPITAL MUNICIPAL",
+        "PREVIDENCIA MUNICIPAL",
+        "INSTITUTO MUNICIPAL",
+    )
+    return any(termo in nome_norm for termo in termos_internos_municipais)
+
+
+def classificar_grupo_cnpj(
+    cnpj: str | None = "",
+    nome_favorecido: str | None = "",
+    natureza_juridica_codigo: str | None = "",
+    natureza_juridica: str | None = "",
+) -> str:
+    """Retorna o grupo canônico do favorecido: 'CNPJ de Município' ou 'Outro CNPJ'."""
+    if eh_cnpj_municipio(
+        cnpj=cnpj,
+        nome_favorecido=nome_favorecido,
+        natureza_juridica_codigo=natureza_juridica_codigo,
+        natureza_juridica=natureza_juridica,
+    ):
+        return GRUPO_CNPJ_MUNICIPIO
+    return GRUPO_OUTRO_CNPJ
+
+
 # Cache em memória e controle de inicialização para alta performance
 _TABELAS_CNPJ_CACHE_INICIALIZADAS: set[str] = set()
 _MEM_CACHE_CNPJ: dict[tuple[str, str], dict[str, Any]] = {}
@@ -128,6 +326,7 @@ def inicializar_tabela_cnpj_cache(db_path: Path | str | None = None) -> None:
                 capital_social REAL DEFAULT 0.0,
                 cnae_principal TEXT,
                 cnae_descricao TEXT,
+                cnaes_secundarios TEXT DEFAULT '[]',
                 uf TEXT,
                 municipio TEXT,
                 fonte_consulta TEXT,
@@ -135,6 +334,12 @@ def inicializar_tabela_cnpj_cache(db_path: Path | str | None = None) -> None:
             )
             """
         )
+        # Migração automática retrocompatível para bancos SQLite criados antes da coluna cnaes_secundarios
+        colunas_existentes = {
+            str(r[1]) for r in conn.execute("PRAGMA table_info(cnpj_cache)").fetchall()
+        }
+        if "cnaes_secundarios" not in colunas_existentes:
+            conn.execute("ALTER TABLE cnpj_cache ADD COLUMN cnaes_secundarios TEXT DEFAULT '[]'")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_cnpj_cache_situacao ON cnpj_cache (situacao_cadastral)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_cnpj_cache_natureza ON cnpj_cache (natureza_juridica_codigo)")
         conn.commit()
@@ -160,6 +365,9 @@ def salvar_cnpj_cache(dados: dict[str, Any], db_path: Path | str | None = None) 
         if match_cod:
             nat_cod = match_cod.group(1).replace("-", "")
 
+    cnaes_sec_lista = _parsear_lista_cnaes_secundarios(dados.get("cnaes_secundarios"))
+    cnaes_sec_json = json.dumps(cnaes_sec_lista, ensure_ascii=False)
+
     registro_dict = {
         "cnpj": cnpj_limpo,
         "razao_social": str(dados.get("razao_social") or "Não informado"),
@@ -173,6 +381,7 @@ def salvar_cnpj_cache(dados: dict[str, Any], db_path: Path | str | None = None) 
         "capital_social": float(dados.get("capital_social") or 0.0),
         "cnae_principal": str(dados.get("cnae_principal") or ""),
         "cnae_descricao": str(dados.get("cnae_descricao") or dados.get("cnae_principal") or ""),
+        "cnaes_secundarios": cnaes_sec_json,
         "uf": str(dados.get("uf") or "SC").upper(),
         "municipio": str(dados.get("municipio") or ""),
         "fonte_consulta": str(dados.get("fonte_consulta") or obter_link_consulta_oficial(cnpj_limpo)),
@@ -185,8 +394,8 @@ def salvar_cnpj_cache(dados: dict[str, Any], db_path: Path | str | None = None) 
             INSERT INTO cnpj_cache (
                 cnpj, razao_social, nome_fantasia, situacao_cadastral, data_situacao_cadastral,
                 motivo_situacao_cadastral, data_abertura, natureza_juridica, natureza_juridica_codigo,
-                capital_social, cnae_principal, cnae_descricao, uf, municipio, fonte_consulta, atualizado_em
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                capital_social, cnae_principal, cnae_descricao, cnaes_secundarios, uf, municipio, fonte_consulta, atualizado_em
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(cnpj) DO UPDATE SET
                 razao_social = excluded.razao_social,
                 nome_fantasia = excluded.nome_fantasia,
@@ -199,6 +408,7 @@ def salvar_cnpj_cache(dados: dict[str, Any], db_path: Path | str | None = None) 
                 capital_social = excluded.capital_social,
                 cnae_principal = excluded.cnae_principal,
                 cnae_descricao = excluded.cnae_descricao,
+                cnaes_secundarios = excluded.cnaes_secundarios,
                 uf = excluded.uf,
                 municipio = excluded.municipio,
                 fonte_consulta = excluded.fonte_consulta,
@@ -217,6 +427,7 @@ def salvar_cnpj_cache(dados: dict[str, Any], db_path: Path | str | None = None) 
                 registro_dict["capital_social"],
                 registro_dict["cnae_principal"],
                 registro_dict["cnae_descricao"],
+                registro_dict["cnaes_secundarios"],
                 registro_dict["uf"],
                 registro_dict["municipio"],
                 registro_dict["fonte_consulta"],
@@ -499,15 +710,19 @@ def check_cnpj_anomalies(
     }
 
 
-def sincronizar_cnpjs_emendas_no_cache(db_path: Path | str | None = None) -> int:
-    """Popula e sincroniza em lote a tabela cnpj_cache a partir de emendas_clean do banco SQLite.
+def sincronizar_cnpjs_emendas_no_cache(
+    db_path: Path | str | None = None,
+    enriched_dir: Path | str = Path("data/enriched"),
+) -> int:
+    """Popula e sincroniza em lote a tabela cnpj_cache a partir de emendas_clean e JSONs enriquecidos.
     
     Garante que todos os fornecedores cadastrados na base de dados possuam registro no cache
-    com seus dados cadastrais (razão social, CNAE, data de abertura, capital social, etc.),
-    permitindo consultas instantâneas e sem custo de rede no Streamlit.
+    com seus dados cadastrais (razão social, CNAE principal/secundários, natureza jurídica, etc.),
+    aplicando o CNAE 8411-6/00 para entes municipais sem enriquecimento externo prévio.
     """
     caminho = resolver_caminho_sqlite(db_path)
     inicializar_tabela_cnpj_cache(caminho)
+    pasta_enriched = Path(enriched_dir)
 
     with conectar_banco(caminho) as conn:
         cursor = conn.cursor()
@@ -533,37 +748,70 @@ def sincronizar_cnpjs_emendas_no_cache(db_path: Path | str | None = None) -> int
             if len(cnpj_limpo) != 14:
                 continue
 
-            # Detecta se o nome sugere Empresário Individual ou MEI
             nome = str(r["fornecedor_nome"] or "").strip()
+            arq_json = pasta_enriched / f"cnpj_{cnpj_limpo}.json"
+            dados_json: dict[str, Any] = {}
+            if arq_json.exists():
+                try:
+                    dados_json = json.loads(arq_json.read_text(encoding="utf-8"))
+                except Exception:
+                    dados_json = {}
+
             eh_ei = bool(re.search(r"\b(ME|EI|MEI)\b", nome, re.IGNORECASE))
-            nat_cod = "2135" if eh_ei else "2062"
-            nat_desc = "Empresário (Individual)" if eh_ei else "Sociedade Empresária Limitada"
+            nat_cod_json = str(dados_json.get("natureza_juridica_codigo") or "").strip()
+            nat_desc_json = str(dados_json.get("natureza_juridica") or "").strip()
+            eh_mun = eh_cnpj_municipio(cnpj_limpo, nome or dados_json.get("razao_social"), nat_cod_json, nat_desc_json)
+
+            if nat_cod_json:
+                nat_cod = nat_cod_json
+                nat_desc = nat_desc_json or ("Município" if eh_mun else "Não informada")
+            elif eh_mun:
+                eh_fundo = "FUNDO" in _normalizar_texto_sem_acentos(nome)
+                nat_cod = "1333" if eh_fundo else "1244"
+                nat_desc = "Fundo Público da Administração Direta Municipal" if eh_fundo else "Município"
+            elif eh_ei:
+                nat_cod = "2135"
+                nat_desc = "Empresário (Individual)"
+            else:
+                nat_cod = "2062"
+                nat_desc = "Sociedade Empresária Limitada"
+
+            cnae_bruto = str(dados_json.get("cnae_principal") or r["cnae_fornecedor"] or "").strip()
+            if eh_mun and cnae_bruto in CNAES_FALLBACK_GENERICOS:
+                cnae_principal = CNAE_PADRAO_MUNICIPIO
+            else:
+                cnae_principal = cnae_bruto
+
+            cnaes_sec = _parsear_lista_cnaes_secundarios(dados_json.get("cnaes_secundarios"))
+            cnaes_sec_json = json.dumps(cnaes_sec, ensure_ascii=False)
+            situacao = normalizar_situacao_cadastral(dados_json.get("situacao_cadastral"))
 
             conn.execute(
                 """
                 INSERT INTO cnpj_cache (
                     cnpj, razao_social, nome_fantasia, situacao_cadastral, data_situacao_cadastral,
                     motivo_situacao_cadastral, data_abertura, natureza_juridica, natureza_juridica_codigo,
-                    capital_social, cnae_principal, cnae_descricao, uf, municipio, fonte_consulta, atualizado_em
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    capital_social, cnae_principal, cnae_descricao, cnaes_secundarios, uf, municipio, fonte_consulta, atualizado_em
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(cnpj) DO NOTHING
                 """,
                 (
                     cnpj_limpo,
-                    nome,
-                    "",
-                    SITUACAO_ATIVA,
-                    "",
-                    "",
-                    str(r["data_abertura_fornecedor"] or ""),
+                    nome or str(dados_json.get("razao_social") or "Não informado"),
+                    str(dados_json.get("nome_fantasia") or ""),
+                    situacao,
+                    str(dados_json.get("data_situacao_cadastral") or ""),
+                    str(dados_json.get("motivo_situacao_cadastral") or ""),
+                    str(dados_json.get("data_abertura") or r["data_abertura_fornecedor"] or ""),
                     nat_desc,
                     nat_cod,
-                    float(r["capital_social_fornecedor"] or 0.0),
-                    str(r["cnae_fornecedor"] or ""),
-                    str(r["cnae_fornecedor"] or ""),
-                    str(r["uf_fornecedor"] or "SC"),
-                    "",
-                    obter_link_consulta_oficial(cnpj_limpo),
+                    float(dados_json.get("capital_social") or r["capital_social_fornecedor"] or 0.0),
+                    cnae_principal,
+                    cnae_principal,
+                    cnaes_sec_json,
+                    str(dados_json.get("uf") or r["uf_fornecedor"] or "SC"),
+                    str(dados_json.get("municipio") or ""),
+                    str(dados_json.get("fonte_consulta") or obter_link_consulta_oficial(cnpj_limpo)),
                     agora,
                 ),
             )
@@ -572,3 +820,86 @@ def sincronizar_cnpjs_emendas_no_cache(db_path: Path | str | None = None) -> int
         conn.commit()
 
     return total_sincronizados
+
+
+def carregar_mapa_cnpjs_cache(db_path: Path | str | None = None) -> dict[str, dict[str, Any]]:
+    """Carrega em lote todos os registros de cnpj_cache indexados pelo CNPJ de 14 dígitos já enriquecidos com grupo e lista de CNAEs."""
+    caminho = resolver_caminho_sqlite(db_path)
+    inicializar_tabela_cnpj_cache(caminho)
+    mapa: dict[str, dict[str, Any]] = {}
+
+    with conectar_banco(caminho) as conn:
+        linhas = conn.execute("SELECT * FROM cnpj_cache").fetchall()
+        for row in linhas:
+            d = dict(row)
+            cnpj_k = limpar_cnpj(d.get("cnpj"))
+            if not cnpj_k:
+                continue
+            secundarios = _parsear_lista_cnaes_secundarios(d.get("cnaes_secundarios"))
+            grupo = classificar_grupo_cnpj(
+                cnpj=cnpj_k,
+                nome_favorecido=d.get("razao_social"),
+                natureza_juridica_codigo=d.get("natureza_juridica_codigo"),
+                natureza_juridica=d.get("natureza_juridica"),
+            )
+            cnae_princ = str(d.get("cnae_principal") or "").strip()
+            if grupo == GRUPO_CNPJ_MUNICIPIO and cnae_princ in CNAES_FALLBACK_GENERICOS:
+                cnae_princ = CNAE_PADRAO_MUNICIPIO
+            d["cnae_principal"] = cnae_princ
+            d["cnaes_secundarios_lista"] = secundarios
+            d["grupo_cnpj"] = grupo
+            mapa[cnpj_k] = d
+
+    return mapa
+
+
+def obter_cnaes_cnpj(
+    cnpj: str,
+    nome_favorecido: str = "",
+    db_path: Path | str | None = None,
+    mapa_cache: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Retorna estrutura consolidada de CNAEs (principal + secundários) e classificação de grupo para um CNPJ."""
+    cnpj_limpo = limpar_cnpj(cnpj)
+    dados = None
+    if mapa_cache is not None and cnpj_limpo in mapa_cache:
+        dados = mapa_cache[cnpj_limpo]
+    elif cnpj_limpo:
+        dados = obter_cnpj_cache(cnpj_limpo, db_path=db_path)
+
+    razao = str((dados or {}).get("razao_social") or nome_favorecido or "Não informado").strip()
+    nat_cod = str((dados or {}).get("natureza_juridica_codigo") or "").strip()
+    nat_desc = str((dados or {}).get("natureza_juridica") or "Não informada").strip()
+
+    grupo = classificar_grupo_cnpj(
+        cnpj=cnpj_limpo,
+        nome_favorecido=nome_favorecido or razao,
+        natureza_juridica_codigo=nat_cod,
+        natureza_juridica=nat_desc,
+    )
+    if grupo == GRUPO_CNPJ_MUNICIPIO and nat_cod in {"", "2062"}:
+        nat_desc = "Administração Pública Municipal"
+
+    cnae_princ = str((dados or {}).get("cnae_principal") or "").strip()
+    if grupo == GRUPO_CNPJ_MUNICIPIO and cnae_princ in CNAES_FALLBACK_GENERICOS:
+        cnae_princ = CNAE_PADRAO_MUNICIPIO
+    elif not cnae_princ:
+        cnae_princ = "Não informado"
+
+    if dados and "cnaes_secundarios_lista" in dados:
+        secundarios = list(dados["cnaes_secundarios_lista"])
+    else:
+        secundarios = _parsear_lista_cnaes_secundarios((dados or {}).get("cnaes_secundarios"))
+
+    qtd_principal = 0 if cnae_princ in {"", "Não informado"} else 1
+    return {
+        "cnpj": cnpj_limpo,
+        "cnpj_formatado": formatar_cnpj_exibicao(cnpj_limpo) if len(cnpj_limpo) == 14 else (cnpj or "Não informado"),
+        "razao_social": razao,
+        "grupo_cnpj": grupo,
+        "natureza_juridica": nat_desc,
+        "natureza_juridica_codigo": nat_cod,
+        "cnae_principal": cnae_princ,
+        "cnaes_secundarios": secundarios,
+        "total_cnaes": qtd_principal + len(secundarios),
+    }

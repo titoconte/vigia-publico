@@ -6,16 +6,24 @@ from pathlib import Path
 import sqlite3
 
 from cnpj_validator import (
+    GRUPO_CNPJ_MUNICIPIO,
+    GRUPO_OUTRO_CNPJ,
     SITUACAO_ATIVA,
     SITUACAO_BAIXADA,
     SITUACAO_INAPTA,
     SITUACAO_NULA,
     SITUACAO_SUSPENSA,
+    carregar_mapa_cnpjs_cache,
     check_cnpj_anomalies,
     check_cnpj_status,
+    classificar_grupo_cnpj,
+    eh_cnpj_municipio,
+    formatar_cnae,
     formatar_cnpj_exibicao,
     limpar_cnpj,
+    limpar_mem_cache_cnpj,
     normalizar_situacao_cadastral,
+    obter_cnaes_cnpj,
     obter_cnpj_cache,
     obter_link_consulta_oficial,
     salvar_cnpj_cache,
@@ -258,4 +266,150 @@ def test_sincronizar_cnpjs_emendas_no_cache(tmp_path: Path) -> None:
     assert cached is not None
     assert cached["razao_social"] == "Hospital Alfa S.A."
     assert cached["situacao_cadastral"] == "Ativa"
+
+
+def test_formatar_cnae_padrao_oficial() -> None:
+    """Verifica a formatação de códigos numéricos CNAE no padrão oficial XXXX-X/XX - Descrição."""
+    assert (
+        formatar_cnae(8411600, "Administração pública em geral")
+        == "8411-6/00 - Administração pública em geral"
+    )
+    assert (
+        formatar_cnae("9430-8/00", "Atividades de associações de defesa de direitos sociais")
+        == "9430-8/00 - Atividades de associações de defesa de direitos sociais"
+    )
+    assert (
+        formatar_cnae("", "4120-4/00 - Construção de edifícios")
+        == "4120-4/00 - Construção de edifícios"
+    )
+    assert formatar_cnae(0, "") == ""
+    assert formatar_cnae("0000000", "") == ""
+
+
+def test_classificar_grupo_cnpj_municipio_vs_outros() -> None:
+    """Garante separação exata entre Administração Municipal (CNPJs de Municípios) e Outros CNPJs."""
+    # Entes da Administração Municipal (direta e indireta)
+    casos_municipais = [
+        ("01566620000155", "MUNICIPIO DE TIGRINHOS", "2062", "Sociedade Empresária Limitada"),
+        ("82892282000143", "PREFEITURA MUNICIPAL DE FLORIANOPOLIS", "", ""),
+        ("00185045000188", "FUNDO MUNICIPAL DE SAUDE DE PORTO UNIAO", "", ""),
+        ("10496698000131", "PMFG - FUNDO MUNICIPAL DE SAUDE", "", ""),
+        ("09129733000103", "FUNDO DE SAUDE DE PINHALZINHO", "", ""),
+        ("03845124000166", "ILHOTAPREV - INSTITUTO DE PREVIDENCIA MUNICIPAL DE ILHOTA", "", ""),
+        ("07933452000175", "FACULDADE MUNICIPAL DE PALHOCA", "", ""),
+        ("79376760000158", "HOSPITAL MUNICIPAL DE MAJOR VIEIRA", "", ""),
+        ("81286254000110", "FUNDACAO HOSPITALAR MUNICIPAL DE CANELINHA", "", ""),
+        ("16501189000136", "FUNDACAO CULTURAL DE GUABIRUBA", "1155", "Fundação Pública de Direito Público Municipal"),
+        ("12345678000199", "CAMARA MUNICIPAL DE VEREADORES DE LAGES", "1066", "Órgão Público do Poder Legislativo Municipal"),
+    ]
+    for cnpj, nome, nat_cod, nat_desc in casos_municipais:
+        assert eh_cnpj_municipio(cnpj, nome, nat_cod, nat_desc) is True, f"Deveria ser municipal: {nome}"
+        assert classificar_grupo_cnpj(cnpj, nome, nat_cod, nat_desc) == GRUPO_CNPJ_MUNICIPIO
+
+    # Outros CNPJs (Associações privadas com 'DO MUNICIPIO', Consórcios, Estado, OSCs e Empresas)
+    casos_outros = [
+        ("79356317000115", "ASSOCIACAO DE MULHERES DO MUNICIPIO DE TAIO", "3999", "Associação Privada"),
+        ("44200054000176", "ASSOCIACAO DE PAIS E AMIGOS DE AUTISTAS DO MUNICIPIO DE LAURO MULLER", "2062", ""),
+        ("03268348000152", "ASSOCIACAO DOS APOSENTADOS PENSIONISTAS E IDOSOS DO MUNICIPIO DE ICARA SC", "", ""),
+        ("07383800000188", "CONSORCIO PUBLICO INTERFEDERATIVO DE SAUDE DA REGIAO DA AMURES - CISAMURES", "1210", ""),
+        ("80673411000187", "FUNDO ESTADUAL DE SAUDE", "1325", ""),
+        ("13925994000107", "FUNDO DE MELHORIA DA POLICIA MILITAR", "", ""),
+        ("82951328000158", "SECRETARIA DE ESTADO DA EDUCACAO", "1023", ""),
+        ("83722462000140", "FUNDACAO CATARINENSE DE CULTURA", "", ""),
+        ("83456123000110", "MedSul Equipamentos Hospitalares S.A.", "2054", "Sociedade Anônima Fechada"),
+    ]
+    for cnpj, nome, nat_cod, nat_desc in casos_outros:
+        assert eh_cnpj_municipio(cnpj, nome, nat_cod, nat_desc) is False, f"Não deveria ser municipal: {nome}"
+        assert classificar_grupo_cnpj(cnpj, nome, nat_cod, nat_desc) == GRUPO_OUTRO_CNPJ
+
+
+def test_cnaes_secundarios_migracao_e_consulta_em_lote(tmp_path: Path) -> None:
+    """Verifica migração retrocompatível da coluna cnaes_secundarios, persistência e consulta estruturada."""
+    db_legado = tmp_path / "legado_sem_secundarios.db"
+    limpar_mem_cache_cnpj()
+
+    # Simula tabela cnpj_cache antiga (sem a coluna cnaes_secundarios)
+    with sqlite3.connect(db_legado) as conn:
+        conn.execute(
+            """
+            CREATE TABLE cnpj_cache (
+                cnpj TEXT PRIMARY KEY,
+                razao_social TEXT,
+                nome_fantasia TEXT,
+                situacao_cadastral TEXT NOT NULL DEFAULT 'Ativa',
+                data_situacao_cadastral TEXT,
+                motivo_situacao_cadastral TEXT,
+                data_abertura TEXT,
+                natureza_juridica TEXT,
+                natureza_juridica_codigo TEXT,
+                capital_social REAL DEFAULT 0.0,
+                cnae_principal TEXT,
+                cnae_descricao TEXT,
+                uf TEXT,
+                municipio TEXT,
+                fonte_consulta TEXT,
+                atualizado_em TEXT NOT NULL
+            )
+            """
+        )
+        conn.commit()
+
+    salvar_cnpj_cache(
+        {
+            "cnpj": "16501189000136",
+            "razao_social": "FUNDACAO CULTURAL DE GUABIRUBA",
+            "natureza_juridica": "Fundação Pública de Direito Público Municipal",
+            "natureza_juridica_codigo": "1155",
+            "cnae_principal": "8412-4/00 - Regulação das atividades de saúde, educação, serviços culturais e outros serviços sociais",
+            "cnaes_secundarios": [
+                "9001-9/02 - Produção musical",
+                "9101-5/00 - Atividades de bibliotecas e arquivos",
+            ],
+        },
+        db_path=db_legado,
+    )
+
+    info = obter_cnaes_cnpj("16.501.189/0001-36", db_path=db_legado)
+    assert info["grupo_cnpj"] == GRUPO_CNPJ_MUNICIPIO
+    assert info["cnae_principal"].startswith("8412-4/00")
+    assert len(info["cnaes_secundarios"]) == 2
+    assert "9001-9/02 - Produção musical" in info["cnaes_secundarios"]
+    assert info["total_cnaes"] == 3
+
+    mapa = carregar_mapa_cnpjs_cache(db_path=db_legado)
+    assert "16501189000136" in mapa
+    assert mapa["16501189000136"]["grupo_cnpj"] == GRUPO_CNPJ_MUNICIPIO
+
+
+def test_sincronizar_cnpjs_municipio_aplica_cnae_8411_quando_fallback(tmp_path: Path) -> None:
+    """Garante que entes municipais sem cache enriquecido recebam CNAE 8411-6/00 e nunca 4789-0/99."""
+    db_path = tmp_path / "sync_mun.db"
+    limpar_mem_cache_cnpj()
+    inicializar_schema(db_path)
+
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(
+            """
+            INSERT INTO emendas_clean (
+                id_emenda, parlamentar, valor, municipio, municipio_normalizado,
+                codigo_ibge, populacao, valor_per_capita, entidade_beneficiaria,
+                area, data, ano_mes, fornecedor_nome, fornecedor_cnpj, uf_fornecedor,
+                cnae_fornecedor, status_execucao, fonte_url
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "EM-MUN-01", "Deputado Teste", 300000.0, "Tigrinhos", "TIGRINHOS",
+                "4217956", 2329, 128.81, "MUNICIPIO DE TIGRINHOS", "Infraestrutura e Mobilidade",
+                "2026-06-01", "2026-06", "MUNICIPIO DE TIGRINHOS", "01566620000155", "SC",
+                "4789-0/99 - Comércio e serviços gerais", "Pago", "https://tcesc.tc.br",
+            ),
+        )
+        conn.commit()
+
+    sincronizar_cnpjs_emendas_no_cache(db_path, enriched_dir=tmp_path / "vazio")
+    cached = obter_cnpj_cache("01566620000155", db_path=db_path)
+    assert cached is not None
+    assert cached["cnae_principal"] == "8411-6/00 - Administração pública em geral"
+    assert cached["natureza_juridica_codigo"] == "1244"
+
 

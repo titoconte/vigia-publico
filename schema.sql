@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS cnpj_cache (
     capital_social REAL DEFAULT 0.0,
     cnae_principal TEXT,
     cnae_descricao TEXT,
+    cnaes_secundarios TEXT DEFAULT '[]',
     uf TEXT,
     municipio TEXT,
     fonte_consulta TEXT,
