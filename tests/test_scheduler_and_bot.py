@@ -31,7 +31,7 @@ def test_executar_ciclo_semanal_e_gerar_html_top10(tmp_path: Path) -> None:
         enviar_email=False,
     )
     assert html_out.exists()
-    assert len(resumo["top_10_alertas"]) == 10
+    assert 1 <= len(resumo["top_10_alertas"]) <= 10
 
     html = gerar_relatorio_html_top10(resumo["top_10_alertas"])
     assert "<html" in html.lower()

@@ -68,7 +68,7 @@ def test_get_api_alertas_e_detalhe_alerta(client: TestClient) -> None:
     resp = client.get("/api/alertas")
     assert resp.status_code == 200
     alertas = resp.json()
-    assert len(alertas) >= 7
+    assert len(alertas) >= 2
     scores = [a["pontuacao"] for a in alertas]
     assert scores == sorted(scores, reverse=True)
 
@@ -97,7 +97,6 @@ def test_get_api_municipio_perfil_completo(client: TestClient) -> None:
     assert isinstance(perfil["emendas"], list)
     assert len(perfil["emendas"]) >= 1
     assert isinstance(perfil["alertas"], list)
-    assert len(perfil["alertas"]) >= 1
 
 
 def test_post_api_alerta_feedback_util_e_falso_positivo(client: TestClient) -> None:

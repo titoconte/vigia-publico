@@ -213,58 +213,29 @@ Para o município selecionado, o painel gera 8 visualizações estatísticas ant
 
 ---
 
-## 4. Manual de Interpretação das 7 Regras de Anomalia e Pontuações
+## 4. Manual de Interpretação dos Novos Alertas Estatísticos e Pontuações
 
-Cada regra em [anomalies.py](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/anomalies.py) atribui uma nota de **0,0 a 100,0 pontos**. Quanto mais próximo de **100**, mais extremo é o afastamento estatístico ou cadastral em relação ao padrão esperado.
+Os alertas do sistema foram reformulados para focar em critérios objetivos de desvio padrão estatístico (+1 STD) e foram **unificados exclusivamente na aba "1. Central de Alertas"** (sendo removidos das páginas de perfil do parlamentar e perfil do município para manter a visualização focada).
 
-| # | Código Interno | Nome no Painel | Gatilho Objetivo | Faixa de Score |
+| # | Código Interno | Nome no Painel | Gatilho Objetivo (Critérios Estatísticos) | Faixa de Score |
 | :-: | :--- | :--- | :--- | :---: |
-| **1** | `REGRA_1_VALOR_ABSOLUTO_P95` | **Valor Absoluto Alto** | Valor da emenda $>$ Percentil 95 da base | `75.0` a `100.0` |
-| **2** | `REGRA_2_PER_CAPITA_ACIMA_2DP` | **Valor Per Capita Alto** | Valor per capita $>$ Média estadual $+ 2\sigma$ (Z-score $> 2$) | `70.0` a `100.0` |
-| **3** | `REGRA_3_CONCENTRACAO_FORNECEDOR_80` | **Concentração de Fornecedor** | $> 80\%$ das verbas do autor num só CNPJ ($\ge$ R$ 500 mil e $\ge 2$ emendas) | `75.0` a `100.0` |
-| **4** | `REGRA_4_CONCENTRACAO_TEMPORAL_70` | **Concentração Temporal** | $> 70\%$ do valor anual do autor num único mês ($\ge$ R$ 500 mil e $\ge 2$ emendas) | `65.0` a `95.0` |
-| **5** | `REGRA_5_CNPJ_RECEM_CRIADO_12M` | **Beneficiário Recém-Criado** | CNPJ aberto há menos de 12 meses antes da data da emenda | `80.0` a `100.0` |
-| **6** | `REGRA_6_CAPITAL_SOCIAL_BAIXO` | **Capital Social Baixo** | Capital social entre R$ 0,01 e R$ 9.999,99 com emenda $\ge$ R$ 200 mil | `75.0` a `100.0` |
-| **7** | `REGRA_7_DISCREPANCIA_GEOGRAFICA_UF` | **Discrepância Geográfica** | Sede do CNPJ fora de Santa Catarina (`UF != SC`) | `70.0` a `95.0` |
+| **1** | `REGRA_1_TRIPLO_DESVIO_VALOR_PER_CAPITA_AREA` | **Triplo Desvio: Valor, Per Capita e Área** | Cumpre cumulativamente 3 requisitos: (1) Valor $>$ Média global $+ 1\sigma$; (2) Município com valor per capita recebido elevado ($> \text{Média} + 1\sigma$); (3) Valor na respectiva área temática $>$ Média setorial $+ 1\sigma$. | `80.0` a `100.0` |
+| **2** | `REGRA_2_VALOR_AREA_ACIMA_MEDIA_1STD` | **Valor na Área Acima da Média + 1 STD** | Valor de uma emenda específica para uma área temática $>$ Média daquela área $+ 1\sigma$ setorial (calculado para todas as áreas temáticas). | `70.0` a `100.0` |
 
-### Como interpretar cada regra na prática analítica
+### Como interpretar cada um dos novos alertas
 
-#### 1. Valor Absoluto Alto (`REGRA_1_VALOR_ABSOLUTO_P95`)
-* **Cálculo do Score:** parte de `75` pontos e sobe até `100` conforme o múltiplo do valor sobre o limiar do Percentil 95 (`multiplo_sobre_p95` no JSON). Representa o **top 5% das emendas mais caras** do estado.
-* **O que investigar:** qual é o objeto detalhado no plano de trabalho? Há estudo técnico e licitação compatível com o vulto milionário?
-* **Explicação legítima comum:** emendas coletivas de **Bancadas Regionais** para grandes hospitais ou rodovias estaduais costumam liderar este ranking legitimamente.
+#### 1. Triplo Desvio: Valor, Per Capita e Área (`REGRA_1_TRIPLO_DESVIO_VALOR_PER_CAPITA_AREA`)
+* **Cálculo do Score:** parte de `80.0` pontos (por exigir o cumprimento estrito de 3 filtros de exceção simultâneos) e sobe até `100.0` conforme a magnitude conjunta dos desvios padrão da emenda frente ao Estado e à área setorial.
+* **Os 3 Requisitos Exigidos Simultaneamente:**
+  1. **Valor Absoluto da Emenda:** a emenda individual é superior à média de todas as emendas de SC mais 1 desvio padrão ($\text{Valor} > \mu_{\text{global}} + \sigma_{\text{global}}$).
+  2. **Impacto Per Capita no Município:** o município destinatário apresenta alocação per capita elevada, seja pelo impacto da própria emenda sobre a população local ou pelo acumulado de repasses por habitante superior à média estadual mais 1 desvio padrão.
+  3. **Relevância Setorial na Área:** o valor da emenda supera a média mais 1 desvio padrão da respectiva função temática (Saúde, Educação, Infraestrutura, Agricultura, etc.).
+* **O que auditar:** por se tratar de um repasse de grande vulto financeiro destinado a um município onde o impacto proporcional por morador é extremo e que simultaneamente lidera a faixa de valores daquela área temátíca, recomenda-se verificar o plano de trabalho, os termos do convênio e a capacidade técnica de execução.
 
-#### 2. Valor Per Capita Alto (`REGRA_2_PER_CAPITA_ACIMA_2DP`)
-* **Cálculo do Score:** mede quantos desvios padrão (`z_score` no JSON) aquela emenda está acima da média estadual por habitante. Parte de `70` (em $Z = 2,0$) e atinge `100` quando $Z \ge 4,5$.
-* **O que investigar:** por que um município tão pequeno recebeu um aporte desproporcional frente aos municípios vizinhos de porte equivalente?
-* **Explicação legítima comum:**
-  1. **Consórcios Intermunicipais ou Hospitais Regionais:** o dinheiro cai no CNPJ sediado num município pequeno/médio (ex.: Correia Pinto), mas atende pacientes de toda a Serra Catarinense.
-  2. **Indivisibilidade de obras:** construir uma ponte ou comprar uma ambulância UTI custa o mesmo num município de 2.500 habitantes ou de 500.000 habitantes.
-
-#### 3. Concentração de Fornecedor (`REGRA_3_CONCENTRACAO_FORNECEDOR_80`)
-* **Cálculo do Score:** parte de `75` pontos em $80\%$ de concentração e chega a `100` quando $100\%$ das emendas do parlamentar vão para o mesmo CNPJ. Só dispara se o parlamentar tiver pelo menos 2 emendas e somar ao menos R$ 500 mil.
-* **O que investigar:** se o CNPJ concentrador for uma **OSC, instituto privado ou empresa**, investigue vínculos políticos/societários, histórico de prestação de contas e por que o mandato canaliza quase toda a sua cota para uma única entidade privada.
-* **Explicação legítima comum:** parlamentar com reduto eleitoral muito concentrado que envia quase todas as suas emendas diretamente para a **Prefeitura Municipal** ou **Fundo Municipal de Saúde** da sua cidade-base.
-
-#### 4. Concentração Temporal (`REGRA_4_CONCENTRACAO_TEMPORAL_70`)
-* **Cálculo do Score:** parte de `65` pontos quando $>70\%$ do orçamento anual do deputado se concentra em um único `ano_mes` (ex.: `2026-06`), chegando a `95` em $100\%$.
-* **O que investigar:** liberações aceleradas em véspera de defeso eleitoral, fim de exercício fiscal ("empenho de última hora") ou eventos políticos locais.
-* **Explicação legítima comum:** janelas orçamentárias oficiais do Poder Executivo Estadual (SIGEF), nas quais o governo libera lotes inteiros de emendas impositivas de vários deputados no mesmo mês. *Dica:* se dezenas de deputados tiverem concentração no exato mesmo mês, trata-se de calendário administrativo do Estado.
-
-#### 5. Beneficiário Recém-Criado (`REGRA_5_CNPJ_RECEM_CRIADO_12M`)
-* **Cálculo do Score:** uma das regras mais sensíveis — **já começa em `80` pontos** e chega perto de `100` quanto mais próximo de zero for o intervalo `dias_entre_abertura_e_emenda` no JSON.
-* **O que investigar:** entidades sem fins lucrativos ou fornecedores abertos poucos meses antes de receberem recursos públicos possuem capacidade técnica, sede física real, corpo funcional e experiência prévia comprovada?
-
-#### 6. Capital Social Baixo (`REGRA_6_CAPITAL_SOCIAL_BAIXO`)
-* **Cálculo do Score:** usa escala logarítmica sobre a razão `razao_emenda_sobre_capital` (ex.: emenda de R$ 500 mil para CNPJ com capital de R$ 3 mil = `166,7x` o capital social, gerando ~`92,8` pontos).
-* **Nuance técnica importantíssima na interpretação:**
-  * Na Receita Federal, órgãos públicos e a maioria das associações/fundações sem fins lucrativos possuem `capital_social = 0.0` (e por isso a regra exige `capital > 0`, evitando poluir o painel com prefeituras).
-  * Porém, algumas associações/institutos registram capital simbólico (ex.: R$ 1.000 a R$ 5.000), e **empresas privadas mercantis (LTDA / SLU)** com capital abaixo de R$ 10.000 recebendo centenas de milhares de reais exigem verificação rigorosa de lastro patrimonial, sede e capacidade operacional.
-
-#### 7. Discrepância Geográfica (`REGRA_7_DISCREPANCIA_GEOGRAFICA_UF`)
-* **Cálculo do Score:** parte de `70` pontos sempre que `uf_fornecedor != SC` e escala conforme o valor financeiro (até `95` pontos).
-* **O que investigar:** por que uma emenda estadual catarinense destinada a um município de SC está vinculada a um CNPJ sediado em outro estado?
-* **Explicação legítima comum:** congregações filantrópicas hospitalares ou educacionais tradicionais (ex.: mantenedoras de hospitais em Itajaí ou Joinville cuja matriz histórica do CNPJ raiz `/0001-XX` fica em `SP`, `PR` ou `RS`), ou fabricantes nacionais exclusivos de equipamentos hospitalares/pesados.
+#### 2. Valor na Área Acima da Média + 1 STD (`REGRA_2_VALOR_AREA_ACIMA_MEDIA_1STD`)
+* **Cálculo do Score:** parte de `70.0` pontos quando o valor da emenda ultrapassa o limiar de 1 desvio padrão da sua respectiva área temática ($Z_{\text{setorial}} > 1.0$), escalando até `100.0` para desvios ainda mais pronunciados.
+* **Gatilho Setorial:** cada área temática (ex.: *Saúde*, *Educação*, *Infraestrutura e Mobilidade*, *Agricultura*, *Segurança Pública*, *Fundo Social*) possui sua própria média e desvio padrão. A regra identifica as emendas que são pontos fora da curva dentro do seu próprio segmento dentre todas as áreas da administração estadual.
+* **O que auditar:** verificar se o objeto pactuado (aquisição de maquinário, pavimentação, reformas de unidades escolares ou hospitalares) possui justificativa orçamentária compatível com a média de custos praticada no setor.
 
 ---
 

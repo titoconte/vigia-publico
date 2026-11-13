@@ -98,7 +98,7 @@ def test_perfis_parlamentar_e_municipio_e_feedback(tmp_path: Path) -> None:
     perfil_mun = obter_dados_perfil_municipio("4218954", db_path=db_path)
     assert perfil_mun["resumo"]["municipio"] == "Urupema"
     assert perfil_mun["resumo"]["populacao"] == 2656
-    assert len(perfil_mun["alertas"]) >= 1
+    assert isinstance(perfil_mun["alertas"], list)
 
     alerta_id = int(dados["alertas"].iloc[0]["id"])
     atualizado = registrar_feedback_local(

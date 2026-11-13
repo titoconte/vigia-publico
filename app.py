@@ -610,9 +610,34 @@ def registrar_feedback_local(
 
 
 def renderizar_pagina_painel_alertas(st: Any, dados: dict[str, pd.DataFrame]) -> None:
-    """Renderiza a Página 1: Painel de Alertas com verificação separada por bancada ou parlamentar."""
-    st.header("🚨 Página 1 — Painel de Alertas e Análise de Risco")
+    """Renderiza a Página 1: Central de Alertas dedicada exclusivamente à triagem e auditoria dos novos alertas."""
+    st.header("🚨 Central de Alertas — Triagem e Auditoria Cívica")
+    st.caption(
+        "Aba dedicada exclusivamente à análise detalhada dos novos alertas estatísticos oficiais: "
+        "(1) Triplo Desvio simultâneo (Valor, Per Capita Municipal e Área Temática) e "
+        "(2) Valor na Área Temática acima da média setorial + 1 STD."
+    )
     df_alertas = dados["alertas"]
+
+    # Indicadores globais da Central de Alertas
+    if not df_alertas.empty:
+        qtd_triplo = (df_alertas["tipo"] == "Triplo Desvio: Valor, Per Capita e Área").sum()
+        qtd_area = (df_alertas["tipo"] == "Valor na Área Acima da Média + 1 STD").sum()
+        val_total_alertas = float(df_alertas["valor"].sum())
+        total_geral = len(df_alertas)
+    else:
+        qtd_triplo = 0
+        qtd_area = 0
+        val_total_alertas = 0.0
+        total_geral = 0
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Total de Alertas", f"{total_geral}")
+    m2.metric("Triplo Desvio (Regra 1)", f"{qtd_triplo}")
+    m3.metric("Destaque na Área (Regra 2)", f"{qtd_area}")
+    m4.metric("Valor Total Sob Alerta", f"R$ {val_total_alertas:,.2f}")
+
+    st.markdown("---")
 
     c_tipo_autor, col1, col2, col3, col4 = st.columns([1.2, 1.2, 1.2, 1.2, 1.0])
     filtro_tipo_autor = c_tipo_autor.selectbox(
@@ -650,12 +675,23 @@ def renderizar_pagina_painel_alertas(st: Any, dados: dict[str, pd.DataFrame]) ->
     if filtro_mun != "Todos":
         df_view = df_view[df_view["municipio"] == filtro_mun]
 
-    st.caption(f"Exibindo **{len(df_view)}** padrões detectados ordenados por pontuação de prioridade.")
+    st.caption(f"Exibindo **{len(df_view)}** alertas detectados com base nos filtros selecionados.")
     st.dataframe(
         df_view[["id", "pontuacao", "tipo", "parlamentar", "municipio", "valor", "beneficiario"]],
         use_container_width=True,
         hide_index=True,
     )
+
+    # Gráficos de síntese na Central de Alertas
+    if not df_view.empty:
+        st.markdown("##### 📊 Distribuição dos Alertas Filtrados")
+        c_gr1, c_gr2 = st.columns(2)
+        with c_gr1:
+            st.caption("Quantidade de Alertas por Tipo")
+            st.bar_chart(df_view["tipo"].value_counts())
+        with c_gr2:
+            st.caption("Municípios com Mais Alertas Filtrados (Top 15)")
+            st.bar_chart(df_view["municipio"].value_counts().head(15))
 
     st.subheader("🔍 Ver Detalhes e Calibrar Regras")
     for _, alerta in df_view.iterrows():
@@ -955,13 +991,7 @@ def renderizar_pagina_perfil_parlamentar(st: Any, dados: dict[str, pd.DataFrame]
         if not ano_autor.empty:
             st.bar_chart(ano_autor)
 
-    st.subheader(f"Padrões / Alertas Associados ({escolhido})")
-    if perfil["alertas"]:
-        for alerta in perfil["alertas"]:
-            st.info(f"**[{alerta['pontuacao']} pts] {alerta['tipo']}**: {alerta['justificativa']}")
-    else:
-        st.success("Nenhum alerta estatístico associado a este autor.")
-
+    st.caption("ℹ️ Os alertas e apontamentos estatísticos estão concentrados exclusivamente na aba **1. Central de Alertas**.")
     st.subheader(f"Emendas Cadastradas ({escolhido})")
     st.dataframe(perfil["emendas"], use_container_width=True, hide_index=True)
 
@@ -1118,16 +1148,8 @@ def renderizar_pagina_perfil_municipio(st: Any, dados: dict[str, pd.DataFrame]) 
             df_tab_mun_cnpj.columns = ["CNPJ", "Favorecido", "Nº de Emendas", "Valor Total (R$)"]
             st.dataframe(df_tab_mun_cnpj, use_container_width=True, hide_index=True)
 
-    # --- Alertas Associados ao Município ---
     st.markdown("---")
-    st.subheader("⚠️ Alertas Associados ao Município")
-    if perfil["alertas"]:
-        for alerta in perfil["alertas"]:
-            st.warning(f"**[{alerta['pontuacao']} pts] {alerta['tipo']}**: {alerta['justificativa']}")
-    else:
-        st.success("Nenhum alerta registrado para este município.")
-
-    # --- Emendas Destinadas ao Município ---
+    st.caption("ℹ️ Os alertas e desvios estatísticos municipais estão concentrados exclusivamente na aba **1. Central de Alertas**.")
     st.subheader("📋 Emendas Destinadas ao Município")
     st.dataframe(perfil["emendas"], use_container_width=True, hide_index=True)
 
@@ -1150,7 +1172,7 @@ def executar_interface_streamlit() -> None:
     pagina = st.sidebar.radio(
         "Navegação",
         [
-            "1. Painel de Alertas",
+            "1. Central de Alertas (Exclusiva)",
             "2. Explorador de Emendas",
             "3. Perfil do Parlamentar",
             "4. Perfil do Município",
