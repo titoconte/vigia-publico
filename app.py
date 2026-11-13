@@ -17,6 +17,7 @@ from cnpj_validator import (
     sincronizar_cnpjs_emendas_no_cache,
 )
 from database import conectar_banco, resolver_caminho_sqlite
+from fund_tracker import check_fund_usage
 from main import garantir_dados_iniciais
 
 AVISO_ETICO_FRONTEND = (
@@ -1200,8 +1201,89 @@ def renderizar_pagina_perfil_municipio(st: Any, dados: dict[str, pd.DataFrame]) 
     st.dataframe(perfil["emendas"], use_container_width=True, hide_index=True)
 
 
+def renderizar_pagina_fluxo_recursos(st: Any, dados: dict[str, pd.DataFrame]) -> None:
+    """Renderiza a Página 5: Rastreabilidade e Fluxo de Recursos com dados cruzados do TCE/SC e e-Sfinge."""
+    st.header("🔄 Página 5 — Rastreabilidade & Fluxo de Recursos (TCE/SC & e-Sfinge)")
+    st.caption(
+        "Auditoria de ponta a ponta: verificação de planos de trabalho exigidos por medida cautelar do TCE/SC, "
+        "estágios de repasse financeiro, declarações no sistema e-Sfinge, conformidade de fornecedores (CNPJ) "
+        "e canais de transparência ativa municipal."
+    )
+
+    df_mun = dados["municipios"]
+    opcoes_mun = [f"{r['municipio']} ({r['codigo_ibge']})" for _, r in df_mun.iterrows()]
+    mapa_cod = {f"{r['municipio']} ({r['codigo_ibge']})": str(r["codigo_ibge"]) for _, r in df_mun.iterrows()}
+
+    c_sel, _ = st.columns([2, 2])
+    with c_sel:
+        escolha = st.selectbox("Selecione o Município de SC para Auditoria do Fluxo", opcoes_mun, key="sel_mun_fluxo")
+
+    codigo_ibge = mapa_cod[escolha]
+    relatorio_fluxo = check_fund_usage(codigo_ibge)
+    contagem_sinais = relatorio_fluxo.get("contagem_sinais", {"verde": 0, "amarelo": 0, "vermelho": 0})
+
+    # 1. Indicadores de Rastreabilidade e Conformidade
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("População (IBGE)", f"{relatorio_fluxo.get('populacao', 0):,} hab.")
+    c2.metric("Total Repassado", f"R$ {relatorio_fluxo.get('total_recebido', 0.0):,.2f}")
+    c3.metric("Emendas Rastreadas", f"{relatorio_fluxo.get('quantidade_emendas', 0)}")
+    c4.metric(
+        "Índice de Conformidade Documental",
+        f"{relatorio_fluxo.get('score_conformidade', 0.0):.1f}%",
+        help="Calculado a partir das 5 dimensões técnicas de rastreabilidade (Plano de Trabalho, e-Sfinge, Ritmo, Fornecedor e Transparência).",
+    )
+
+    # 2. Painel de Acesso Rápido a Portais Oficiais de Auditoria
+    st.markdown("##### 🔗 Portais Oficiais para Verificação Manual (Sem Login / Acesso Público)")
+    links = relatorio_fluxo.get("links_oficiais", {})
+    l1, l2, l3, l4 = st.columns(4)
+    l1.markdown(f"📊 [**Painel TCE/SC: Fluxo de Recursos**]({links.get('tce_fluxo_recursos', '#')})")
+    l2.markdown(f"🏛️ [**Sistema e-Sfinge TCE/SC**]({links.get('tce_esfinge', '#')})")
+    l3.markdown(f"⚖️ [**Cautelar TCE/SC: Planos de Trabalho**]({links.get('tce_medida_cautelar', '#')})")
+    l4.markdown(f"🌐 [**Transparência Municipal**]({links.get('portal_transparencia_municipio', '#')})")
+
+    st.markdown("---")
+
+    # 3. Sumário dos Sinais Técnicos de Rastreabilidade
+    st.markdown("##### 📋 Resumo das 5 Dimensões de Verificação Técnica")
+    c_s1, c_s2, c_s3 = st.columns(3)
+    c_s1.info(f"🟢 **{contagem_sinais.get('verde', 0)} registros regulares**: Objeto compatível, fluxo formalizado e fornecedor regular.")
+    c_s2.warning(f"🟡 **{contagem_sinais.get('amarelo', 0)} pontos de atenção**: Plano de trabalho genérico ou em tramitação inicial.")
+    c_s3.error(f"🔴 **{contagem_sinais.get('vermelho', 0)} pendências de evidência**: Fornecedor com apontamento cadastral ou ausência de prestação de contas.")
+
+    # 4. Detalhamento de cada emenda com rastreamento ponta a ponta
+    emendas = relatorio_fluxo.get("emendas_analisadas", [])
+    st.subheader(f"🔍 Rastreamento Individual das Emendas: {relatorio_fluxo.get('municipio', escolha)}")
+
+    if emendas:
+        for em in emendas:
+            titulo_expander = (
+                f"[{em['estagio_fluxo']}] {em['id_emenda']} — {em['parlamentar']} "
+                f"| R$ {em['valor']:,.2f} ({em['area']})"
+            )
+            with st.expander(titulo_expander):
+                st.markdown(f"**Beneficiário / Fornecedor Contratado:** `{em['fornecedor_nome']}` (CNPJ: `{em['fornecedor_cnpj']}`)")
+                st.markdown(
+                    f"🔗 [Consultar Fornecedor no Gov.br]({em['cnpj_link_gov']}) | "
+                    f"🔗 [Ver Emenda no TCE/SC]({em['tce_link']})"
+                )
+
+                st.markdown("###### Sinais de Conformidade e Rastreabilidade:")
+                for sinal in em["sinais"]:
+                    tag = sinal.get("tag", "")
+                    desc = sinal.get("descricao", "")
+                    if sinal.get("status") == "verde":
+                        st.success(f"**{tag}**: {desc}")
+                    elif sinal.get("status") == "amarelo":
+                        st.warning(f"**{tag}**: {desc}")
+                    else:
+                        st.error(f"**{tag}**: {desc}")
+    else:
+        st.info("Nenhuma emenda registrada para este município na base de dados.")
+
+
 def executar_interface_streamlit() -> None:
-    """Inicializa a aplicação Streamlit com menu lateral de navegação entre as 4 páginas e aviso ético."""
+    """Inicializa a aplicação Streamlit com menu lateral de navegação entre as 5 páginas e aviso ético."""
     import streamlit as st
 
     st.set_page_config(
@@ -1222,6 +1304,7 @@ def executar_interface_streamlit() -> None:
             "2. Explorador de Emendas",
             "3. Perfil do Parlamentar",
             "4. Perfil do Município",
+            "5. Rastreabilidade & Fluxo de Recursos (TCE/SC)",
         ],
     )
     st.sidebar.markdown("---")
@@ -1236,8 +1319,10 @@ def executar_interface_streamlit() -> None:
         renderizar_pagina_explorador_emendas(st, dados)
     elif pagina.startswith("3."):
         renderizar_pagina_perfil_parlamentar(st, dados)
-    else:
+    elif pagina.startswith("4."):
         renderizar_pagina_perfil_municipio(st, dados)
+    else:
+        renderizar_pagina_fluxo_recursos(st, dados)
 
 
 if __name__ == "__main__":

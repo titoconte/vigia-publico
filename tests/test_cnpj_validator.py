@@ -258,3 +258,4 @@ def test_sincronizar_cnpjs_emendas_no_cache(tmp_path: Path) -> None:
     assert cached is not None
     assert cached["razao_social"] == "Hospital Alfa S.A."
     assert cached["situacao_cadastral"] == "Ativa"
+

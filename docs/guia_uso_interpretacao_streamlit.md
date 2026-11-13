@@ -213,6 +213,32 @@ Para o município selecionado, o painel gera 8 visualizações estatísticas ant
 
 ---
 
+### 🔄 Página 5 — Rastreabilidade & Fluxo de Recursos (TCE/SC & e-Sfinge)
+Implementada em [`renderizar_pagina_fluxo_recursos`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/app.py) e apoiada pelo módulo [`fund_tracker.py`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/fund_tracker.py), permite auditar o fluxo dos recursos públicos de ponta a ponta para verificar se as verbas recebidas pelos municípios cumpriram a finalidade pactuada e as exigências do TCE/SC:
+
+#### 1. As 5 Dimensões Técnicas de Verificação de Conformidade
+1. **Objeto do Plano de Trabalho:**
+   * Medida cautelar do TCE/SC determina a suspensão de repasses que não possuam plano de trabalho prévio com objeto claro, metas e cronograma.
+   * O sistema cruza os termos descritos no objeto com a área temátíca da emenda (Saúde, Educação, Infraestrutura, etc.).
+2. **Prestação de Contas no Sistema e-Sfinge:**
+   * O TCE/SC consolida as declarações contábeis municipais no e-Sfinge. Verifica se o recurso repassado já conta com ateste e liquidação formal registrada.
+3. **Ritmo de Execução Orçamentária:**
+   * Compara a data de cadastro da emenda com o estágio contábil (`Pago`, `Liquidado`, `Empenhado`, `Aprovado`). Sinaliza emendas aprovadas há mais de 12 meses sem movimentação financeira.
+4. **Qualificação Cadastral do Fornecedor / Credor:**
+   * Integração com o módulo de validação em 3 camadas de CNPJs: verifica se a empresa contratada está ativa perante a Receita Federal, se é um Empresário Individual (código 2135) recebendo valor expressivo (> R$ 500k), ou se possui capital social desproporcional.
+5. **Transparência Ativa Municipal:**
+   * Mapeia os canais de transparência do município e gera links diretos para conferência das ordens de empenho e notas fiscais.
+
+#### 2. Links Oficiais para Verificação Manual sem Juízos Conclusivos
+Para permitir que jornalistas e cidadãos realizem auditoria direta sem intermediários, cada emenda apresenta links oficiais:
+* 🔗 **Painel TCE/SC — Fluxo de Recursos:** rastreamento de ponta a ponta desde a aprovação até o beneficiário final.
+* 🔗 **Sistema e-Sfinge do TCE/SC:** consulta a declarações e balancetes municipais.
+* 🔗 **Medida Cautelar TCE/SC:** termos da decisão sobre obrigatoriedade de planos de trabalho.
+* 🔗 **Portal de Transparência Municipal:** canal oficial da prefeitura executora.
+* 🔗 **Consulta de CNPJ no Gov.br:** certidão de situação cadastral e quadro societário da Receita Federal.
+
+---
+
 ## 4. Manual de Interpretação dos Novos Alertas Estatísticos e Pontuações
 
 Os alertas do sistema foram reformulados para focar em critérios objetivos de desvio padrão estatístico (+1 STD) e foram **unificados exclusivamente na aba "1. Central de Alertas"** (sendo removidos das páginas de perfil do parlamentar e perfil do município para manter a visualização focada).
