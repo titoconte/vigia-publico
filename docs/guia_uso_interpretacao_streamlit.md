@@ -71,13 +71,18 @@ Para garantir respostas instantâneas ao alternar entre páginas, filtros e muni
 4. **Configurações de Servidor (`fastReruns` e `enableStaticServing`):**
    * Em `.streamlit/config.toml`, a opção `fastReruns = true` descarta execuções intermediárias obsoletas quando o usuário interage rapidamente com múltiplos filtros.
 5. **Botão de Recarga Forçada:**
-   * Na barra lateral, o botão **`🔄 Atualizar Base / Limpar Cache`** permite que o usuário limpe instantaneamente toda a memória de trabalho e recarregue os dados mais recentes do disco.
+   * No cabeçalho superior (topbar), o botão **`🔄 Limpar Cache`** permite que o usuário limpe instantaneamente toda a memória de trabalho e recarregue os dados mais recentes do disco.
 
 ---
 
-## 3. Guia Página por Página: Como Usar e Como Interpretar
+## 3. Guia Módulo por Módulo: Como Usar e Como Interpretar
 
-A barra lateral esquerda (`Navegação`) divide a análise em **4 visões complementares**:
+O menu horizontal de abas no topo da aplicação (`st.tabs`) divide a navegação em **5 módulos investigativos complementares**, aproveitando 100% da largura da tela sem obstruções de barra lateral:
+1. `🚨 1. Central de Alertas`: Mesa de triagem e priorização das 2 novas regras estatísticas oficiais.
+2. `📊 2. Explorador de Emendas`: Tabela geral de emendas com filtros dinâmicos, métricas per capita e gráficos territoriais.
+3. `🏛️ 3. Perfil do Parlamentar`: Detalhamento individual de deputados e bancadas regionais com histogramas e repasses por CPF/CNPJ.
+4. `🏙️ 4. Perfil do Município`: Radiografia orçamentária do município com 5 gráficos analíticos e cruzamento per capita.
+5. `🔍 5. Rastreabilidade & Fluxo de Recursos (TCE/SC)`: Auditoria de ponta a ponta do ciclo orçamentário e planos de trabalho.
 
 ---
 

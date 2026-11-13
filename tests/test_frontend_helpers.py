@@ -448,6 +448,28 @@ def test_carregar_estilos_customizados_e_arquivos_tema(tmp_path: Path) -> None:
     assert not mock_st_inexistente.markdown.called
 
 
+def test_layout_menu_abas_e_remocao_sidebar() -> None:
+    """Verifica que o layout principal opera com abas superiores (st.tabs) e remove completamente a sidebar."""
+    import inspect
+    from app import executar_interface_streamlit
+
+    # 1. Valida que o CSS oculta e desativa a sidebar
+    css_path = Path("assets/style.css")
+    assert css_path.exists()
+    conteudo_css = css_path.read_text(encoding="utf-8")
+    assert 'section[data-testid="stSidebar"]' in conteudo_css
+    assert "display: none !important" in conteudo_css
+    assert 'div[data-testid="stTabs"]' in conteudo_css
+    assert 'button[data-baseweb="tab"]' in conteudo_css
+
+    # 2. Inspeciona o código-fonte de executar_interface_streamlit
+    codigo_fonte = inspect.getsource(executar_interface_streamlit)
+    assert "st.tabs([" in codigo_fonte, "A interface deve usar st.tabs para o menu superior de navegação."
+    assert "st.sidebar" not in codigo_fonte, "A interface não deve conter referências à barra lateral st.sidebar."
+    assert 'initial_sidebar_state="collapsed"' in codigo_fonte, "O page_config deve configurar a sidebar como colapsada."
+
+
+
 
 
 

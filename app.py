@@ -1350,95 +1350,87 @@ def carregar_estilos_customizados(st: Any, caminho_css: Path | str | None = None
 
 
 def executar_interface_streamlit() -> None:
-    """Inicializa a aplicação Streamlit com tema dark mode profissional de Painel de Inteligência, navegação e aviso ético."""
+    """Inicializa a aplicação Streamlit com navegação centralizada em abas superiores (sem sidebar) e alta performance."""
     st.set_page_config(
         page_title="Vigia Público SC — Painel de Inteligência & Auditoria Cívica",
         page_icon="🔍",
         layout="wide",
-        initial_sidebar_state="expanded",
+        initial_sidebar_state="collapsed",
     )
 
     carregar_estilos_customizados(st)
 
-    # Topbar institucional e moderna de Painel de Inteligência
-    st.markdown(
-        """
-        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #21262D; padding-bottom: 10px; margin-bottom: 14px;">
+    # Topbar institucional e moderna de Painel de Inteligência com controles rápidos
+    c_titulo, c_badge = st.columns([3.6, 1.4])
+    with c_titulo:
+        st.markdown(
+            """
             <div>
-                <h1 style="margin: 0; font-size: 1.8rem; letter-spacing: -0.02em;">
+                <h1 style="margin: 0; font-size: 1.85rem; letter-spacing: -0.02em;">
                     🔍 Vigia Público SC
                 </h1>
-                <p style="margin: 3px 0 0 0; color: #8B949E; font-size: 0.85rem;">
+                <p style="margin: 3px 0 0 0; color: #8B949E; font-size: 0.88rem;">
                     Painel de Inteligência, Rastreabilidade e Auditoria Cívica de Emendas Parlamentares
                 </p>
             </div>
-            <div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with c_badge:
+        st.markdown(
+            """
+            <div style="text-align: right; margin-bottom: 4px;">
                 <span class="badge-status badge-cyan">
                     TCE/SC • IBGE • RECEITA FEDERAL
                 </span>
             </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+            """,
+            unsafe_allow_html=True,
+        )
+        c_perf, c_btn = st.columns([1.5, 1.5])
+        with c_perf:
+            st.caption("⚡ Alta Performance Ativa")
+        with c_btn:
+            if st.button("🔄 Limpar Cache", use_container_width=True, help="Força a recarga e invalida caches em memória."):
+                limpar_cache_aplicacao()
+                st.success("Caches limpos com sucesso!")
+                st.rerun()
+
+    st.markdown("<hr style='margin: 8px 0 14px 0;'>", unsafe_allow_html=True)
     st.warning(AVISO_ETICO_FRONTEND)
 
     dados = carregar_dados_painel()
 
-    st.sidebar.markdown(
-        """
-        <div style="padding: 4px 0 10px 0;">
-            <div style="font-weight: 700; font-size: 1.05rem; color: #F0F6FC; letter-spacing: -0.01em;">
-                🛡️ VIGIA PÚBLICO SC
-            </div>
-            <div style="font-size: 0.72rem; color: #8B949E; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1px;">
-                Inteligência e Controle Social
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    # Menu de abas superiores horizontais ocupando toda a largura da tela
+    tab_alertas, tab_explorador, tab_parlamentar, tab_municipio, tab_fluxo = st.tabs([
+        "🚨 1. Central de Alertas",
+        "📊 2. Explorador de Emendas",
+        "🏛️ 3. Perfil do Parlamentar",
+        "🏙️ 4. Perfil do Município",
+        "🔍 5. Rastreabilidade & Fluxo de Recursos (TCE/SC)",
+    ])
 
-    pagina = st.sidebar.radio(
-        "Módulos de Navegação",
-        [
-            "1. Central de Alertas (Exclusiva)",
-            "2. Explorador de Emendas",
-            "3. Perfil do Parlamentar",
-            "4. Perfil do Município",
-            "5. Rastreabilidade & Fluxo de Recursos (TCE/SC)",
-        ],
-    )
-    st.sidebar.markdown("---")
-    st.sidebar.markdown(
-        """
-        <div style="font-size: 0.78rem; color: #8B949E; margin-bottom: 8px;">
-            ⚡ <b>Alta Performance Ativa</b>: Dados cacheados em memória com invalidação automática por data do banco.
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    if st.sidebar.button("🔄 Atualizar Base / Limpar Cache", use_container_width=True, help="Força a recarga e invalida caches em memória."):
-        limpar_cache_aplicacao()
-        st.sidebar.success("Caches limpos com sucesso!")
-        st.rerun()
-
-    st.sidebar.markdown("---")
-    st.sidebar.caption(
-        "Dados públicos: TCE/SC, IBGE, Portal de Dados Abertos SC e Receita Federal. "
-        "Foco em transparência ativa, controle social e auditoria cívica."
-    )
-
-    if pagina.startswith("1."):
+    with tab_alertas:
         renderizar_pagina_painel_alertas(st, dados)
-    elif pagina.startswith("2."):
+
+    with tab_explorador:
         renderizar_pagina_explorador_emendas(st, dados)
-    elif pagina.startswith("3."):
+
+    with tab_parlamentar:
         renderizar_pagina_perfil_parlamentar(st, dados)
-    elif pagina.startswith("4."):
+
+    with tab_municipio:
         renderizar_pagina_perfil_municipio(st, dados)
-    else:
+
+    with tab_fluxo:
         renderizar_pagina_fluxo_recursos(st, dados)
+
+    st.markdown("---")
+    st.caption(
+        "🛡️ **Vigia Público SC** • Dados públicos oficiais: Tribunal de Contas de Santa Catarina (TCE/SC), "
+        "Instituto Brasileiro de Geografia e Estatística (IBGE), Portal de Dados Abertos SC e Receita Federal do Brasil. "
+        "Desenvolvido para transparência ativa, jornalismo investigativo e controle social."
+    )
 
 
 if __name__ == "__main__":
