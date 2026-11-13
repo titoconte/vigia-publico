@@ -7,6 +7,7 @@ from pathlib import Path
 from anomalies import executar_motor_anomalias
 from app import (
     AVISO_ETICO_FRONTEND,
+    calcular_resumo_grupos_cnpj,
     calcular_valor_por_populacao_filtrada,
     carregar_dados_painel,
     carregar_estilos_customizados,
@@ -14,6 +15,7 @@ from app import (
     eh_bancada_regional,
     filtrar_emendas_explorador,
     formatar_cpf_cnpj,
+    montar_tabela_cnaes_cnpjs,
     obter_dados_perfil_municipio,
     obter_dados_perfil_parlamentar,
     obter_metricas_detalhadas_municipio,
@@ -467,6 +469,144 @@ def test_layout_menu_abas_e_remocao_sidebar() -> None:
     assert "st.tabs([" in codigo_fonte, "A interface deve usar st.tabs para o menu superior de navegação."
     assert "st.sidebar" not in codigo_fonte, "A interface não deve conter referências à barra lateral st.sidebar."
     assert 'initial_sidebar_state="collapsed"' in codigo_fonte, "O page_config deve configurar a sidebar como colapsada."
+
+
+def test_separacao_cnpjs_municipio_vs_outros_e_tabela_cnaes(tmp_path: Path) -> None:
+    """Valida a separação entre CNPJs de Municípios e Outros CNPJs e a montagem da tabela de CNAEs."""
+    import pandas as pd
+    from cnpj_validator import limpar_mem_cache_cnpj, salvar_cnpj_cache
+    from database import inicializar_schema
+
+    limpar_mem_cache_cnpj()
+    db_path = tmp_path / "cnpjs_grupos.db"
+    inicializar_schema(db_path)
+
+    salvar_cnpj_cache(
+        {
+            "cnpj": "01566620000155",
+            "razao_social": "MUNICIPIO DE TIGRINHOS",
+            "natureza_juridica": "Município",
+            "natureza_juridica_codigo": "1244",
+            "cnae_principal": "8411-6/00 - Administração pública em geral",
+            "cnaes_secundarios": [],
+        },
+        db_path=db_path,
+    )
+    salvar_cnpj_cache(
+        {
+            "cnpj": "00058956000144",
+            "razao_social": "ASSOCIACAO DE MORADORES DE BARRAGEM SUL",
+            "natureza_juridica": "Associação Privada",
+            "natureza_juridica_codigo": "3999",
+            "cnae_principal": "9430-8/00 - Atividades de associações de defesa de direitos sociais",
+            "cnaes_secundarios": [
+                "9493-6/00 - Atividades de organizações associativas ligadas à cultura e à arte",
+                "9499-5/00 - Atividades associativas não especificadas anteriormente",
+            ],
+        },
+        db_path=db_path,
+    )
+
+    df_emendas = pd.DataFrame(
+        [
+            {
+                "id_emenda": "EM-1",
+                "parlamentar": "Dep. Teste",
+                "partido": "PSD",
+                "municipio": "Tigrinhos",
+                "codigo_ibge": "4217956",
+                "populacao": 2329,
+                "area": "Infraestrutura e Mobilidade",
+                "valor": 400000.0,
+                "fornecedor_nome": "MUNICIPIO DE TIGRINHOS",
+                "fornecedor_cnpj": "01566620000155",
+            },
+            {
+                "id_emenda": "EM-2",
+                "parlamentar": "Dep. Teste",
+                "partido": "PSD",
+                "municipio": "Tigrinhos",
+                "codigo_ibge": "4217956",
+                "populacao": 2329,
+                "area": "Assistência Social",
+                "valor": 150000.0,
+                "fornecedor_nome": "ASSOCIACAO DE MORADORES DE BARRAGEM SUL",
+                "fornecedor_cnpj": "00058956000144",
+            },
+        ]
+    )
+
+    # 1. Resumo comparativo dos dois grupos
+    resumo = calcular_resumo_grupos_cnpj(df_emendas, db_path=db_path)
+    assert resumo["municipios"]["cnpjs_unicos"] == 1
+    assert resumo["municipios"]["valor_total"] == 400000.0
+    assert resumo["outros"]["cnpjs_unicos"] == 1
+    assert resumo["outros"]["valor_total"] == 150000.0
+
+    # 2. Filtro na Aba 2 (Explorador)
+    df_mun = filtrar_emendas_explorador(df_emendas, grupo_cnpj="CNPJs de Municípios", db_path=db_path)
+    df_out = filtrar_emendas_explorador(df_emendas, grupo_cnpj="Outros CNPJs", db_path=db_path)
+    assert len(df_mun) == 1
+    assert df_mun.iloc[0]["fornecedor_cnpj"] == "01566620000155"
+    assert len(df_out) == 1
+    assert df_out.iloc[0]["fornecedor_cnpj"] == "00058956000144"
+
+    # 3. Agregação de favorecidos na Aba 3 (Perfil do Parlamentar)
+    tot_mun = obter_totais_por_cpf_cnpj(df_emendas, grupo_cnpj="CNPJs de Municípios", db_path=db_path)
+    tot_out = obter_totais_por_cpf_cnpj(df_emendas, grupo_cnpj="Outros CNPJs", db_path=db_path)
+    assert len(tot_mun) == 1
+    assert tot_mun.iloc[0]["grupo_cnpj"] == "CNPJ de Município"
+    assert len(tot_out) == 1
+    assert tot_out.iloc[0]["grupo_cnpj"] == "Outro CNPJ"
+
+    # 4. Métricas detalhadas na Aba 4 (Perfil do Município)
+    det_mun = obter_metricas_detalhadas_municipio(df_emendas, grupo_cnpj="CNPJs de Municípios", db_path=db_path)
+    det_out = obter_metricas_detalhadas_municipio(df_emendas, grupo_cnpj="Outros CNPJs", db_path=db_path)
+    assert len(det_mun["por_cnpj_total_top50"]) == 1
+    assert det_mun["por_cnpj_total_top50"].iloc[0]["grupo_cnpj"] == "CNPJ de Município"
+    assert len(det_out["por_cnpj_total_top50"]) == 1
+    assert det_out["por_cnpj_total_top50"].iloc[0]["grupo_cnpj"] == "Outro CNPJ"
+
+    # 5. Tabela estruturada de CNAEs para os expanders recolhidos
+    tab_cnaes = montar_tabela_cnaes_cnpjs(df_emendas, db_path=db_path)
+    assert len(tab_cnaes) == 2
+    assert list(tab_cnaes.columns) == [
+        "CNPJ",
+        "Favorecido",
+        "Grupo CNPJ",
+        "Natureza Jurídica",
+        "CNAE Principal",
+        "Qtd. CNAEs Secundários",
+        "CNAEs Secundários",
+        "Valor Total (R$)",
+    ]
+    linha_assoc = tab_cnaes[tab_cnaes["Grupo CNPJ"] == "Outro CNPJ"].iloc[0]
+    assert linha_assoc["CNAE Principal"].startswith("9430-8/00")
+    assert linha_assoc["Qtd. CNAEs Secundários"] == 2
+    assert "9493-6/00" in linha_assoc["CNAEs Secundários"]
+
+
+def test_abas_2_3_4_possuem_separacao_cnpj_e_expander_cnaes_recolhido() -> None:
+    """Garante que as Abas 2, 3 e 4 expõem a separação de grupo de CNPJ e st.expander recolhido de CNAEs."""
+    import inspect
+    from app import (
+        renderizar_pagina_explorador_emendas,
+        renderizar_pagina_perfil_municipio,
+        renderizar_pagina_perfil_parlamentar,
+    )
+
+    for func in (
+        renderizar_pagina_explorador_emendas,
+        renderizar_pagina_perfil_parlamentar,
+        renderizar_pagina_perfil_municipio,
+    ):
+        src = inspect.getsource(func)
+        assert "CNPJs de Municípios" in src, f"{func.__name__} deve ter opção 'CNPJs de Municípios'"
+        assert "Outros CNPJs" in src, f"{func.__name__} deve ter opção 'Outros CNPJs'"
+        assert "CNAEs" in src and "expanded=False" in src, (
+            f"{func.__name__} deve apresentar os CNAEs recolhidos em st.expander(..., expanded=False)"
+        )
+
 
 
 

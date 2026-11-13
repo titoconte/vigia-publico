@@ -13,9 +13,15 @@ import streamlit as st
 
 from auth import fazer_logout, renderizar_tela_login, usuario_esta_autenticado
 from cnpj_validator import (
+    GRUPO_CNPJ_MUNICIPIO,
+    GRUPO_OUTRO_CNPJ,
+    carregar_mapa_cnpjs_cache,
     check_cnpj_anomalies,
     check_cnpj_status,
+    classificar_grupo_cnpj,
+    limpar_cnpj,
     limpar_mem_cache_cnpj,
+    obter_cnaes_cnpj,
     obter_link_consulta_oficial,
     sincronizar_cnpjs_emendas_no_cache,
 )
@@ -53,11 +59,13 @@ def _carregar_dados_painel_cached(caminho_str: str, mtime: float) -> dict[str, p
         df_municipios = pd.read_sql_query(
             "SELECT * FROM agregados_municipio ORDER BY total_recebido DESC", conn
         )
+    mapa_cnpjs = carregar_mapa_cnpjs_cache(caminho)
     return {
         "alertas": df_alertas,
         "emendas": df_emendas,
         "parlamentares": df_parlamentares,
         "municipios": df_municipios,
+        "mapa_cnpjs": mapa_cnpjs,
     }
 
 
@@ -128,6 +136,170 @@ def obter_totais_por_ano(
     return df.groupby("ano")["valor"].sum().sort_index()
 
 
+def normalizar_filtro_grupo_cnpj(grupo_cnpj: str | None) -> str:
+    """Converte rótulos de interface para o grupo canônico ('Todos', 'CNPJ de Município' ou 'Outro CNPJ')."""
+    texto = str(grupo_cnpj or "Todos").strip().lower()
+    if texto in ("todos", "todas", ""):
+        return "Todos"
+    if "munic" in texto:
+        return GRUPO_CNPJ_MUNICIPIO
+    if "outro" in texto:
+        return GRUPO_OUTRO_CNPJ
+    return "Todos"
+
+
+def _resolver_mapa_cnpjs(
+    db_path: Path | str | None = None,
+    mapa_cache: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, dict[str, Any]]:
+    """Obtém o dicionário indexado de cnpj_cache a partir da memória já carregada ou do banco SQLite."""
+    if mapa_cache is not None:
+        return mapa_cache
+    if db_path is not None:
+        return carregar_mapa_cnpjs_cache(db_path)
+    return {}
+
+
+def anexar_grupo_cnpj_emendas(
+    df_emendas: pd.DataFrame,
+    *,
+    db_path: Path | str | None = None,
+    mapa_cache: dict[str, dict[str, Any]] | None = None,
+) -> pd.DataFrame:
+    """Adiciona a coluna 'grupo_cnpj' ('CNPJ de Município' ou 'Outro CNPJ') a um DataFrame de emendas."""
+    df = df_emendas.copy()
+    if df.empty or "fornecedor_cnpj" not in df.columns:
+        df["grupo_cnpj"] = pd.Series(dtype=str)
+        return df
+
+    mapa = _resolver_mapa_cnpjs(db_path=db_path, mapa_cache=mapa_cache)
+    col_nome = "fornecedor_nome" if "fornecedor_nome" in df.columns else "entidade_beneficiaria"
+    nomes = df[col_nome].fillna("") if col_nome in df.columns else [""] * len(df)
+
+    grupos: list[str] = []
+    for cnpj_raw, nome_raw in zip(df["fornecedor_cnpj"], nomes):
+        cnpj_limpo = limpar_cnpj(str(cnpj_raw or ""))
+        info_cache = mapa.get(cnpj_limpo)
+        if info_cache and "grupo_cnpj" in info_cache:
+            grupos.append(str(info_cache["grupo_cnpj"]))
+        else:
+            grupos.append(
+                classificar_grupo_cnpj(
+                    cnpj=cnpj_limpo,
+                    nome_favorecido=str(nome_raw or ""),
+                    natureza_juridica_codigo=str((info_cache or {}).get("natureza_juridica_codigo") or ""),
+                    natureza_juridica=str((info_cache or {}).get("natureza_juridica") or ""),
+                )
+            )
+    df["grupo_cnpj"] = grupos
+    return df
+
+
+def calcular_resumo_grupos_cnpj(
+    df_emendas: pd.DataFrame,
+    *,
+    db_path: Path | str | None = None,
+    mapa_cache: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, dict[str, float | int]]:
+    """Calcula total de CNPJs únicos, quantidade de emendas e valor total para CNPJs de Municípios vs Outros CNPJs."""
+    vazio = {"cnpjs_unicos": 0, "quantidade_emendas": 0, "valor_total": 0.0}
+    if df_emendas.empty or "fornecedor_cnpj" not in df_emendas.columns:
+        return {"municipios": dict(vazio), "outros": dict(vazio)}
+
+    df_grp = (
+        df_emendas
+        if "grupo_cnpj" in df_emendas.columns
+        else anexar_grupo_cnpj_emendas(df_emendas, db_path=db_path, mapa_cache=mapa_cache)
+    )
+
+    def _agregar_subconjunto(sub: pd.DataFrame) -> dict[str, float | int]:
+        """Consolida contagem distinta de CNPJs, emendas e soma financeira de um subconjunto."""
+        if sub.empty:
+            return dict(vazio)
+        cnpjs_limpos = sub["fornecedor_cnpj"].apply(lambda x: limpar_cnpj(str(x or "")))
+        cnpjs_validos = cnpjs_limpos[cnpjs_limpos != ""]
+        return {
+            "cnpjs_unicos": int(cnpjs_validos.nunique()),
+            "quantidade_emendas": int(len(sub)),
+            "valor_total": round(float(sub["valor"].sum()), 2) if "valor" in sub.columns else 0.0,
+        }
+
+    df_mun = df_grp[df_grp["grupo_cnpj"] == GRUPO_CNPJ_MUNICIPIO]
+    df_out = df_grp[df_grp["grupo_cnpj"] == GRUPO_OUTRO_CNPJ]
+    return {
+        "municipios": _agregar_subconjunto(df_mun),
+        "outros": _agregar_subconjunto(df_out),
+    }
+
+
+def montar_tabela_cnaes_cnpjs(
+    df_origem: pd.DataFrame,
+    *,
+    db_path: Path | str | None = None,
+    mapa_cache: dict[str, dict[str, Any]] | None = None,
+) -> pd.DataFrame:
+    """Constrói tabela consolidada de CNAEs (Principal + Secundários) por CNPJ para exibição recolhida em expander."""
+    colunas = [
+        "CNPJ",
+        "Favorecido",
+        "Grupo CNPJ",
+        "Natureza Jurídica",
+        "CNAE Principal",
+        "Qtd. CNAEs Secundários",
+        "CNAEs Secundários",
+        "Valor Total (R$)",
+    ]
+    if df_origem.empty or "fornecedor_cnpj" not in df_origem.columns:
+        return pd.DataFrame(columns=colunas)
+
+    mapa = _resolver_mapa_cnpjs(db_path=db_path, mapa_cache=mapa_cache)
+    df = df_origem.copy()
+    df["_cnpj_limpo"] = df["fornecedor_cnpj"].apply(lambda x: limpar_cnpj(str(x or "")))
+    df = df[df["_cnpj_limpo"].str.len() == 14]
+    if df.empty:
+        return pd.DataFrame(columns=colunas)
+
+    col_nome = "fornecedor_nome" if "fornecedor_nome" in df.columns else "entidade_beneficiaria"
+    col_valor = "valor" if "valor" in df.columns else ("valor_total" if "valor_total" in df.columns else None)
+
+    agrupado = (
+        df.groupby("_cnpj_limpo", as_index=False)
+        .agg(
+            favorecido=(col_nome, "first") if col_nome in df.columns else ("_cnpj_limpo", "first"),
+            valor_total=(col_valor, "sum") if col_valor else ("_cnpj_limpo", "count"),
+        )
+    )
+    if not col_valor:
+        agrupado["valor_total"] = 0.0
+    agrupado = agrupado.sort_values(by="valor_total", ascending=False).reset_index(drop=True)
+
+    registros: list[dict[str, Any]] = []
+    for _, row in agrupado.iterrows():
+        cnpj_k = str(row["_cnpj_limpo"])
+        nome_fav = str(row["favorecido"] or "").strip()
+        info = obter_cnaes_cnpj(
+            cnpj_k,
+            nome_favorecido=nome_fav,
+            db_path=db_path,
+            mapa_cache=mapa if mapa else None,
+        )
+        sec_lista = info["cnaes_secundarios"]
+        sec_texto = " | ".join(sec_lista) if sec_lista else "Nenhum CNAE secundário registrado"
+        registros.append(
+            {
+                "CNPJ": info["cnpj_formatado"],
+                "Favorecido": nome_fav or info["razao_social"],
+                "Grupo CNPJ": info["grupo_cnpj"],
+                "Natureza Jurídica": info["natureza_juridica"],
+                "CNAE Principal": info["cnae_principal"],
+                "Qtd. CNAEs Secundários": len(sec_lista),
+                "CNAEs Secundários": sec_texto,
+                "Valor Total (R$)": round(float(row["valor_total"]), 2),
+            }
+        )
+    return pd.DataFrame(registros, columns=colunas)
+
+
 def filtrar_emendas_explorador(
     df_emendas: pd.DataFrame,
     *,
@@ -136,13 +308,20 @@ def filtrar_emendas_explorador(
     area: str = "Todas",
     valor_minimo: float = 0.0,
     tipo_autor: str = "Todos",
+    grupo_cnpj: str = "Todos",
+    db_path: Path | str | None = None,
+    mapa_cache: dict[str, dict[str, Any]] | None = None,
 ) -> pd.DataFrame:
-    """Aplica os filtros selecionados pelo usuário na Página 2 (Explorador de Emendas)."""
-    df = df_emendas.copy()
+    """Aplica os filtros selecionados pelo usuário na Página 2 (Explorador de Emendas), incluindo grupo de CNPJ."""
+    df = anexar_grupo_cnpj_emendas(df_emendas, db_path=db_path, mapa_cache=mapa_cache)
     if tipo_autor in ("Parlamentar", "Parlamentar Individual", "Parlamentares", "Parlamentares Individuais"):
         df = df[~df["parlamentar"].apply(eh_bancada_regional)]
     elif tipo_autor in ("Bancada", "Bancada Regional", "Bancadas", "Bancadas Regionais"):
         df = df[df["parlamentar"].apply(eh_bancada_regional)]
+
+    alvo_grupo = normalizar_filtro_grupo_cnpj(grupo_cnpj)
+    if alvo_grupo != "Todos" and "grupo_cnpj" in df.columns:
+        df = df[df["grupo_cnpj"] == alvo_grupo]
 
     if parlamentar and parlamentar != "Todos":
         df = df[df["parlamentar"] == parlamentar]
@@ -262,21 +441,31 @@ def formatar_cpf_cnpj(documento: str) -> str:
 def obter_totais_por_cpf_cnpj(
     df_emendas: pd.DataFrame,
     top_n: int | None = None,
+    *,
+    grupo_cnpj: str = "Todos",
+    db_path: Path | str | None = None,
+    mapa_cache: dict[str, dict[str, Any]] | None = None,
 ) -> pd.DataFrame:
-    """Consolida as emendas agrupadas por CPF/CNPJ do favorecido calculando valor total e contagem no período."""
+    """Consolida as emendas agrupadas por CPF/CNPJ do favorecido com separação por grupo de CNPJ."""
+    colunas_padrao = [
+        "identificacao_cpf_cnpj",
+        "fornecedor_cnpj",
+        "doc_formatado",
+        "grupo_cnpj",
+        "valor_total",
+        "quantidade_emendas",
+        "fornecedor_nome",
+    ]
     if df_emendas.empty or "fornecedor_cnpj" not in df_emendas.columns:
-        return pd.DataFrame(
-            columns=[
-                "identificacao_cpf_cnpj",
-                "fornecedor_cnpj",
-                "doc_formatado",
-                "valor_total",
-                "quantidade_emendas",
-                "fornecedor_nome",
-            ]
-        )
+        return pd.DataFrame(columns=colunas_padrao)
 
-    df = df_emendas.copy()
+    df = anexar_grupo_cnpj_emendas(df_emendas, db_path=db_path, mapa_cache=mapa_cache)
+    alvo_grupo = normalizar_filtro_grupo_cnpj(grupo_cnpj)
+    if alvo_grupo != "Todos":
+        df = df[df["grupo_cnpj"] == alvo_grupo]
+    if df.empty:
+        return pd.DataFrame(columns=colunas_padrao)
+
     col_nome = "fornecedor_nome" if "fornecedor_nome" in df.columns else "entidade_beneficiaria"
     nomes = df[col_nome].fillna("Não informado") if col_nome in df.columns else ["Não informado"] * len(df)
     df["doc_formatado"] = df["fornecedor_cnpj"].apply(formatar_cpf_cnpj)
@@ -287,7 +476,7 @@ def obter_totais_por_cpf_cnpj(
 
     col_id = "id_emenda" if "id_emenda" in df.columns else "valor"
     agg = (
-        df.groupby(["identificacao_cpf_cnpj", "fornecedor_cnpj", "doc_formatado"], as_index=False)
+        df.groupby(["identificacao_cpf_cnpj", "fornecedor_cnpj", "doc_formatado", "grupo_cnpj"], as_index=False)
         .agg(
             valor_total=("valor", "sum"),
             quantidade_emendas=(col_id, "count"),
@@ -325,6 +514,7 @@ def _obter_dados_perfil_parlamentar_cached(
             params=(parlamentar,),
         )
 
+    mapa_cnpjs = carregar_mapa_cnpjs_cache(caminho)
     por_area = (
         df_emendas.groupby("area", as_index=False)["valor"]
         .sum()
@@ -339,7 +529,7 @@ def _obter_dados_perfil_parlamentar_cached(
         if not df_emendas.empty
         else pd.DataFrame(columns=["municipio", "valor"])
     )
-    por_cpf_cnpj = obter_totais_por_cpf_cnpj(df_emendas)
+    por_cpf_cnpj = obter_totais_por_cpf_cnpj(df_emendas, mapa_cache=mapa_cnpjs)
     return {
         "resumo": dict(resumo_row) if resumo_row else {"parlamentar": parlamentar, "total_emendas": 0.0},
         "emendas": df_emendas,
@@ -445,7 +635,13 @@ def obter_totais_gerais_municipios(
     return resultado.sort_values(by="valor_total", ascending=False).reset_index(drop=True)
 
 
-def obter_metricas_detalhadas_municipio(df_emendas_mun: pd.DataFrame) -> dict[str, pd.DataFrame]:
+def obter_metricas_detalhadas_municipio(
+    df_emendas_mun: pd.DataFrame,
+    *,
+    grupo_cnpj: str = "Todos",
+    db_path: Path | str | None = None,
+    mapa_cache: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     """Calcula as métricas detalhadas de um município específico para visualização gráfica antes dos alertas.
     
     Retorna os seguintes conjuntos de dados:
@@ -455,9 +651,27 @@ def obter_metricas_detalhadas_municipio(df_emendas_mun: pd.DataFrame) -> dict[st
     - 2.2 ranking_emendas: Relação das emendas individuais com identificador e valores.
     - 3.1 por_partido_valor: Valor total por partido em reais.
     - 3.2 por_partido_qtd: Número total de emendas por partido.
-    - 4 por_cnpj_total_top50: Valor total por CNPJ/favorecido (50 maiores valores).
-    - 5 por_cnpj_maior_emenda_top50: Valor da maior emenda por CNPJ/favorecido (50 maiores valores).
+    - 4 por_cnpj_total_top50: Valor total por CNPJ/favorecido (50 maiores valores), filtrável por grupo.
+    - 5 por_cnpj_maior_emenda_top50: Valor da maior emenda por CNPJ/favorecido (50 maiores valores), filtrável por grupo.
     """
+    cols_total = [
+        "identificador_cnpj",
+        "fornecedor_cnpj",
+        "cnpj_formatado",
+        "fornecedor_nome",
+        "grupo_cnpj",
+        "valor_total",
+        "quantidade_emendas",
+    ]
+    cols_maior = [
+        "identificador_cnpj",
+        "fornecedor_cnpj",
+        "cnpj_formatado",
+        "fornecedor_nome",
+        "grupo_cnpj",
+        "maior_valor",
+        "quantidade_emendas",
+    ]
     if df_emendas_mun.empty:
         return {
             "por_area_valor": pd.DataFrame(columns=["area", "valor_total"]),
@@ -466,12 +680,9 @@ def obter_metricas_detalhadas_municipio(df_emendas_mun: pd.DataFrame) -> dict[st
             "ranking_emendas": pd.DataFrame(columns=["id_rotulo", "id_emenda", "parlamentar", "area", "valor"]),
             "por_partido_valor": pd.DataFrame(columns=["partido", "valor_total"]),
             "por_partido_qtd": pd.DataFrame(columns=["partido", "quantidade"]),
-            "por_cnpj_total_top50": pd.DataFrame(
-                columns=["identificador_cnpj", "cnpj_formatado", "fornecedor_nome", "valor_total", "quantidade_emendas"]
-            ),
-            "por_cnpj_maior_emenda_top50": pd.DataFrame(
-                columns=["identificador_cnpj", "cnpj_formatado", "fornecedor_nome", "maior_valor", "quantidade_emendas"]
-            ),
+            "por_cnpj_total_top50": pd.DataFrame(columns=cols_total),
+            "por_cnpj_maior_emenda_top50": pd.DataFrame(columns=cols_maior),
+            "resumo_grupos_cnpj": calcular_resumo_grupos_cnpj(df_emendas_mun, db_path=db_path, mapa_cache=mapa_cache),
         }
 
     df = df_emendas_mun.copy()
@@ -534,7 +745,13 @@ def obter_metricas_detalhadas_municipio(df_emendas_mun: pd.DataFrame) -> dict[st
     )
 
     # 4 e 5: CNPJs (50 maiores valores totais e 50 maiores emendas individuais)
-    df_cnpj = df[df["fornecedor_cnpj"].notna() & (df["fornecedor_cnpj"].astype(str).str.strip() != "")].copy()
+    df_cnpj_base = df[df["fornecedor_cnpj"].notna() & (df["fornecedor_cnpj"].astype(str).str.strip() != "")].copy()
+    df_cnpj_base = anexar_grupo_cnpj_emendas(df_cnpj_base, db_path=db_path, mapa_cache=mapa_cache)
+    resumo_grupos = calcular_resumo_grupos_cnpj(df_cnpj_base, db_path=db_path, mapa_cache=mapa_cache)
+
+    alvo_grupo = normalizar_filtro_grupo_cnpj(grupo_cnpj)
+    df_cnpj = df_cnpj_base[df_cnpj_base["grupo_cnpj"] == alvo_grupo].copy() if alvo_grupo != "Todos" else df_cnpj_base
+
     if not df_cnpj.empty:
         df_cnpj["cnpj_formatado"] = df_cnpj["fornecedor_cnpj"].apply(formatar_cpf_cnpj)
         df_cnpj["fornecedor_nome"] = df_cnpj["fornecedor_nome"].fillna("Não informado")
@@ -544,7 +761,10 @@ def obter_metricas_detalhadas_municipio(df_emendas_mun: pd.DataFrame) -> dict[st
         )
 
         por_cnpj_total_top50 = (
-            df_cnpj.groupby(["identificador_cnpj", "cnpj_formatado", "fornecedor_nome"], as_index=False)
+            df_cnpj.groupby(
+                ["identificador_cnpj", "fornecedor_cnpj", "cnpj_formatado", "fornecedor_nome", "grupo_cnpj"],
+                as_index=False,
+            )
             .agg(
                 valor_total=("valor", "sum"),
                 quantidade_emendas=("id_emenda", "count"),
@@ -555,7 +775,10 @@ def obter_metricas_detalhadas_municipio(df_emendas_mun: pd.DataFrame) -> dict[st
         )
 
         por_cnpj_maior_emenda_top50 = (
-            df_cnpj.groupby(["identificador_cnpj", "cnpj_formatado", "fornecedor_nome"], as_index=False)
+            df_cnpj.groupby(
+                ["identificador_cnpj", "fornecedor_cnpj", "cnpj_formatado", "fornecedor_nome", "grupo_cnpj"],
+                as_index=False,
+            )
             .agg(
                 maior_valor=("valor", "max"),
                 quantidade_emendas=("id_emenda", "count"),
@@ -565,12 +788,8 @@ def obter_metricas_detalhadas_municipio(df_emendas_mun: pd.DataFrame) -> dict[st
             .reset_index(drop=True)
         )
     else:
-        por_cnpj_total_top50 = pd.DataFrame(
-            columns=["identificador_cnpj", "cnpj_formatado", "fornecedor_nome", "valor_total", "quantidade_emendas"]
-        )
-        por_cnpj_maior_emenda_top50 = pd.DataFrame(
-            columns=["identificador_cnpj", "cnpj_formatado", "fornecedor_nome", "maior_valor", "quantidade_emendas"]
-        )
+        por_cnpj_total_top50 = pd.DataFrame(columns=cols_total)
+        por_cnpj_maior_emenda_top50 = pd.DataFrame(columns=cols_maior)
 
     return {
         "por_area_valor": por_area_valor,
@@ -581,6 +800,7 @@ def obter_metricas_detalhadas_municipio(df_emendas_mun: pd.DataFrame) -> dict[st
         "por_partido_qtd": por_partido_qtd,
         "por_cnpj_total_top50": por_cnpj_total_top50,
         "por_cnpj_maior_emenda_top50": por_cnpj_maior_emenda_top50,
+        "resumo_grupos_cnpj": resumo_grupos,
     }
 
 
@@ -612,7 +832,8 @@ def _obter_dados_perfil_municipio_cached(
             params=(cod_ibge,),
         )
 
-    detalhes = obter_metricas_detalhadas_municipio(df_emendas)
+    mapa_cnpjs = carregar_mapa_cnpjs_cache(caminho)
+    detalhes = obter_metricas_detalhadas_municipio(df_emendas, mapa_cache=mapa_cnpjs)
     return {
         "resumo": resumo,
         "emendas": df_emendas,
@@ -796,12 +1017,34 @@ def renderizar_pagina_painel_alertas(st: Any, dados: dict[str, pd.DataFrame]) ->
             )
 
 
-def renderizar_pagina_explorador_emendas(st: Any, dados: dict[str, pd.DataFrame]) -> None:
-    """Renderiza a Página 2: Explorador de Emendas com tabela filtrável por bancada ou parlamentar."""
+def _renderizar_expander_cnaes(
+    st: Any,
+    df_origem: pd.DataFrame,
+    titulo_expander: str,
+    mapa_cnpjs: dict[str, dict[str, Any]] | None = None,
+    *,
+    expanded: bool = False,
+) -> None:
+    """Renderiza seção recolhida (st.expander) com CNAE Principal e CNAEs Secundários dos CNPJs exibidos."""
+    with st.expander(titulo_expander, expanded=expanded):
+        df_cnaes = montar_tabela_cnaes_cnpjs(df_origem, mapa_cache=mapa_cnpjs)
+        if df_cnaes.empty:
+            st.caption("Nenhum CNPJ válido (14 dígitos) disponível neste recorte para exibição de CNAEs.")
+            return
+        st.caption(
+            f"Atividades econômicas registradas na Receita Federal para **{len(df_cnaes)}** CNPJs únicos "
+            "(código CNAE principal e lista de CNAEs secundários):"
+        )
+        st.dataframe(df_cnaes, use_container_width=True, hide_index=True)
+
+
+def renderizar_pagina_explorador_emendas(st: Any, dados: dict[str, Any]) -> None:
+    """Renderiza a Página 2: Explorador de Emendas com separação de grupo de CNPJ e CNAEs recolhidos."""
     st.header("📊 Página 2 — Explorador de Emendas Parlamentares")
     df_emendas = dados["emendas"]
+    mapa_cnpjs = dados.get("mapa_cnpjs")
 
-    c_tipo, col1, col2, col3, col4 = st.columns([1.2, 1.2, 1.2, 1.2, 1.0])
+    c_tipo, col1, c_grp, col2, col3, col4 = st.columns([1.1, 1.2, 1.2, 1.1, 1.1, 1.0])
     f_tipo_autor = c_tipo.selectbox(
         "Tipo de Autor",
         ["Todos", "Parlamentar Individual", "Bancada Regional"],
@@ -821,6 +1064,11 @@ def renderizar_pagina_explorador_emendas(st: Any, dados: dict[str, pd.DataFrame]
     areas = ["Todas"] + sorted(df_emendas["area"].unique().tolist())
 
     f_parl = col1.selectbox("Autor Específico", opcoes_parl, key=f"p2_autor_{f_tipo_autor}")
+    f_grupo_cnpj = c_grp.selectbox(
+        "Grupo de CNPJ",
+        ["Todos", "CNPJs de Municípios", "Outros CNPJs"],
+        key="p2_grupo_cnpj",
+    )
     f_mun = col2.selectbox("Filtrar por Município", municipios)
     f_area = col3.selectbox("Filtrar por Área", areas)
     f_val = col4.number_input("Valor Mínimo (R$)", min_value=0.0, value=0.0, step=50000.0)
@@ -832,9 +1080,13 @@ def renderizar_pagina_explorador_emendas(st: Any, dados: dict[str, pd.DataFrame]
         area=f_area,
         valor_minimo=f_val,
         tipo_autor=f_tipo_autor,
+        grupo_cnpj=f_grupo_cnpj,
+        mapa_cache=mapa_cnpjs,
     )
 
     resumo_calc = calcular_valor_por_populacao_filtrada(df_filtrado)
+    resumo_grupos = calcular_resumo_grupos_cnpj(df_filtrado, mapa_cache=mapa_cnpjs)
+
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Total Filtrado", f"R$ {resumo_calc['total_valor']:,.2f}")
     m2.metric("Quantidade de Emendas", f"{len(df_filtrado)}")
@@ -845,30 +1097,74 @@ def renderizar_pagina_explorador_emendas(st: Any, dados: dict[str, pd.DataFrame]
         help=f"População total dos municípios do recorte: {resumo_calc['populacao_total']:,} habitantes (IBGE).",
     )
 
+    g_mun_info = resumo_grupos["municipios"]
+    g_out_info = resumo_grupos["outros"]
+    mc1, mc2 = st.columns(2)
+    mc1.metric(
+        "🏛️ CNPJs de Municípios (Administração Municipal)",
+        f"R$ {g_mun_info['valor_total']:,.2f}",
+        f"{g_mun_info['cnpjs_unicos']} CNPJs únicos • {g_mun_info['quantidade_emendas']} emendas",
+    )
+    mc2.metric(
+        "🏢 Outros CNPJs (Entidades Privadas / OSCs / Estaduais)",
+        f"R$ {g_out_info['valor_total']:,.2f}",
+        f"{g_out_info['cnpjs_unicos']} CNPJs únicos • {g_out_info['quantidade_emendas']} emendas",
+    )
+
+    colunas_exibicao = [
+        "id_emenda",
+        "parlamentar",
+        "partido",
+        "municipio",
+        "populacao",
+        "area",
+        "valor",
+        "valor_per_capita",
+        "grupo_cnpj",
+        "entidade_beneficiaria",
+        "fornecedor_nome",
+        "fornecedor_cnpj",
+        "status_execucao",
+        "data",
+    ]
     st.dataframe(
-        df_filtrado[
-            [
-                "id_emenda",
-                "parlamentar",
-                "partido",
-                "municipio",
-                "populacao",
-                "area",
-                "valor",
-                "valor_per_capita",
-                "entidade_beneficiaria",
-                "fornecedor_nome",
-                "fornecedor_cnpj",
-                "status_execucao",
-                "data",
-            ]
-        ],
+        df_filtrado[[c for c in colunas_exibicao if c in df_filtrado.columns]],
         use_container_width=True,
         hide_index=True,
     )
 
+    _renderizar_expander_cnaes(
+        st,
+        df_filtrado,
+        "🗂️ Ver CNAEs dos CNPJs no recorte filtrado (Principal e Secundários)",
+        mapa_cnpjs=mapa_cnpjs,
+        expanded=False,
+    )
+
     st.markdown("---")
     st.subheader("📊 Gráficos Analíticos do Recorte Filtrado")
+
+    # Comparativo de Favorecidos: CNPJs de Municípios vs Outros CNPJs
+    gc1, gc2 = st.columns(2)
+    with gc1:
+        st.markdown("##### 🏛️ Top Favorecidos — CNPJs de Municípios (R$)")
+        df_top_mun_cnpj = obter_totais_por_cpf_cnpj(
+            df_filtrado, top_n=15, grupo_cnpj="CNPJs de Municípios", mapa_cache=mapa_cnpjs
+        )
+        if not df_top_mun_cnpj.empty:
+            st.bar_chart(df_top_mun_cnpj.set_index("identificacao_cpf_cnpj")["valor_total"])
+        else:
+            st.caption("Nenhum CNPJ de Município no recorte filtrado.")
+
+    with gc2:
+        st.markdown("##### 🏢 Top Favorecidos — Outros CNPJs (R$)")
+        df_top_out_cnpj = obter_totais_por_cpf_cnpj(
+            df_filtrado, top_n=15, grupo_cnpj="Outros CNPJs", mapa_cache=mapa_cnpjs
+        )
+        if not df_top_out_cnpj.empty:
+            st.bar_chart(df_top_out_cnpj.set_index("identificacao_cpf_cnpj")["valor_total"])
+        else:
+            st.caption("Nenhum Outro CNPJ no recorte filtrado.")
 
     # Linha 1: Separação de Total por Parlamentar Individual vs Bancadas Regionais
     g1, g2 = st.columns(2)
@@ -1022,27 +1318,53 @@ def renderizar_pagina_perfil_parlamentar(st: Any, dados: dict[str, pd.DataFrame]
         st.caption("Nenhum município cadastrado para este autor.")
 
     st.markdown("##### 💳 Destinações por CPF / CNPJ do Beneficiário no Período")
+    mapa_cnpjs = dados.get("mapa_cnpjs")
+    resumo_grp_autor = calcular_resumo_grupos_cnpj(perfil["emendas"], mapa_cache=mapa_cnpjs)
+    ca_mun, ca_out = st.columns(2)
+    ca_mun.metric(
+        "🏛️ CNPJs de Municípios (este autor)",
+        f"R$ {resumo_grp_autor['municipios']['valor_total']:,.2f}",
+        f"{resumo_grp_autor['municipios']['cnpjs_unicos']} CNPJs • {resumo_grp_autor['municipios']['quantidade_emendas']} emendas",
+    )
+    ca_out.metric(
+        "🏢 Outros CNPJs (este autor)",
+        f"R$ {resumo_grp_autor['outros']['valor_total']:,.2f}",
+        f"{resumo_grp_autor['outros']['cnpjs_unicos']} CNPJs • {resumo_grp_autor['outros']['quantidade_emendas']} emendas",
+    )
+
+    filtro_grp_parl = st.radio(
+        "Separar Favorecidos por Grupo de CNPJ:",
+        ["Todos", "CNPJs de Municípios", "Outros CNPJs"],
+        horizontal=True,
+        key="p3_radio_grupo_cnpj",
+    )
+    df_cpf_filtrado = obter_totais_por_cpf_cnpj(
+        perfil["emendas"],
+        grupo_cnpj=filtro_grp_parl,
+        mapa_cache=mapa_cnpjs,
+    )
+
     c_cpf1, c_cpf2 = st.columns(2)
     with c_cpf1:
         st.markdown("###### 💰 Valor Total por CPF / CNPJ (R$)")
-        if not perfil["por_cpf_cnpj"].empty:
-            serie_val_cpf = perfil["por_cpf_cnpj"].set_index("identificacao_cpf_cnpj")["valor_total"]
+        if not df_cpf_filtrado.empty:
+            serie_val_cpf = df_cpf_filtrado.set_index("identificacao_cpf_cnpj")["valor_total"]
             st.bar_chart(serie_val_cpf)
         else:
-            st.caption("Nenhum favorecido cadastrado para este autor.")
+            st.caption("Nenhum favorecido cadastrado neste grupo de CNPJ para este autor.")
 
     with c_cpf2:
         st.markdown("###### 📋 Número Total de Emendas por CPF / CNPJ")
-        if not perfil["por_cpf_cnpj"].empty:
-            serie_qtd_cpf = perfil["por_cpf_cnpj"].set_index("identificacao_cpf_cnpj")["quantidade_emendas"]
+        if not df_cpf_filtrado.empty:
+            serie_qtd_cpf = df_cpf_filtrado.set_index("identificacao_cpf_cnpj")["quantidade_emendas"]
             st.bar_chart(serie_qtd_cpf)
         else:
-            st.caption("Nenhum favorecido cadastrado para este autor.")
+            st.caption("Nenhum favorecido cadastrado neste grupo de CNPJ para este autor.")
 
-    with st.expander("Ver detalhamento dos favorecidos (CPF / CNPJ) deste autor"):
-        if not perfil["por_cpf_cnpj"].empty:
-            df_tab_cpf = perfil["por_cpf_cnpj"][
-                ["doc_formatado", "fornecedor_nome", "fornecedor_cnpj", "quantidade_emendas", "valor_total"]
+    with st.expander("Ver detalhamento dos favorecidos (CPF / CNPJ) deste autor", expanded=False):
+        if not df_cpf_filtrado.empty:
+            df_tab_cpf = df_cpf_filtrado[
+                ["doc_formatado", "fornecedor_nome", "grupo_cnpj", "fornecedor_cnpj", "quantidade_emendas", "valor_total"]
             ].copy()
             total_autor_val = float(resumo.get("total_emendas", 0.0))
             if total_autor_val > 0:
@@ -1056,16 +1378,42 @@ def renderizar_pagina_perfil_parlamentar(st: Any, dados: dict[str, pd.DataFrame]
                 obter_link_consulta_oficial(cnpj) for cnpj in df_tab_cpf["fornecedor_cnpj"]
             ]
             df_tab_cpf = df_tab_cpf.drop(columns=["fornecedor_cnpj"])
-            cols_ordem = ["doc_formatado", "fornecedor_nome", "Situação Cadastral", "quantidade_emendas", "valor_total"]
+            cols_ordem = [
+                "doc_formatado",
+                "fornecedor_nome",
+                "grupo_cnpj",
+                "Situação Cadastral",
+                "quantidade_emendas",
+                "valor_total",
+            ]
             if "% do Total" in df_tab_cpf.columns:
                 cols_ordem.append("% do Total")
             cols_ordem.append("Link Gov.br")
             df_tab_cpf = df_tab_cpf[cols_ordem]
             df_tab_cpf.columns = [
-                "CPF / CNPJ", "Favorecido", "Situação Cadastral", "Nº de Emendas",
-                "Valor Total (R$)", *(["% do Total"] if "% do Total" in cols_ordem else []), "Consulta Gov.br"
+                "CPF / CNPJ",
+                "Favorecido",
+                "Grupo CNPJ",
+                "Situação Cadastral",
+                "Nº de Emendas",
+                "Valor Total (R$)",
+                *(["% do Total"] if "% do Total" in cols_ordem else []),
+                "Consulta Gov.br",
             ]
             st.dataframe(df_tab_cpf, use_container_width=True, hide_index=True)
+
+    df_emendas_cnae_autor = filtrar_emendas_explorador(
+        perfil["emendas"],
+        grupo_cnpj=filtro_grp_parl,
+        mapa_cache=mapa_cnpjs,
+    )
+    _renderizar_expander_cnaes(
+        st,
+        df_emendas_cnae_autor,
+        "🗂️ Ver CNAEs dos CNPJs favorecidos por este autor (Principal e Secundários)",
+        mapa_cnpjs=mapa_cnpjs,
+        expanded=False,
+    )
 
     c_graf1, c_graf2 = st.columns(2)
     with c_graf1:
@@ -1213,25 +1561,61 @@ def renderizar_pagina_perfil_municipio(st: Any, dados: dict[str, pd.DataFrame]) 
 
     # 4 e 5: Favorecidos por CNPJ (50 maiores valores totais e 50 maiores individuais)
     st.markdown("#### 4 e 5. Favorecidos e Credores por CNPJ (Top 50)")
+    mapa_cnpjs = dados.get("mapa_cnpjs")
+    resumo_grp_mun = detalhes.get("resumo_grupos_cnpj") or calcular_resumo_grupos_cnpj(
+        perfil["emendas"], mapa_cache=mapa_cnpjs
+    )
+    cm_mun, cm_out = st.columns(2)
+    cm_mun.metric(
+        "🏛️ CNPJs de Municípios (neste município)",
+        f"R$ {resumo_grp_mun['municipios']['valor_total']:,.2f}",
+        f"{resumo_grp_mun['municipios']['cnpjs_unicos']} CNPJs • {resumo_grp_mun['municipios']['quantidade_emendas']} emendas",
+    )
+    cm_out.metric(
+        "🏢 Outros CNPJs (neste município)",
+        f"R$ {resumo_grp_mun['outros']['valor_total']:,.2f}",
+        f"{resumo_grp_mun['outros']['cnpjs_unicos']} CNPJs • {resumo_grp_mun['outros']['quantidade_emendas']} emendas",
+    )
+
+    filtro_grp_mun = st.radio(
+        "Separar Favorecidos por Grupo de CNPJ:",
+        ["Todos", "CNPJs de Municípios", "Outros CNPJs"],
+        horizontal=True,
+        key="p4_radio_grupo_cnpj",
+    )
+    detalhes_cnpj = (
+        detalhes
+        if filtro_grp_mun == "Todos"
+        else obter_metricas_detalhadas_municipio(
+            perfil["emendas"],
+            grupo_cnpj=filtro_grp_mun,
+            mapa_cache=mapa_cnpjs,
+        )
+    )
+
     c_cnpj1, c_cnpj2 = st.columns(2)
     with c_cnpj1:
         st.markdown("###### 4. Valor Total por CNPJ (50 Maiores Valores)")
-        df_ctop = detalhes.get("por_cnpj_total_top50", pd.DataFrame())
+        df_ctop = detalhes_cnpj.get("por_cnpj_total_top50", pd.DataFrame())
         if not df_ctop.empty:
             st.bar_chart(df_ctop.set_index("identificador_cnpj")["valor_total"])
         else:
-            st.caption("Nenhum favorecido/CNPJ registrado para este município.")
+            st.caption("Nenhum favorecido/CNPJ registrado neste grupo para este município.")
     with c_cnpj2:
         st.markdown("###### 5. Valor da Maior Emenda por CNPJ (50 Maiores Valores)")
-        df_cmax = detalhes.get("por_cnpj_maior_emenda_top50", pd.DataFrame())
+        df_cmax = detalhes_cnpj.get("por_cnpj_maior_emenda_top50", pd.DataFrame())
         if not df_cmax.empty:
             st.bar_chart(df_cmax.set_index("identificador_cnpj")["maior_valor"])
         else:
-            st.caption("Nenhum favorecido/CNPJ registrado para este município.")
+            st.caption("Nenhum favorecido/CNPJ registrado neste grupo para este município.")
 
-    with st.expander("Ver tabela detalhada dos favorecidos (CNPJ) deste município"):
+    with st.expander("Ver tabela detalhada dos favorecidos (CNPJ) deste município", expanded=False):
         if not df_ctop.empty:
-            df_tab_mun_cnpj = df_ctop[["cnpj_formatado", "fornecedor_nome", "quantidade_emendas", "valor_total"]].copy()
+            cols_base = ["cnpj_formatado", "fornecedor_nome", "grupo_cnpj", "quantidade_emendas", "valor_total"]
+            cols_disp = [c for c in cols_base if c in df_ctop.columns]
+            df_tab_mun_cnpj = df_ctop[cols_disp].copy()
+            if "grupo_cnpj" not in df_tab_mun_cnpj.columns:
+                df_tab_mun_cnpj["grupo_cnpj"] = GRUPO_OUTRO_CNPJ
             df_tab_mun_cnpj["Situação Cadastral"] = [
                 check_cnpj_status(cnpj)["situacao_cadastral"] for cnpj in df_tab_mun_cnpj["cnpj_formatado"]
             ]
@@ -1239,10 +1623,39 @@ def renderizar_pagina_perfil_municipio(st: Any, dados: dict[str, pd.DataFrame]) 
                 obter_link_consulta_oficial(cnpj) for cnpj in df_tab_mun_cnpj["cnpj_formatado"]
             ]
             df_tab_mun_cnpj = df_tab_mun_cnpj[
-                ["cnpj_formatado", "fornecedor_nome", "Situação Cadastral", "quantidade_emendas", "valor_total", "Consulta Gov.br"]
+                [
+                    "cnpj_formatado",
+                    "fornecedor_nome",
+                    "grupo_cnpj",
+                    "Situação Cadastral",
+                    "quantidade_emendas",
+                    "valor_total",
+                    "Consulta Gov.br",
+                ]
             ]
-            df_tab_mun_cnpj.columns = ["CNPJ", "Favorecido", "Situação Cadastral", "Nº de Emendas", "Valor Total (R$)", "Consulta Gov.br"]
+            df_tab_mun_cnpj.columns = [
+                "CNPJ",
+                "Favorecido",
+                "Grupo CNPJ",
+                "Situação Cadastral",
+                "Nº de Emendas",
+                "Valor Total (R$)",
+                "Consulta Gov.br",
+            ]
             st.dataframe(df_tab_mun_cnpj, use_container_width=True, hide_index=True)
+
+    df_emendas_cnae_mun = filtrar_emendas_explorador(
+        perfil["emendas"],
+        grupo_cnpj=filtro_grp_mun,
+        mapa_cache=mapa_cnpjs,
+    )
+    _renderizar_expander_cnaes(
+        st,
+        df_emendas_cnae_mun,
+        "🗂️ Ver CNAEs dos CNPJs favorecidos neste município (Principal e Secundários)",
+        mapa_cnpjs=mapa_cnpjs,
+        expanded=False,
+    )
 
     st.markdown("---")
     st.caption("ℹ️ Os alertas e desvios estatísticos municipais estão concentrados exclusivamente na aba **1. Central de Alertas**.")
