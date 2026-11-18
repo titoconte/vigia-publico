@@ -109,6 +109,44 @@ CREATE TABLE IF NOT EXISTS alertas_feedback (
     FOREIGN KEY (alerta_id) REFERENCES alertas(id)
 );
 
+-- Tabelas para Dados Abertos SC: Servidores Estaduais (Remuneração) e Contratos (SIGEF/SICOP)
+CREATE TABLE IF NOT EXISTS servidores_estaduais (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    nome_normalizado TEXT NOT NULL,
+    cpf_mascarado TEXT,
+    cargo TEXT NOT NULL,
+    orgao_lotacao TEXT NOT NULL,
+    municipio_lotacao TEXT,
+    remuneracao_bruta REAL DEFAULT 0.0,
+    situacao_funcional TEXT DEFAULT 'Efetivo'
+);
+
+CREATE TABLE IF NOT EXISTS cnpj_socios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cnpj TEXT NOT NULL,
+    nome_socio TEXT NOT NULL,
+    nome_socio_normalizado TEXT NOT NULL,
+    qualificacao TEXT DEFAULT 'Sócio',
+    faixa_etaria TEXT
+);
+
+CREATE TABLE IF NOT EXISTS contratos_estaduais (
+    id_contrato TEXT PRIMARY KEY,
+    numero_contrato TEXT NOT NULL,
+    ano INTEGER NOT NULL,
+    orgao_contratante TEXT NOT NULL,
+    fornecedor_nome TEXT NOT NULL,
+    fornecedor_cnpj TEXT NOT NULL,
+    municipio TEXT,
+    codigo_ibge TEXT,
+    objeto_contrato TEXT NOT NULL,
+    valor_contrato REAL NOT NULL,
+    data_assinatura TEXT,
+    situacao TEXT DEFAULT 'Vigente',
+    fonte_url TEXT
+);
+
 -- Índices obrigatórios nos campos de busca (parlamentar, município, CNPJ e pontuação)
 CREATE INDEX IF NOT EXISTS idx_emendas_parlamentar ON emendas_clean (parlamentar);
 CREATE INDEX IF NOT EXISTS idx_emendas_municipio ON emendas_clean (municipio_normalizado);
@@ -126,3 +164,13 @@ CREATE INDEX IF NOT EXISTS idx_alertas_cnpj ON alertas (fornecedor_cnpj);
 
 CREATE INDEX IF NOT EXISTS idx_cnpj_cache_situacao ON cnpj_cache (situacao_cadastral);
 CREATE INDEX IF NOT EXISTS idx_cnpj_cache_natureza ON cnpj_cache (natureza_juridica_codigo);
+
+CREATE INDEX IF NOT EXISTS idx_servidores_nome_norm ON servidores_estaduais (nome_normalizado);
+CREATE INDEX IF NOT EXISTS idx_servidores_orgao ON servidores_estaduais (orgao_lotacao);
+
+CREATE INDEX IF NOT EXISTS idx_cnpj_socios_cnpj ON cnpj_socios (cnpj);
+CREATE INDEX IF NOT EXISTS idx_cnpj_socios_nome_norm ON cnpj_socios (nome_socio_normalizado);
+
+CREATE INDEX IF NOT EXISTS idx_contratos_cnpj ON contratos_estaduais (fornecedor_cnpj);
+CREATE INDEX IF NOT EXISTS idx_contratos_municipio ON contratos_estaduais (municipio);
+CREATE INDEX IF NOT EXISTS idx_contratos_ano ON contratos_estaduais (ano);

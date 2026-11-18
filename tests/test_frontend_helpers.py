@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
+import pandas as pd
 
 from anomalies import executar_motor_anomalias
 from app import (
@@ -927,6 +929,149 @@ def test_renderizar_pagina_perfil_municipio_filtra_tabela_emendas_destinadas(mon
     renderizar_pagina_perfil_municipio(st_todos, dados_painel)
     assert len(st_todos.dataframes_apos_secao) == 1
     assert len(st_todos.dataframes_apos_secao[0]) == 2
+
+
+class _FakeStreamlitRenderer:
+    """Mock abrangente de Streamlit para validar execução sem erros das novas abas."""
+
+    def __init__(self):
+        self.headers = []
+        self.warnings = []
+        self.dataframes = []
+        self.metrics = []
+        self.infos = []
+
+    def header(self, text: str):
+        self.headers.append(text)
+
+    def caption(self, *args, **kwargs):
+        pass
+
+    def warning(self, text: str):
+        self.warnings.append(text)
+
+    def info(self, text: str):
+        self.infos.append(text)
+
+    def success(self, *args, **kwargs):
+        pass
+
+    def error(self, *args, **kwargs):
+        pass
+
+    def metric(self, label: str, value: Any, **kwargs):
+        self.metrics.append((label, value))
+
+    def markdown(self, *args, **kwargs):
+        pass
+
+    def columns(self, spec):
+        n = spec if isinstance(spec, int) else len(spec)
+        return [self] * n
+
+    def selectbox(self, label: str, options: list[Any], **kwargs):
+        return options[0] if options else None
+
+    def text_input(self, label: str, **kwargs):
+        return ""
+
+    def dataframe(self, df: pd.DataFrame, **kwargs):
+        self.dataframes.append(df)
+
+    def expander(self, label: str):
+        class _Context:
+            def __enter__(inner_self):
+                return self
+            def __exit__(inner_self, *args):
+                pass
+        return _Context()
+
+    def write(self, *args, **kwargs):
+        pass
+
+    def subheader(self, *args, **kwargs):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        pass
+
+
+def test_renderizar_aba_conflito_interesses(monkeypatch) -> None:
+    """Verifica se a Aba 6 de Conflito de Interesses renderiza cabeçalhos, métricas e tabelas com dados."""
+    import app
+    st_mock = _FakeStreamlitRenderer()
+
+    # Cenário com dados de conflito
+    df_fake = pd.DataFrame([{
+        "servidor_nome": "JOAO DA SILVA",
+        "cargo": "MEDICO",
+        "orgao": "SECRETARIA DA SAUDE",
+        "fornecedor_nome": "MEDICAMENTOS SC LTDA",
+        "fornecedor_cnpj": "12345678000199",
+        "qualificacao_socio": "Sócio-Administrador",
+        "id_emenda": "EM-001",
+        "emenda_area": "Saúde",
+        "emenda_valor": 500000.0,
+        "severidade": "alta",
+        "motivo": "Atua na mesma pasta da emenda",
+    }])
+    monkeypatch.setattr(
+        app,
+        "detectar_conflitos_servidores",
+        lambda *args, **kwargs: {
+            "conflitos": df_fake,
+            "total_conflitos": 1,
+            "alta_severidade": 1,
+            "moderada_severidade": 0,
+        },
+    )
+
+    app.renderizar_aba_conflito_interesses(st_mock, {})
+    assert any("Conflito de Interesses" in h for h in st_mock.headers)
+    assert len(st_mock.metrics) == 4
+    assert len(st_mock.dataframes) == 1
+
+
+def test_renderizar_aba_conformidade_contratos(monkeypatch) -> None:
+    """Verifica se a Aba 7 de Conformidade de Contratos renderiza cabeçalhos, métricas e tabelas com dados."""
+    import app
+    st_mock = _FakeStreamlitRenderer()
+
+    df_fake = pd.DataFrame([{
+        "numero_contrato": "CT-2024-001",
+        "sistema_origem": "SIGEF",
+        "municipio": "Florianópolis",
+        "emenda_area": "Saúde",
+        "fornecedor_nome": "EVENTOS E SHOWS LTDA",
+        "fornecedor_cnpj": "98765432000188",
+        "valor_contrato": 120000.0,
+        "emenda_valor": 100000.0,
+        "status_conformidade": "inconsistente",
+        "justificativa_auditoria": "Desvio temático",
+        "termos_discrepantes": ["show", "palco"],
+        "objeto": "Locação de palco e som para shows",
+    }])
+    monkeypatch.setattr(
+        app,
+        "auditar_contratos_emendas",
+        lambda *args, **kwargs: {
+            "contratos": df_fake,
+            "total_contratos": 1,
+            "inconsistentes": 1,
+            "aderentes": 0,
+            "valor_total_contratos": 120000.0,
+        },
+    )
+
+    app.renderizar_aba_conformidade_contratos(st_mock, {})
+    assert any("Conformidade de Contratos" in h for h in st_mock.headers)
+    assert len(st_mock.metrics) == 4
+    assert len(st_mock.dataframes) == 1
+
+
 
 
 

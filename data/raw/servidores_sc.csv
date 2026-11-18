@@ -1,0 +1,13 @@
+nome,cpf_mascarado,cargo,orgao_lotacao,municipio_lotacao,remuneracao_bruta,situacao_funcional
+IVAN FREDERICO HUDLER,***.112.334-**,Analista Técnico em Saúde,Secretaria de Estado da Saúde (SES),Joinville,14250.0,Efetivo
+ALEXANDRE MEYER,***.445.667-**,Engenheiro Civil,Secretaria de Estado da Infraestrutura e Mobilidade (SIE),Florianópolis,16800.0,Efetivo
+ATAIR DERNER FILHO,***.778.990-**,Auditor Fiscal da Receita Estadual,Secretaria de Estado da Fazenda (SEF),Florianópolis,28900.0,Efetivo
+ROBERTO CARLOS DA SILVA,***.223.344-**,Médico Clínico Geral,Secretaria de Estado da Saúde (SES),Criciúma,19500.0,Efetivo
+MARCOS AURELIO DOS SANTOS,***.556.677-**,Especialista em Gestão Educacional,Secretaria de Estado da Educação (SED),Lages,11200.0,Efetivo
+JULIANA PEREIRA LIMA,***.889.001-**,Farmacêutica Bioquímica,Fundo Estadual de Saúde (FES),Chapecó,13400.0,Efetivo
+CARLOS EDUARDO DE SOUZA,***.334.455-**,Técnico em Atividades de Trânsito,Departamento Estadual de Trânsito (DETRAN/SC),Blumenau,8900.0,Efetivo
+PATRICIA HELENA ALVES,***.667.788-**,Assistente de Saúde,Secretaria de Estado da Saúde (SES),Florianópolis,7800.0,Efetivo
+FERNANDO HENRIQUE RAMOS,***.990.112-**,Engenheiro Agrônomo,Secretaria de Estado da Agricultura (SAR),Tubarão,15300.0,Efetivo
+ANA BEATRIZ ZIMMERMANN,***.123.456-**,Professora de Ensino Médio,Secretaria de Estado da Educação (SED),Joinville,9200.0,Efetivo
+LUCAS MATHEUS PINTO,***.234.567-**,Agente de Polícia Civil,Polícia Civil de Santa Catarina (PCSC),Florianópolis,12500.0,Efetivo
+MARCELO VICENTE DA COSTA,***.345.678-**,Administrador,Secretaria de Estado da Casa Civil (SCC),Florianópolis,14800.0,Efetivo

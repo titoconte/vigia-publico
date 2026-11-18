@@ -26,6 +26,8 @@ from cnpj_validator import (
     sincronizar_cnpjs_emendas_no_cache,
 )
 from database import conectar_banco, resolver_caminho_sqlite
+from conflict_detector import detectar_conflitos_servidores
+from contract_auditor import auditar_contratos_emendas
 from fund_tracker import check_fund_usage
 from main import garantir_dados_iniciais
 
@@ -1796,6 +1798,258 @@ def renderizar_pagina_fluxo_recursos(st: Any, dados: dict[str, pd.DataFrame]) ->
         st.info("Nenhuma emenda registrada para este município na base de dados.")
 
 
+def renderizar_aba_conflito_interesses(st: Any, dados: dict[str, pd.DataFrame]) -> None:
+    """Renderiza a Página 6: Conflito de Interesses (Servidores Públicos vs. QSA de Fornecedores)."""
+    st.header("👥 Página 6 — Conflito de Interesses: Servidores Públicos vs. Fornecedores (QSA)")
+    st.caption(
+        "Cruzamento entre a base de **Remuneração de Servidores Públicos do Poder Executivo de Santa Catarina** "
+        "(dados abertos oficiais do Estado de SC — dados.sc.gov.br) e o **Quadro de Sócios e Administradores (QSA)** "
+        "das empresas fornecedoras que receberam recursos de emendas parlamentares."
+    )
+
+    st.warning(
+        "⚠️ **Aviso de Responsabilidade e Homônimos (LGPD):** A base pública de servidores contém CPFs parcialmente "
+        "mascarados. É fundamental conferir os documentos societários (Junta Comercial) e vínculos funcionais "
+        "antes de qualquer juízo de valor. Este painel aponta inconsistências para apuração documental."
+    )
+
+    df_conflitos_relatorio = detectar_conflitos_servidores()
+    df_conflitos = df_conflitos_relatorio.get("conflitos", pd.DataFrame())
+
+    if df_conflitos is None or df_conflitos.empty:
+        st.info("Nenhum conflito societário ou funcional identificado com os parâmetros atuais.")
+        return
+
+    # Contadores de severidade
+    qtd_total = df_conflitos_relatorio.get("total_conflitos", len(df_conflitos))
+    qtd_alta = df_conflitos_relatorio.get("alta_severidade", len(df_conflitos[df_conflitos["severidade"] == "alta"]))
+    qtd_moderada = df_conflitos_relatorio.get("moderada_severidade", len(df_conflitos[df_conflitos["severidade"] == "moderada"]))
+    valor_total_emendas = float(df_conflitos["emenda_valor"].sum()) if "emenda_valor" in df_conflitos.columns else 0.0
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Sócios-Servidores Identificados", f"{qtd_total}")
+    c2.metric("🔴 Alta Severidade (Mesma Pasta)", f"{qtd_alta}", help="Servidor público atua na mesma área/secretaria para a qual a emenda foi destinada.")
+    c3.metric("🟡 Risco Moderado", f"{qtd_moderada}", help="Servidor é sócio de empresa beneficiária de emenda em outra área governamental.")
+    c4.metric("Valor Total das Emendas", f"R$ {valor_total_emendas:,.2f}")
+
+    st.markdown("---")
+
+    # Filtros interativos
+    c_f1, c_f2, c_f3 = st.columns([1.5, 2, 2])
+    with c_f1:
+        filtro_sev = st.selectbox(
+            "Filtrar por Severidade",
+            ["Todos", "🔴 Alta Severidade (Mesma Pasta)", "🟡 Risco Moderado"],
+            key="filtro_conflito_sev",
+        )
+    with c_f2:
+        orgaos_disponiveis = ["Todos"] + sorted(list(df_conflitos["orgao"].dropna().unique()))
+        filtro_orgao = st.selectbox("Filtrar por Órgão do Servidor", orgaos_disponiveis, key="filtro_conflito_orgao")
+    with c_f3:
+        termo_busca = st.text_input("Buscar por Nome do Servidor ou Fornecedor", key="filtro_conflito_busca")
+
+    df_filtrado = df_conflitos.copy()
+    if filtro_sev == "🔴 Alta Severidade (Mesma Pasta)":
+        df_filtrado = df_filtrado[df_filtrado["severidade"] == "alta"]
+    elif filtro_sev == "🟡 Risco Moderado":
+        df_filtrado = df_filtrado[df_filtrado["severidade"] == "moderada"]
+
+    if filtro_orgao != "Todos":
+        df_filtrado = df_filtrado[df_filtrado["orgao"] == filtro_orgao]
+
+    if termo_busca.strip():
+        termo = termo_busca.strip().lower()
+        df_filtrado = df_filtrado[
+            df_filtrado["servidor_nome"].str.lower().str.contains(termo, na=False)
+            | df_filtrado["fornecedor_nome"].str.lower().str.contains(termo, na=False)
+            | df_filtrado["fornecedor_cnpj"].str.contains(termo, na=False)
+        ]
+
+    st.markdown(f"##### 📋 Registros Localizados ({len(df_filtrado)})")
+
+    # Tabela consolidada
+    cols_exibicao = [
+        "servidor_nome",
+        "cargo",
+        "orgao",
+        "fornecedor_nome",
+        "fornecedor_cnpj",
+        "qualificacao_socio",
+        "id_emenda",
+        "emenda_area",
+        "emenda_valor",
+        "severidade",
+    ]
+    cols_presentes = [c for c in cols_exibicao if c in df_filtrado.columns]
+    st.dataframe(df_filtrado[cols_presentes], use_container_width=True, hide_index=True)
+
+    # Detalhamento expansível de cada caso
+    st.markdown("##### 🔎 Detalhamento dos Casos de Maior Atenção")
+    for _, caso in df_filtrado.iterrows():
+        icone = "🔴" if caso.get("severidade") == "alta" else "🟡"
+        titulo = (
+            f"{icone} {caso.get('servidor_nome')} — Sócio de {caso.get('fornecedor_nome')} "
+            f"| Emenda: {caso.get('id_emenda')} (R$ {float(caso.get('emenda_valor', 0.0)):,.2f})"
+        )
+        with st.expander(titulo):
+            c_s1, c_s2 = st.columns(2)
+            with c_s1:
+                st.markdown("###### 🏛️ Vínculo no Serviço Público Estadual (SC)")
+                st.write(f"**Servidor:** `{caso.get('servidor_nome')}` (Matrícula: `{caso.get('matricula', 'N/D')}`)")
+                st.write(f"**Cargo / Função:** {caso.get('cargo', 'Não informado')}")
+                st.write(f"**Órgão de Lotação:** {caso.get('orgao', 'Não informado')}")
+                rem = float(caso.get("remuneracao_bruta", 0.0))
+                st.write(f"**Remuneração Bruta:** R$ {rem:,.2f}")
+                st.markdown(
+                    f"🔗 [Consultar no Portal da Transparência de SC](https://www.transparencia.sc.gov.br/remuneracao-dos-servidores)"
+                )
+
+            with c_s2:
+                st.markdown("###### 🏢 Empresa Fornecedora & Emenda")
+                cnpj = caso.get("fornecedor_cnpj", "")
+                st.write(f"**Empresa:** `{caso.get('fornecedor_nome')}` (CNPJ: `{cnpj}`)")
+                st.write(f"**Qualificação no QSA:** {caso.get('qualificacao_socio', 'Sócio')}")
+                st.write(f"**Emenda Vinculada:** `{caso.get('id_emenda')}` ({caso.get('parlamentar')})")
+                st.write(f"**Área da Emenda:** {caso.get('emenda_area')} | **Município:** {caso.get('municipio')}")
+                st.markdown(
+                    f"🔗 [Consultar CNPJ no Portal Gov.br](https://solucoes.receita.fazenda.gov.br/servicos/cnpjreva/cnpjreva_solicitacao.asp)"
+                )
+
+            st.markdown("###### 🚨 Parecer da Análise Automática:")
+            if caso.get("severidade") == "alta":
+                st.error(
+                    f"**Conflito Potencial de Alta Gravidade:** {caso.get('motivo')} "
+                    f"O servidor público atua no órgão `{caso.get('orgao')}`, diretamente relacionado à área da emenda "
+                    f"(`{caso.get('emenda_area')}`), recebida pela empresa em que consta como sócio/administrador."
+                )
+            else:
+                st.warning(
+                    f"**Atenção Ético-Administrativa:** {caso.get('motivo')} "
+                    f"O servidor público integra o QSA de empresa beneficiada com recursos públicos estaduais. "
+                    f"Recomenda-se checar se a legislação funcional (Estatuto dos Servidores de SC) autoriza a administração da firma."
+                )
+
+
+def renderizar_aba_conformidade_contratos(st: Any, dados: dict[str, pd.DataFrame]) -> None:
+    """Renderiza a Página 7: Conformidade de Contratos Públicos Estaduais (SIGEF/SICOP)."""
+    st.header("📄 Página 7 — Conformidade de Contratos Públicos Estaduais (SIGEF/SICOP)")
+    st.caption(
+        "Auditoria semântica e financeira de **Contratos Administrativos do Poder Executivo de Santa Catarina** "
+        "(sistemas SIGEF e SICOP — dados.sc.gov.br) correlacionados à **finalidade e área temática declaradas** "
+        "nas emendas parlamentares destinadas aos municípios e entidades."
+    )
+
+    df_contratos_relatorio = auditar_contratos_emendas()
+    df_contratos = df_contratos_relatorio.get("contratos", pd.DataFrame())
+
+    if df_contratos is None or df_contratos.empty:
+        st.info("Nenhum contrato público estadual registrado para correlação no momento.")
+        return
+
+    # Contadores
+    qtd_total = df_contratos_relatorio.get("total_contratos", len(df_contratos))
+    qtd_inconsistentes = df_contratos_relatorio.get("inconsistentes", len(df_contratos[df_contratos["status_conformidade"] == "inconsistente"]))
+    qtd_aderentes = df_contratos_relatorio.get("aderentes", len(df_contratos[df_contratos["status_conformidade"] == "aderente"]))
+    val_total = float(df_contratos_relatorio.get("valor_total_contratos", 0.0))
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Contratos Auditados", f"{qtd_total}")
+    c2.metric("🔴 Desvios de Finalidade / Inconsistências", f"{qtd_inconsistentes}", help="Objeto contratual possui termos colidentes com a finalidade declarada na emenda.")
+    c3.metric("🟢 Contratos Aderentes", f"{qtd_aderentes}", help="Objeto contratual alinhado com a área temática da emenda.")
+    c4.metric("Valor Total Auditado", f"R$ {val_total:,.2f}")
+
+    st.markdown("---")
+
+    # Filtros
+    c_f1, c_f2, c_f3 = st.columns([1.5, 2, 2])
+    with c_f1:
+        filtro_status = st.selectbox(
+            "Filtrar por Status de Conformidade",
+            ["Todos", "🔴 Inconsistente / Desvio Potencial", "🟢 Aderente"],
+            key="filtro_contratos_status",
+        )
+    with c_f2:
+        areas = ["Todas"] + sorted(list(df_contratos["emenda_area"].dropna().unique()))
+        filtro_area = st.selectbox("Filtrar por Área da Emenda", areas, key="filtro_contratos_area")
+    with c_f3:
+        termo_contrato = st.text_input("Buscar por Objeto, Fornecedor ou Município", key="filtro_contrato_termo")
+
+    df_filtrado = df_contratos.copy()
+    if filtro_status == "🔴 Inconsistente / Desvio Potencial":
+        df_filtrado = df_filtrado[df_filtrado["status_conformidade"] == "inconsistente"]
+    elif filtro_status == "🟢 Aderente":
+        df_filtrado = df_filtrado[df_filtrado["status_conformidade"] == "aderente"]
+
+    if filtro_area != "Todas":
+        df_filtrado = df_filtrado[df_filtrado["emenda_area"] == filtro_area]
+
+    if termo_contrato.strip():
+        termo = termo_contrato.strip().lower()
+        df_filtrado = df_filtrado[
+            df_filtrado["objeto"].str.lower().str.contains(termo, na=False)
+            | df_filtrado["fornecedor_nome"].str.lower().str.contains(termo, na=False)
+            | df_filtrado["municipio"].str.lower().str.contains(termo, na=False)
+            | df_filtrado["numero_contrato"].str.lower().str.contains(termo, na=False)
+        ]
+
+    st.markdown(f"##### 📋 Contratos Auditados ({len(df_filtrado)})")
+
+    cols_exibicao = [
+        "numero_contrato",
+        "sistema_origem",
+        "municipio",
+        "emenda_area",
+        "fornecedor_nome",
+        "valor_contrato",
+        "emenda_valor",
+        "status_conformidade",
+    ]
+    cols_presentes = [c for c in cols_exibicao if c in df_filtrado.columns]
+    st.dataframe(df_filtrado[cols_presentes], use_container_width=True, hide_index=True)
+
+    # Expansores de detalhes
+    st.markdown("##### 🔎 Detalhamento da Análise Semântica dos Contratos")
+    for _, row in df_filtrado.iterrows():
+        inconsistente = row.get("status_conformidade") == "inconsistente"
+        icone = "🔴" if inconsistente else "🟢"
+        titulo = (
+            f"{icone} Contrato {row.get('numero_contrato')} ({row.get('sistema_origem', 'SIGEF')}) "
+            f"— {row.get('municipio')} | Emenda: {row.get('id_emenda')} ({row.get('emenda_area')})"
+        )
+        with st.expander(titulo):
+            c_info1, c_info2 = st.columns(2)
+            with c_info1:
+                st.markdown("###### 📜 Dados do Contrato Administrativo")
+                st.write(f"**Número do Contrato:** `{row.get('numero_contrato')}`")
+                st.write(f"**Sistema de Origem:** `{row.get('sistema_origem', 'SIGEF')}`")
+                st.write(f"**Contratada / Fornecedor:** `{row.get('fornecedor_nome')}` (CNPJ: `{row.get('fornecedor_cnpj')}`)")
+                st.write(f"**Valor Contratado:** R$ {float(row.get('valor_contrato', 0.0)):,.2f}")
+                st.write(f"**Vigência:** {row.get('data_inicio', '')} a {row.get('data_fim', '')}")
+
+            with c_info2:
+                st.markdown("###### 🏛️ Dados da Emenda Parlamentar de Origem")
+                st.write(f"**Emenda:** `{row.get('id_emenda')}` ({row.get('parlamentar')})")
+                st.write(f"**Área Temática Declarada:** `{row.get('emenda_area')}`")
+                st.write(f"**Município / Beneficiário:** {row.get('municipio')}")
+                st.write(f"**Valor Repassado via Emenda:** R$ {float(row.get('emenda_valor', 0.0)):,.2f}")
+
+            st.markdown("###### 📝 Objeto Integral do Contrato:")
+            st.info(f"\"{row.get('objeto', 'Objeto não especificado.')}\"")
+
+            st.markdown("###### 🔍 Resultado do Teste de Aderência Semântica:")
+            if inconsistente:
+                termos = ", ".join(f"`{t}`" for t in row.get("termos_discrepantes", []))
+                st.error(
+                    f"**Inconsistência Temática Detectada:** {row.get('justificativa_auditoria')} "
+                    f"Termos que indicam divergência em relação à área `{row.get('emenda_area')}`: {termos}."
+                )
+            else:
+                st.success(
+                    f"**Contrato Aderente:** {row.get('justificativa_auditoria')} "
+                    f"O objeto atende os requisitos temáticos da área declarada de `{row.get('emenda_area')}`."
+                )
+
+
 @st.cache_data(show_spinner=False)
 def _ler_css_customizado_cached(caminho_str: str, mtime: float) -> str:
     """Lê o arquivo de estilos CSS com cache em memória para evitar I/O repetitivo a cada rerun."""
@@ -1878,12 +2132,14 @@ def executar_interface_streamlit() -> None:
     dados = carregar_dados_painel()
 
     # Menu de abas superiores horizontais ocupando toda a largura da tela
-    tab_alertas, tab_explorador, tab_parlamentar, tab_municipio, tab_fluxo = st.tabs([
+    tab_alertas, tab_explorador, tab_parlamentar, tab_municipio, tab_fluxo, tab_conflitos, tab_contratos = st.tabs([
         "🚨 1. Central de Alertas",
         "📊 2. Explorador de Emendas",
         "🏛️ 3. Perfil do Parlamentar",
         "🏙️ 4. Perfil do Município",
         "🔍 5. Rastreabilidade & Fluxo de Recursos (TCE/SC)",
+        "👥 6. Conflito de Interesses (Servidores vs. QSA)",
+        "📄 7. Conformidade de Contratos (SIGEF)",
     ])
 
     with tab_alertas:
@@ -1900,6 +2156,12 @@ def executar_interface_streamlit() -> None:
 
     with tab_fluxo:
         renderizar_pagina_fluxo_recursos(st, dados)
+
+    with tab_conflitos:
+        renderizar_aba_conflito_interesses(st, dados)
+
+    with tab_contratos:
+        renderizar_aba_conformidade_contratos(st, dados)
 
     st.markdown("---")
     st.caption(

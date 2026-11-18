@@ -91,12 +91,14 @@ Para garantir respostas instantâneas ao alternar entre páginas, filtros e muni
 
 ## 3. Guia Módulo por Módulo: Como Usar e Como Interpretar
 
-O menu horizontal de abas no topo da aplicação (`st.tabs`) divide a navegação em **5 módulos investigativos complementares**, aproveitando 100% da largura da tela sem obstruções de barra lateral:
+O menu horizontal de abas no topo da aplicação (`st.tabs`) divide a navegação em **7 módulos investigativos complementares**, aproveitando 100% da largura da tela sem obstruções de barra lateral:
 1. `🚨 1. Central de Alertas`: Mesa de triagem e priorização das 2 novas regras estatísticas oficiais.
 2. `📊 2. Explorador de Emendas`: Tabela geral de emendas com filtros dinâmicos, métricas per capita e gráficos territoriais.
 3. `🏛️ 3. Perfil do Parlamentar`: Detalhamento individual de deputados e bancadas regionais com histogramas e repasses por CPF/CNPJ.
 4. `🏙️ 4. Perfil do Município`: Radiografia orçamentária do município com 5 gráficos analíticos e cruzamento per capita.
 5. `🔍 5. Rastreabilidade & Fluxo de Recursos (TCE/SC)`: Auditoria de ponta a ponta do ciclo orçamentário e planos de trabalho.
+6. `👥 6. Conflito de Interesses (Servidores vs. QSA)`: Cruzamento entre Remuneração de Servidores Estaduais (dados.sc.gov.br) e o Quadro de Sócios (QSA) dos fornecedores.
+7. `📄 7. Conformidade de Contratos (SIGEF)`: Auditoria semântica e financeira de contratos administrativos frente à finalidade declarada na emenda.
 
 ---
 
@@ -327,6 +329,29 @@ Além do status cadastral, o sistema combina dados societários e contratuais pa
 #### 3ª Camada: Cache Local Persistente (`cnpj_cache`) e Consulta Direta no Gov.br
 * **Tabela `cnpj_cache`:** armazena localmente no SQLite o histórico de consultas de todos os fornecedores das emendas, garantindo respostas em milissegundos sem depender de cotas de APIs externas.
 * **Link Direto Gov.br / Portal da Transparência:** cada CNPJ exibido na Central de Alertas e nos Perfis conta com link oficial direto para conferência pública gratuita e sem necessidade de login.
+
+---
+
+### 👥 Página 6 — Conflito de Interesses: Servidores Públicos vs. Fornecedores (QSA)
+Implementada em [`renderizar_aba_conflito_interesses`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/app.py), esta funcionalidade realiza o cruzamento sistemático entre duas bases de dados públicos:
+1. **Remuneração e Lotação dos Servidores do Poder Executivo de SC:** obtida do portal oficial de Dados Abertos de Santa Catarina ([dados.sc.gov.br](https://dados.sc.gov.br/dataset/remuneracao-servidores-do-executivo)), contendo remunerações, cargos, órgãos de lotação e matrículas de servidores ativos e estatais dependentes.
+2. **Quadro de Sócios e Administradores (QSA):** obtido via Receita Federal do Brasil (BrasilAPI / CNPJ.ws) a partir dos CNPJs de empresas favorecidas por emendas parlamentares.
+
+#### Regras de Classificação de Risco:
+* **🔴 Alto Risco (Conflito Direto de Pasta):** acionado quando um servidor público estadual figura como sócio ou administrador de uma empresa que recebeu emendas destinadas exatamente à mesma pasta, secretaria ou área de atuação funcional do servidor (ex.: servidor lotado na Secretaria de Estado da Saúde sendo sócio de fornecedora contratada com emenda de Saúde).
+* **🟡 Risco Moderado (Participação Societária):** acionado quando o servidor integra o QSA de empresa contemplada com emenda parlamentar estadual, porém em área governamental distinta de sua lotação administrativa imediata.
+* **Nota Ética e LGPD:** Os dados abertos oficiais mascaram parcialmente os CPFs por exigência legal. Por isso, a plataforma sinaliza o cruzamento como ponto de partida para conferência na Junta Comercial (JUCESC) e no Portal da Transparência de SC, sem atribuir culpa sumária por homonímia.
+
+---
+
+### 📄 Página 7 — Conformidade de Contratos Públicos Estaduais (SIGEF/SICOP)
+Implementada em [`renderizar_aba_conformidade_contratos`](file:///C:/Users/titoc/OneDrive/Documentos/vigia-publico/app.py), esta aba efetua a auditoria semântica cruzada entre os contratos administrativos firmados e a destinação temática original das emendas:
+1. **Origem dos Contratos:** dataset oficial de Contratos do Poder Executivo Estadual ([dados.sc.gov.br](https://dados.sc.gov.br/dataset/contratos-sigef)), originário dos sistemas integrados SIGEF e SICOP.
+2. **Motor de Análise Semântica:** analisa o texto descritivo do `objeto` do contrato comparando-o com o mapa de palavras-chave da respectiva `emenda_area` (Saúde, Educação, Infraestrutura, Agricultura, Turismo/Cultura).
+3. **Detecção de Desvio de Finalidade:**
+   * **🔴 Inconsistente / Divergente:** identifica termos discrepantes flagrantes (ex.: emenda carimbada como "Saúde", mas com contrato cujo objeto descreve "locação de trio elétrico", "show pirotécnico" ou "pavimentação asfáltica").
+   * **🟢 Aderente:** termos contratuais perfeitamente compatíveis com as finalidades setoriais declaradas.
+4. **Análise de Valores e Vigência:** compara o valor financeiro repassado via emenda com o montante homologado no contrato e o prazo de execução formal.
 
 ---
 

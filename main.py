@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 
 from anomalies import executar_motor_anomalias
 from collect_tce import executar_coleta_completa
+from dados_sc_loader import carregar_dados_abertos_sc
 from database import conectar_banco, inicializar_schema, resolver_caminho_sqlite
 from enrich_cnpj import CADASTRO_REFERENCIA_CNPJ, enriquecer_lote_cnpjs
 from etl import executar_etl, normalizar_municipio
@@ -50,11 +51,14 @@ def garantir_dados_iniciais(db_path: Path | str | None = None) -> Path:
     inicializar_schema(caminho)
     with conectar_banco(caminho) as conn:
         qtd = int(conn.execute("SELECT COUNT(*) FROM emendas_clean").fetchone()[0])
+        qtd_serv = int(conn.execute("SELECT COUNT(*) FROM servidores_estaduais").fetchone()[0])
     if qtd == 0:
         executar_coleta_completa()
         enriquecer_lote_cnpjs(list(CADASTRO_REFERENCIA_CNPJ.keys()), usar_rede=False)
         executar_etl(db_path=caminho)
         executar_motor_anomalias(db_path=caminho)
+    if qtd_serv == 0:
+        carregar_dados_abertos_sc(caminho)
     return caminho
 
 
